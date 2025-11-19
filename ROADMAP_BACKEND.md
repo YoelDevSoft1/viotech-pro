@@ -27,11 +27,17 @@
 - ✅ Relación User → Services
 
 #### 🎫 Tickets
-- ✅ GET `/api/tickets` - Listar tickets del usuario
+- ✅ GET `/api/tickets` - Listar tickets del usuario (con paginación y filtros)
+- ✅ GET `/api/tickets/:id` - Obtener ticket específico
 - ✅ POST `/api/tickets` - Crear ticket
+- ✅ PUT `/api/tickets/:id` - Actualizar ticket
 - ✅ POST `/api/tickets/:ticketId/comment` - Agregar comentario
+- ✅ GET `/api/tickets/:ticketId/attachments` - Listar adjuntos
+- ✅ POST `/api/tickets/:ticketId/attachments` - Registrar adjunto
+- ✅ DELETE `/api/tickets/:ticketId/attachments/:attachmentId` - Eliminar adjunto
 - ✅ Modelo Ticket con Prisma
 - ✅ Modelo TicketComment con Prisma
+- ✅ Modelo TicketAttachment con Prisma
 - ✅ Validación de prioridad y estado
 
 #### 💳 Pagos
@@ -55,8 +61,8 @@
 
 ### 1. Sistema de Tickets - Funcionalidades Faltantes
 
-#### ❌ GET `/api/tickets/:id` - Obtener ticket específico
-**Estado:** No implementado  
+#### ✅ GET `/api/tickets/:id` - Obtener ticket específico
+**Estado:** ✅ Implementado  
 **Prioridad:** 🔴 Alta  
 **Descripción:** El frontend necesita obtener un ticket específico con todos sus comentarios y adjuntos.
 
@@ -76,15 +82,15 @@ static async getById(req, res) {
 }
 ```
 
-#### ❌ PUT `/api/tickets/:id` - Actualizar ticket
-**Estado:** No implementado  
+#### ✅ PUT `/api/tickets/:id` - Actualizar ticket
+**Estado:** ✅ Implementado  
 **Prioridad:** 🟡 Media  
 **Descripción:** Permitir actualizar estado, prioridad, descripción del ticket.
 
-#### ❌ Adjuntos de Tickets - Backend Integration
-**Estado:** Frontend usa Supabase Storage directamente  
+#### ✅ Adjuntos de Tickets - Backend Integration
+**Estado:** ✅ Implementado  
 **Prioridad:** 🔴 Alta  
-**Descripción:** El frontend sube archivos directamente a Supabase. Debería pasar por el backend para:
+**Descripción:** El backend ahora registra los adjuntos en la base de datos. El frontend sube archivos a Supabase Storage y luego registra la metadata en el backend. Funcionalidades:
 - Validación de tipos de archivo
 - Validación de tamaño
 - Registro en base de datos
@@ -123,10 +129,10 @@ model TicketAttachment {
 }
 ```
 
-#### ❌ Paginación y Filtros en Tickets
-**Estado:** No implementado  
+#### ✅ Paginación y Filtros en Tickets
+**Estado:** ✅ Implementado  
 **Prioridad:** 🟡 Media  
-**Descripción:** Agregar paginación y filtros (estado, prioridad, fecha).
+**Descripción:** Paginación y filtros implementados (estado, prioridad, fecha, ordenamiento).
 
 **Query params:**
 - `?page=1&limit=20`
@@ -462,13 +468,13 @@ CREATE INDEX idx_ticket_comments_created_at ON ticket_comments(created_at);
 ## 📅 Plan de Implementación (12 Semanas)
 
 ### **Sprint 1-2: Tickets Completos (Semanas 1-2)**
-- [ ] GET `/api/tickets/:id`
-- [ ] PUT `/api/tickets/:id`
-- [ ] Adjuntos de tickets (backend)
-- [ ] Paginación y filtros
-- [ ] Migración de base de datos para adjuntos
+- [x] GET `/api/tickets/:id`
+- [x] PUT `/api/tickets/:id`
+- [x] Adjuntos de tickets (backend)
+- [x] Paginación y filtros
+- [x] Migración de base de datos para adjuntos
 
-**Entregable:** Sistema de tickets 100% funcional
+**Entregable:** Sistema de tickets 100% funcional ✅
 
 ---
 
