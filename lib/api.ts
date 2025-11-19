@@ -1,6 +1,6 @@
 const FALLBACK_BACKEND_API_URL =
   process.env.NEXT_PUBLIC_BACKEND_API_URL?.trim() ||
-  "https://denver-unbrooded-miley.ngrok-free.dev/api";
+  "https://viotech-main.onrender.com/api";
 
 const stripTrailingSlashes = (value: string) => value.replace(/\/+$/, "");
 

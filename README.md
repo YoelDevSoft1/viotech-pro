@@ -35,7 +35,7 @@ Abre [http://localhost:3000](http://localhost:3000)
 El login/registro usa la API existente. Configura un archivo `.env.local` en la raíz con:
 
 ```env
-NEXT_PUBLIC_BACKEND_API_URL=https://denver-unbrooded-miley.ngrok-free.dev/api
+NEXT_PUBLIC_BACKEND_API_URL=https://viotech-main.onrender.com/api
 ```
 
 Si no defines la variable usará la URL anterior como fallback.
