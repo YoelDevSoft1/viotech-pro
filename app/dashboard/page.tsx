@@ -850,8 +850,10 @@ export default function DashboardPage() {
                 </section>
               </>
             )}
+          </>
+        )}
+{activeTab === "tickets" && (
 
-        {activeTab === "tickets" && (
           <section className="space-y-8">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div>
