@@ -703,151 +703,153 @@ export default function DashboardPage() {
                     <StatCard
                       key={stat.title}
                       title={stat.title}
-                  value={stat.value}
-                  description={stat.description}
-                />
-              ))}
-            </section>
+                      value={stat.value}
+                      description={stat.description}
+                    />
+                  ))}
+                </section>
 
-            <section className="grid grid-cols-1 lg:grid-cols-[1.2fr,0.8fr] gap-8">
-              <div className="space-y-6">
-                <h2 className="text-2xl font-medium text-foreground">Servicios activos</h2>
-                {services.length === 0 ? (
-                  <div className="rounded-3xl border border-border/70 bg-background/80 p-8 text-center space-y-3">
-                    <p className="text-lg text-foreground">Aún no has activado tu primer proyecto.</p>
-                    <p className="text-sm text-muted-foreground">
-                      Agenda un discovery call para priorizar el backlog y recibir un plan de acción.
-                    </p>
-                    <a
-                      href="https://wa.link/1r4ul7"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-xs font-medium text-background hover:scale-105 transition-transform"
-                    >
-                      Hablar con un consultor
-                      <ArrowRight className="w-3 h-3" />
-                    </a>
+                <section className="grid grid-cols-1 lg:grid-cols-[1.2fr,0.8fr] gap-8">
+                  <div className="space-y-6">
+                    <h2 className="text-2xl font-medium text-foreground">Servicios activos</h2>
+                    {services.length === 0 ? (
+                      <div className="rounded-3xl border border-border/70 bg-background/80 p-8 text-center space-y-3">
+                        <p className="text-lg text-foreground">Aún no has activado tu primer proyecto.</p>
+                        <p className="text-sm text-muted-foreground">
+                          Agenda un discovery call para priorizar el backlog y recibir un plan de acción.
+                        </p>
+                        <a
+                          href="https://wa.link/1r4ul7"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-xs font-medium text-background hover:scale-105 transition-transform"
+                        >
+                          Hablar con un consultor
+                          <ArrowRight className="w-3 h-3" />
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {services.map((service) => (
+                          <ServiceCard key={service.id} service={service} />
+                        ))}
+                      </div>
+                    )}
                   </div>
-                ) : (
+
+                  <div className="space-y-6">
+                    <h2 className="text-2xl font-medium text-foreground">Roadmap inmediato</h2>
+                    {timeline.length ? (
+                      <div className="space-y-4">
+                        {timeline.map((event) => (
+                          <TimelineCard key={event.id} event={event} />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="rounded-3xl border border-border/70 bg-background/70 p-6 text-sm text-muted-foreground">
+                        No hay hitos calendarizados todavía. Nuestro equipo puede ayudarte a definir el
+                        siguiente release.
+                      </div>
+                    )}
+                    <div className="rounded-3xl border border-border/70 bg-background/80 p-6 space-y-3">
+                      <p className="text-sm font-medium text-foreground">Mesa de soporte VIP</p>
+                      <p className="text-sm text-muted-foreground">
+                        Respuesta prioritaria <strong>en menos de 2 minutos</strong> vía WhatsApp o canal
+                        privado de Slack. Tu squad está disponible 24/7.
+                      </p>
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <QuickAction
+                          title="Canal WhatsApp"
+                          description="Contacta al ingeniero on-call"
+                          href="https://wa.link/1r4ul7"
+                        />
+                        <QuickAction
+                          title="Agendar sesión"
+                          description="Reunión con tu Product Manager"
+                          href="https://calendly.com/viotech/demo"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="rounded-3xl border border-border/70 bg-muted/20 p-8 space-y-6">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                        Reportes ejecutivos
+                      </p>
+                      <h3 className="text-2xl font-medium text-foreground">
+                        Insights del trimestre y próximos pasos.
+                      </h3>
+                      <p className="text-sm text-muted-foreground max-w-2xl">
+                        Consolidamos métricas de performance, satisfacción de usuarios y backlog priorizado
+                        para que puedas tomar decisiones con claridad.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      <QuickAction
+                        title="Último reporte PDF"
+                        description="Descarga y compártelo con tu junta directiva"
+                        href="mailto:contacto@viotech.com.co?subject=Solicitar%20reporte%20ejecutivo"
+                      />
+                      <QuickAction
+                        title="Cargar briefing"
+                        description="Comparte nuevos requerimientos del Q"
+                        href="https://viotech.com.co/#contact"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="rounded-2xl border border-border/70 bg-background/80 p-5 space-y-2">
+                      <TrendingUp className="w-5 h-5 text-foreground" />
+                      <p className="text-lg font-medium text-foreground">+18% velocidad</p>
+                      <p className="text-sm text-muted-foreground">Incremento promedio tras 2 sprints.</p>
+                    </div>
+                    <div className="rounded-2xl border border-border/70 bg-background/80 p-5 space-y-2">
+                      <CalendarDays className="w-5 h-5 text-foreground" />
+                      <p className="text-lg font-medium text-foreground">Roadmap listo</p>
+                      <p className="text-sm text-muted-foreground">
+                        Los siguientes releases están definidos.
+                      </p>
+                    </div>
+                    <div className="rounded-2xl border border-border/70 bg-background/80 p-5 space-y-2">
+                      <Headphones className="w-5 h-5 text-foreground" />
+                      <p className="text-lg font-medium text-foreground">SLA cumplido</p>
+                      <p className="text-sm text-muted-foreground">Monitoreo 24/7 y soporte ejecutado.</p>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="rounded-3xl border border-border/70 bg-background/80 p-8 space-y-5">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-foreground" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Checklist ejecutivo</p>
+                      <p className="text-xs text-muted-foreground">
+                        Seguimiento quincenal de acciones clave con tu squad.
+                      </p>
+                    </div>
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {services.map((service) => (
-                      <ServiceCard key={service.id} service={service} />
+                    {[
+                      "Validar entregables del sprint actual",
+                      "Confirmar alcance de la próxima iteración",
+                      "Actualizar stakeholders internos",
+                      "Definir aprobaciones de seguridad/compliance",
+                    ].map((task) => (
+                      <label
+                        key={task}
+                        className="flex items-start gap-3 rounded-2xl border border-border/60 p-4 text-sm"
+                      >
+                        <input type="checkbox" className="mt-1 accent-foreground" />
+                        <span>{task}</span>
+                      </label>
                     ))}
                   </div>
-                )}
-              </div>
-
-              <div className="space-y-6">
-                <h2 className="text-2xl font-medium text-foreground">Roadmap inmediato</h2>
-                {timeline.length ? (
-                  <div className="space-y-4">
-                    {timeline.map((event) => (
-                      <TimelineCard key={event.id} event={event} />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="rounded-3xl border border-border/70 bg-background/70 p-6 text-sm text-muted-foreground">
-                    No hay hitos calendarizados todavía. Nuestro equipo puede ayudarte a definir el
-                    siguiente release.
-                  </div>
-                )}
-                <div className="rounded-3xl border border-border/70 bg-background/80 p-6 space-y-3">
-                  <p className="text-sm font-medium text-foreground">Mesa de soporte VIP</p>
-                  <p className="text-sm text-muted-foreground">
-                    Respuesta prioritaria <strong>en menos de 2 minutos</strong> vía WhatsApp o canal
-                    privado de Slack. Tu squad está disponible 24/7.
-                  </p>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <QuickAction
-                      title="Canal WhatsApp"
-                      description="Contacta al ingeniero on-call"
-                      href="https://wa.link/1r4ul7"
-                    />
-                    <QuickAction
-                      title="Agendar sesión"
-                      description="Reunión con tu Product Manager"
-                      href="https://calendly.com/viotech/demo"
-                    />
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <section className="rounded-3xl border border-border/70 bg-muted/20 p-8 space-y-6">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                    Reportes ejecutivos
-                  </p>
-                  <h3 className="text-2xl font-medium text-foreground">
-                    Insights del trimestre y próximos pasos.
-                  </h3>
-                  <p className="text-sm text-muted-foreground max-w-2xl">
-                    Consolidamos métricas de performance, satisfacción de usuarios y backlog priorizado
-                    para que puedas tomar decisiones con claridad.
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  <QuickAction
-                    title="Último reporte PDF"
-                    description="Descarga y compártelo con tu junta directiva"
-                    href="mailto:contacto@viotech.com.co?subject=Solicitar%20reporte%20ejecutivo"
-                  />
-                  <QuickAction
-                    title="Cargar briefing"
-                    description="Comparte nuevos requerimientos del Q"
-                    href="https://viotech.com.co/#contact"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="rounded-2xl border border-border/70 bg-background/80 p-5 space-y-2">
-                  <TrendingUp className="w-5 h-5 text-foreground" />
-                  <p className="text-lg font-medium text-foreground">+18% velocidad</p>
-                  <p className="text-sm text-muted-foreground">Incremento promedio tras 2 sprints.</p>
-                </div>
-                <div className="rounded-2xl border border-border/70 bg-background/80 p-5 space-y-2">
-                  <CalendarDays className="w-5 h-5 text-foreground" />
-                  <p className="text-lg font-medium text-foreground">Roadmap listo</p>
-                  <p className="text-sm text-muted-foreground">Los siguientes releases están definidos.</p>
-                </div>
-                <div className="rounded-2xl border border-border/70 bg-background/80 p-5 space-y-2">
-                  <Headphones className="w-5 h-5 text-foreground" />
-                  <p className="text-lg font-medium text-foreground">SLA cumplido</p>
-                  <p className="text-sm text-muted-foreground">Monitoreo 24/7 y soporte ejecutado.</p>
-                </div>
-              </div>
-            </section>
-
-            <section className="rounded-3xl border border-border/70 bg-background/80 p-8 space-y-5">
-              <div className="flex items-center gap-3">
-                <CheckCircle2 className="w-5 h-5 text-foreground" />
-                <div>
-                  <p className="text-sm font-medium text-foreground">Checklist ejecutivo</p>
-                  <p className="text-xs text-muted-foreground">
-                    Seguimiento quincenal de acciones clave con tu squad.
-                  </p>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[
-                  "Validar entregables del sprint actual",
-                  "Confirmar alcance de la próxima iteración",
-                  "Actualizar stakeholders internos",
-                  "Definir aprobaciones de seguridad/compliance",
-                ].map((task) => (
-                  <label
-                    key={task}
-                    className="flex items-start gap-3 rounded-2xl border border-border/60 p-4 text-sm"
-                  >
-                    <input type="checkbox" className="mt-1 accent-foreground" />
-                    <span>{task}</span>
-                  </label>
-                ))}
-              </div>
-              </section>
-          </>
-        )}
+                </section>
+              </>
+            )}
 
         {activeTab === "tickets" && (
           <section className="space-y-8">
