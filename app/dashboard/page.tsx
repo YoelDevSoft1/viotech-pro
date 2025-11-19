@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -9,6 +9,9 @@ import {
   CheckCircle2,
   Headphones,
   LogOut,
+  MessageSquare,
+  Paperclip,
+  Plus,
   Shield,
   Sparkles,
   TrendingUp,
@@ -35,6 +38,30 @@ type TimelineEvent = {
   serviceName: string;
 };
 
+type TicketComment = {
+  id: string;
+  contenido: string;
+  tipo: string;
+  createdAt: string;
+  autor?: {
+    id: string;
+    nombre: string;
+    email: string;
+  } | null;
+};
+
+type Ticket = {
+  id: string;
+  titulo: string;
+  descripcion?: string | null;
+  estado: string;
+  prioridad: string;
+  slaObjetivo?: string | null;
+  etiquetas?: string | Record<string, unknown> | Array<unknown> | null;
+  createdAt: string;
+  comentarios?: TicketComment[];
+};
+
 const TOKEN_KEYS = ["viotech_token", "authTokenVioTech"];
 const USERNAME_KEYS = ["viotech_user_name", "userNameVioTech"];
 
@@ -59,6 +86,21 @@ const computeProgressFromDates = (service: Service) => {
   const total = end - start;
   const elapsed = Math.min(Math.max(Date.now() - start, 0), total);
   return Math.round((elapsed / total) * 100);
+};
+
+const parseMaybeJson = <T,>(value: unknown, fallback: T): T => {
+  if (!value) return fallback;
+  if (typeof value === "string") {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return fallback;
+    }
+  }
+  if (typeof value === "object") {
+    return value as T;
+  }
+  return fallback;
 };
 
 const getFromStorage = (keys: string[]) => {
@@ -195,6 +237,75 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"overview" | "tickets">("overview");
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [ticketsLoading, setTicketsLoading] = useState(false);
+  const [ticketsError, setTicketsError] = useState<string | null>(null);
+  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const [createTicketOpen, setCreateTicketOpen] = useState(false);
+  const [ticketForm, setTicketForm] = useState({
+    titulo: "",
+    descripcion: "",
+    prioridad: "media",
+    slaObjetivo: "",
+  });
+  const [ticketSubmitting, setTicketSubmitting] = useState(false);
+  const [ticketComment, setTicketComment] = useState("");
+  const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const [attachmentsUploading, setAttachmentsUploading] = useState(false);
+
+  const uploadTicketAttachments = useCallback(async (files: File[]) => {
+    if (!files.length) return [];
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const bucket =
+      process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "tickets";
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error(
+        "Supabase no está configurado. Define NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY."
+      );
+    }
+
+    const uploads: { name: string; url: string; path: string }[] = [];
+
+    for (const file of files) {
+      const sanitizedName = file.name.replace(/\s+/g, "-");
+      const uniqueId =
+        typeof window !== "undefined" && typeof window.crypto?.randomUUID === "function"
+          ? window.crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      const filePath = `tickets/${uniqueId}-${sanitizedName}`;
+
+      const response = await fetch(
+        `${supabaseUrl}/storage/v1/object/${bucket}/${encodeURIComponent(filePath)}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": file.type || "application/octet-stream",
+            apikey: supabaseAnonKey,
+            Authorization: `Bearer ${supabaseAnonKey}`,
+          },
+          body: file,
+        }
+      );
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || "No se pudo subir el adjunto.");
+      }
+
+      uploads.push({
+        name: file.name,
+        url: `${supabaseUrl}/storage/v1/object/public/${bucket}/${filePath}`,
+        path: filePath,
+      });
+    }
+
+    return uploads;
+  }, []);
 
   const fetchServices = useCallback(
     async (token: string) => {
@@ -237,6 +348,139 @@ export default function DashboardPage() {
     [router],
   );
 
+  const fetchTickets = useCallback(
+    async (authToken: string) => {
+      setTicketsLoading(true);
+      setTicketsError(null);
+      try {
+        const response = await fetch(buildApiUrl("/tickets"), {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok) {
+          throw new Error(payload?.error || payload?.message || "No se pudieron cargar los tickets.");
+        }
+        const normalized: Ticket[] = (payload?.data?.tickets || []).map((ticket: Ticket) => ({
+          ...ticket,
+          etiquetas: parseMaybeJson(
+            ticket.etiquetas,
+            [] as Array<{ name: string; url: string }>
+          ),
+          comentarios: ticket.comentarios || [],
+        }));
+        setTickets(normalized);
+        if (normalized.length) {
+          setSelectedTicket((prev) => {
+            if (!prev) return normalized[0];
+            return normalized.find((item) => item.id === prev.id) || normalized[0];
+          });
+        } else {
+          setSelectedTicket(null);
+        }
+      } catch (ticketsError) {
+        const message =
+          ticketsError instanceof Error ? ticketsError.message : "Error desconocido al cargar tickets.";
+        setTicketsError(message);
+      } finally {
+        setTicketsLoading(false);
+      }
+    },
+    [selectedTicket],
+  );
+
+  const handleCreateTicket = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!token) {
+      router.replace("/login?from=/dashboard&reason=expired");
+      return;
+    }
+    if (!ticketForm.titulo.trim()) {
+      setTicketsError("El título del ticket es obligatorio.");
+      return;
+    }
+    setTicketSubmitting(true);
+    setTicketsError(null);
+    try {
+      setAttachmentsUploading(true);
+      const uploads = await uploadTicketAttachments(attachments);
+      setAttachmentsUploading(false);
+
+      const response = await fetch(buildApiUrl("/tickets"), {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          titulo: ticketForm.titulo.trim(),
+          descripcion: ticketForm.descripcion?.trim(),
+          prioridad: ticketForm.prioridad,
+          slaObjetivo: ticketForm.slaObjetivo || undefined,
+          etiquetas: uploads.length ? uploads : undefined,
+        }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(payload?.error || payload?.message || "No se pudo crear el ticket.");
+      }
+      setTicketForm({
+        titulo: "",
+        descripcion: "",
+        prioridad: "media",
+        slaObjetivo: "",
+      });
+      setAttachments([]);
+      setCreateTicketOpen(false);
+      await fetchTickets(token);
+    } catch (creationError) {
+      const message =
+        creationError instanceof Error ? creationError.message : "Error desconocido al crear ticket.";
+      setTicketsError(message);
+    } finally {
+      setTicketSubmitting(false);
+      setAttachmentsUploading(false);
+    }
+  };
+
+  const handleCommentSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!selectedTicket || !token) return;
+    if (!ticketComment.trim()) return;
+    setCommentSubmitting(true);
+    try {
+      const response = await fetch(buildApiUrl(`/tickets/${selectedTicket.id}/comment`), {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ contenido: ticketComment.trim() }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(payload?.error || payload?.message || "No se pudo agregar el comentario.");
+      }
+      setTicketComment("");
+      await fetchTickets(token);
+    } catch (commentError) {
+      const message =
+        commentError instanceof Error
+          ? commentError.message
+          : "Error desconocido al agregar comentario.";
+      setTicketsError(message);
+    } finally {
+      setCommentSubmitting(false);
+    }
+  };
+
+  const handleAttachmentsChange = (event: ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files) {
+      setAttachments([]);
+      return;
+    }
+    setAttachments(Array.from(event.target.files));
+  };
+
   useEffect(() => {
     const storedToken = getFromStorage(TOKEN_KEYS);
     const storedName = getFromStorage(USERNAME_KEYS);
@@ -247,8 +491,18 @@ export default function DashboardPage() {
     }
 
     setUserName(storedName);
+    setToken(storedToken);
     fetchServices(storedToken);
   }, [router, fetchServices]);
+
+  useEffect(() => {
+    if (activeTab !== "tickets" || !token) return;
+    fetchTickets(token);
+  }, [activeTab, token, fetchTickets]);
+
+  useEffect(() => {
+    setTicketComment("");
+  }, [selectedTicket?.id]);
 
   const metrics = useMemo(() => {
     if (!services.length) {
@@ -391,36 +645,64 @@ export default function DashboardPage() {
           )}
         </section>
 
-        {loading && (
-          <section className="rounded-3xl border border-border/70 bg-background/80 p-10 text-center space-y-4">
-            <p className="text-lg text-muted-foreground">Sincronizando con tu Command Center...</p>
-            <p className="text-sm text-muted-foreground">Tus datos se cargan con cifrado end-to-end.</p>
-          </section>
-        )}
-
-        {error && (
-          <section className="rounded-3xl border border-red-500/40 bg-red-500/5 p-8 space-y-3">
-            <p className="text-sm font-medium text-red-500">No pudimos cargar tu panel.</p>
-            <p className="text-sm text-red-500/80">{error}</p>
+        <div className="flex flex-wrap items-center gap-3">
+          {(
+            [
+              { key: "overview", label: "Resumen ejecutivo" },
+              { key: "tickets", label: "Tickets & soporte" },
+            ] as const
+          ).map((tab) => (
             <button
-              className="inline-flex items-center gap-2 text-xs font-medium text-red-500 underline"
-              onClick={() => {
-                const storedToken = getFromStorage(TOKEN_KEYS);
-                if (storedToken) fetchServices(storedToken);
-              }}
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={`rounded-full border px-4 py-2 text-sm font-medium transition-all ${
+                activeTab === tab.key
+                  ? "bg-foreground text-background"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
             >
-              Reintentar
+              {tab.label}
             </button>
-          </section>
-        )}
+          ))}
+        </div>
 
-        {!loading && !error && (
+        {activeTab === "overview" && (
           <>
-            <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {metrics.map((stat) => (
-                <StatCard
-                  key={stat.title}
-                  title={stat.title}
+            {loading && (
+              <section className="rounded-3xl border border-border/70 bg-background/80 p-10 text-center space-y-4">
+                <p className="text-lg text-muted-foreground">
+                  Sincronizando con tu Command Center...
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Tus datos se cargan con cifrado end-to-end.
+                </p>
+              </section>
+            )}
+
+            {error && (
+              <section className="rounded-3xl border border-red-500/40 bg-red-500/5 p-8 space-y-3">
+                <p className="text-sm font-medium text-red-500">No pudimos cargar tu panel.</p>
+                <p className="text-sm text-red-500/80">{error}</p>
+                <button
+                  className="inline-flex items-center gap-2 text-xs font-medium text-red-500 underline"
+                  onClick={() => {
+                    const storedToken = getFromStorage(TOKEN_KEYS);
+                    if (storedToken) fetchServices(storedToken);
+                  }}
+                >
+                  Reintentar
+                </button>
+              </section>
+            )}
+
+            {!loading && !error && (
+              <>
+                <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {metrics.map((stat) => (
+                    <StatCard
+                      key={stat.title}
+                      title={stat.title}
                   value={stat.value}
                   description={stat.description}
                 />
@@ -563,8 +845,285 @@ export default function DashboardPage() {
                   </label>
                 ))}
               </div>
-            </section>
+              </section>
           </>
+        )}
+
+        {activeTab === "tickets" && (
+          <section className="space-y-8">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                  Tickets & soporte
+                </p>
+                <h2 className="text-3xl font-medium text-foreground">Gestión de casos prioritarios</h2>
+                <p className="text-sm text-muted-foreground">
+                  Registra nuevos tickets, adjunta evidencias y conversa con tu squad dedicado.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCreateTicketOpen((prev) => !prev)}
+                className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background hover:scale-105 transition-transform"
+              >
+                <Plus className="w-4 h-4" />
+                {createTicketOpen ? "Cerrar formulario" : "Nuevo ticket"}
+              </button>
+            </div>
+
+            {ticketsError && (
+              <div className="rounded-2xl border border-red-500/40 bg-red-500/5 p-4 text-sm text-red-500">
+                {ticketsError}
+              </div>
+            )}
+
+            {ticketsLoading ? (
+              <div className="rounded-3xl border border-border/60 bg-background/70 p-8 text-center text-muted-foreground">
+                Sincronizando tickets...
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-[0.45fr,0.55fr] gap-6">
+                <div className="rounded-3xl border border-border/70 bg-background/80 p-4 space-y-3">
+                  {tickets.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-6">
+                      Aún no tienes tickets registrados.
+                    </p>
+                  ) : (
+                    tickets.map((ticket) => (
+                      <button
+                        key={ticket.id}
+                        type="button"
+                        onClick={() => setSelectedTicket(ticket)}
+                        className={`w-full text-left rounded-2xl border px-4 py-3 transition-all ${
+                          selectedTicket?.id === ticket.id
+                            ? "border-foreground bg-muted/40"
+                            : "border-border hover:border-border/80"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-sm font-medium text-foreground">{ticket.titulo}</p>
+                          <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                            {ticket.prioridad}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {formatDate(ticket.createdAt)}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-2 mt-3 text-xs">
+                          <span
+                            className={`px-2 py-0.5 rounded-full ${
+                              ticket.estado === "resuelto"
+                                ? "bg-green-100 text-green-700"
+                                : ticket.estado === "en_progreso"
+                                ? "bg-amber-100 text-amber-700"
+                                : "bg-slate-100 text-slate-700"
+                            }`}
+                          >
+                            {ticket.estado}
+                          </span>
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
+
+                <div className="rounded-3xl border border-border/70 bg-background/80 p-6 space-y-4">
+                  {selectedTicket ? (
+                    <>
+                      <div className="space-y-2">
+                        <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                          Ticket #{selectedTicket.id.slice(0, 6).toUpperCase()}
+                        </p>
+                        <h3 className="text-2xl font-medium text-foreground">
+                          {selectedTicket.titulo}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {selectedTicket.descripcion || "Sin descripción."}
+                        </p>
+                        <div className="flex flex-wrap gap-3 text-xs">
+                          <span className="rounded-full border border-border px-3 py-1">
+                            Prioridad: {selectedTicket.prioridad}
+                          </span>
+                          {selectedTicket.slaObjetivo && (
+                            <span className="rounded-full border border-border px-3 py-1">
+                              SLA: {formatDate(selectedTicket.slaObjetivo)}
+                            </span>
+                          )}
+                        </div>
+
+                        {Array.isArray(selectedTicket.etiquetas) &&
+                          selectedTicket.etiquetas.length > 0 && (
+                            <div className="space-y-2">
+                              <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                                Adjuntos
+                              </p>
+                              <div className="flex flex-wrap gap-3">
+                                {(
+                                  selectedTicket.etiquetas as Array<{ name: string; url: string }>
+                                ).map((file) => (
+                                  <a
+                                    key={`${selectedTicket.id}-${file.url}`}
+                                    href={file.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs hover:bg-muted"
+                                  >
+                                    <Paperclip className="w-3 h-3" />
+                                    {file.name}
+                                  </a>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                      </div>
+
+                      <div className="space-y-3">
+                        <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                          Actividad
+                        </p>
+                        <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
+                          {selectedTicket.comentarios && selectedTicket.comentarios.length > 0 ? (
+                            selectedTicket.comentarios.map((comment) => (
+                              <div
+                                key={comment.id}
+                                className="rounded-2xl border border-border/70 p-3 text-sm"
+                              >
+                                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                  <span>{comment.autor?.nombre || "Equipo VioTech"}</span>
+                                  <span>{formatDate(comment.createdAt)}</span>
+                                </div>
+                                <p className="text-foreground mt-1">{comment.contenido}</p>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-sm text-muted-foreground">Sin comentarios aún.</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <form className="space-y-3" onSubmit={handleCommentSubmit}>
+                        <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground flex items-center gap-2">
+                          <MessageSquare className="w-4 h-4" />
+                          Nuevo comentario
+                        </label>
+                        <textarea
+                          className="w-full rounded-2xl border border-border bg-transparent px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40"
+                          rows={3}
+                          value={ticketComment}
+                          onChange={(event) => setTicketComment(event.target.value)}
+                          placeholder="Actualiza a tu squad con los últimos detalles..."
+                        />
+                        <button
+                          type="submit"
+                          className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background hover:scale-105 transition-transform disabled:opacity-60"
+                          disabled={commentSubmitting || !ticketComment.trim()}
+                        >
+                          {commentSubmitting ? "Enviando..." : "Agregar comentario"}
+                        </button>
+                      </form>
+                    </>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Selecciona un ticket para ver los detalles.
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {createTicketOpen && (
+              <form
+                className="rounded-3xl border border-border/70 bg-background/80 p-6 space-y-4"
+                onSubmit={handleCreateTicket}
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                      Título
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full rounded-2xl border border-border bg-transparent px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
+                      value={ticketForm.titulo}
+                      onChange={(event) =>
+                        setTicketForm((prev) => ({ ...prev, titulo: event.target.value }))
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                      Prioridad
+                    </label>
+                    <select
+                      className="w-full rounded-2xl border border-border bg-transparent px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
+                      value={ticketForm.prioridad}
+                      onChange={(event) =>
+                        setTicketForm((prev) => ({ ...prev, prioridad: event.target.value }))
+                      }
+                    >
+                      <option value="baja">Baja</option>
+                      <option value="media">Media</option>
+                      <option value="alta">Alta</option>
+                      <option value="critica">Crítica</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                    Descripción
+                  </label>
+                  <textarea
+                    className="w-full rounded-2xl border border-border bg-transparent px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
+                    rows={4}
+                    value={ticketForm.descripcion}
+                    onChange={(event) =>
+                      setTicketForm((prev) => ({ ...prev, descripcion: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                      SLA objetivo
+                    </label>
+                    <input
+                      type="date"
+                      className="w-full rounded-2xl border border-border bg-transparent px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
+                      value={ticketForm.slaObjetivo}
+                      onChange={(event) =>
+                        setTicketForm((prev) => ({ ...prev, slaObjetivo: event.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                      <Paperclip className="w-3 h-3" />
+                      Adjuntos (opcional)
+                    </label>
+                    <input
+                      type="file"
+                      multiple
+                      onChange={handleAttachmentsChange}
+                      className="block w-full text-xs text-muted-foreground file:mr-4 file:rounded-full file:border-0 file:bg-foreground file:px-4 file:py-2 file:text-xs file:font-medium file:text-background hover:file:opacity-80"
+                    />
+                    {attachments.length > 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        {attachments.length} archivo(s) listos para subir.
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background hover:scale-105 transition-transform disabled:opacity-60"
+                  disabled={ticketSubmitting || attachmentsUploading}
+                >
+                  {ticketSubmitting ? "Creando ticket..." : "Crear ticket"}
+                </button>
+              </form>
+            )}
+          </section>
         )}
       </div>
     </main>
