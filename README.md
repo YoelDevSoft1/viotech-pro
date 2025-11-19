@@ -42,6 +42,12 @@ Si no defines la variable usará la URL anterior como fallback.
 
 > 💡 Si vienes del frontend anterior (Astro) puedes reutilizar exactamente la misma URL (`http://localhost:4000/api` en desarrollo o `https://viotech.com.co/api` en producción). El nuevo login persiste el token en `localStorage` bajo las mismas claves (`authTokenVioTech` y `userNameVioTech`) y redirige a `/dashboard`, así que el portal legacy sigue funcionando hasta terminar la migración.
 
+## 🧭 Panel ejecutivo (clientes top tier)
+
+- `/dashboard` muestra el nuevo Command Center con KPIs, roadmap inmediato, soporte prioritario y las licencias/landing pages que entrega el backend (`GET /api/services/me`).
+- El acceso requiere un token válido. Si no se encuentra uno en `viotech_token`/`authTokenVioTech`, se redirige automáticamente a `/login?from=/dashboard`.
+- Recuerda exponer el dominio del frontend (`https://viotech-pro.vercel.app`) en la whitelist de CORS del backend para que las solicitudes autenticadas funcionen en producción.
+
 ## 🎯 Diseño
 
 ### Paleta de Colores
