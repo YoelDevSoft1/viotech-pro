@@ -35,6 +35,8 @@ const availability = [
 
 const TOKEN_STORAGE_KEY = "viotech_token";
 const USERNAME_STORAGE_KEY = "viotech_user_name";
+const LEGACY_TOKEN_STORAGE_KEY = "authTokenVioTech";
+const LEGACY_USERNAME_STORAGE_KEY = "userNameVioTech";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -55,9 +57,9 @@ export default function LoginPage() {
   const [registerLoading, setRegisterLoading] = useState(false);
 
   const getRedirectPath = () => {
-    if (typeof window === "undefined") return "/";
+    if (typeof window === "undefined") return "/dashboard";
     const params = new URLSearchParams(window.location.search);
-    return params.get("from") || "/";
+    return params.get("from") || "/dashboard";
   };
 
   const handleLoginSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -94,6 +96,9 @@ export default function LoginPage() {
 
         secondaryStorage.removeItem(TOKEN_STORAGE_KEY);
         secondaryStorage.removeItem(USERNAME_STORAGE_KEY);
+
+        window.localStorage.setItem(LEGACY_TOKEN_STORAGE_KEY, token);
+        window.localStorage.setItem(LEGACY_USERNAME_STORAGE_KEY, nombre);
 
         window.dispatchEvent(
           new CustomEvent("authChanged", {

@@ -40,6 +40,8 @@ NEXT_PUBLIC_BACKEND_API_URL=https://denver-unbrooded-miley.ngrok-free.dev/api
 
 Si no defines la variable usará la URL anterior como fallback.
 
+> 💡 Si vienes del frontend anterior (Astro) puedes reutilizar exactamente la misma URL (`http://localhost:4000/api` en desarrollo o `https://viotech.com.co/api` en producción). El nuevo login persiste el token en `localStorage` bajo las mismas claves (`authTokenVioTech` y `userNameVioTech`) y redirige a `/dashboard`, así que el portal legacy sigue funcionando hasta terminar la migración.
+
 ## 🎯 Diseño
 
 ### Paleta de Colores
