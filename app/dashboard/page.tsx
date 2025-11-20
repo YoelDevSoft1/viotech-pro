@@ -411,26 +411,55 @@ export default function DashboardPage() {
 
     const validTickets = (payload.data.tickets || [])
       .filter((ticket: any) => ticket && ticket.id && ticket.titulo)
-      .map((ticket: Ticket) => ({
-        id: String(ticket.id),
-        titulo: String(ticket.titulo || 'Sin título'),
-        descripcion: ticket.descripcion || null,
-        estado: String(ticket.estado || 'abierto'),
-        prioridad: String(ticket.prioridad || 'media'),
-        slaObjetivo: ticket.slaObjetivo || null,
-        etiquetas: parseMaybeJson(
-          ticket.etiquetas,
-          [] as Array<{ name: string; url: string }>
-        ),
-        createdAt: ticket.createdAt || new Date().toISOString(),
-        comentarios: Array.isArray(ticket.comentarios) ? ticket.comentarios : [],
-      }));
+      .map((ticket: Ticket) => {
+        // Mapear comentarios preservando toda la estructura
+        const comentarios = Array.isArray(ticket.comentarios) 
+          ? ticket.comentarios.map((comment: any) => ({
+              id: String(comment.id || ''),
+              contenido: String(comment.contenido || ''),
+              tipo: String(comment.tipo || 'cliente'),
+              ticketId: String(comment.ticketId || comment.ticket_id || ''),
+              autorId: String(comment.autorId || comment.autor_id || ''),
+              createdAt: comment.createdAt || comment.created_at || new Date().toISOString(),
+              updatedAt: comment.updatedAt || comment.updated_at || new Date().toISOString(),
+              autor: comment.autor || null,
+            }))
+          : [];
+        
+        return {
+          id: String(ticket.id),
+          titulo: String(ticket.titulo || 'Sin título'),
+          descripcion: ticket.descripcion || null,
+          estado: String(ticket.estado || 'abierto'),
+          prioridad: String(ticket.prioridad || 'media'),
+          slaObjetivo: ticket.slaObjetivo || null,
+          etiquetas: parseMaybeJson(
+            ticket.etiquetas,
+            [] as Array<{ name: string; url: string }>
+          ),
+          createdAt: ticket.createdAt || new Date().toISOString(),
+          comentarios: comentarios,
+        };
+      });
 
     console.log('Tickets recibidos:', {
       total: payload.data.tickets?.length || 0,
       validos: validTickets.length,
       sample: validTickets[0],
+      sampleComentarios: validTickets[0]?.comentarios,
+      sampleComentariosCount: validTickets[0]?.comentarios?.length || 0,
     });
+    
+    // Log detallado del primer ticket para debugging
+    if (validTickets.length > 0) {
+      console.log('Primer ticket detallado:', {
+        id: validTickets[0].id,
+        titulo: validTickets[0].titulo,
+        comentariosRaw: payload.data.tickets?.[0]?.comentarios,
+        comentariosMapeados: validTickets[0].comentarios,
+        comentariosLength: validTickets[0].comentarios?.length,
+      });
+    }
 
     setTickets(validTickets);
 
@@ -1291,22 +1320,36 @@ export default function DashboardPage() {
                           Actividad
                         </p>
                         <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
-                          {selectedTicket.comentarios && selectedTicket.comentarios.length > 0 ? (
-                            selectedTicket.comentarios.map((comment) => (
-                              <div
-                                key={comment.id}
-                                className="rounded-2xl border border-border/70 p-3 text-sm"
-                              >
-                                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                  <span>{comment.autor?.nombre || "Equipo VioTech"}</span>
-                                  <span>{formatDate(comment.createdAt)}</span>
+                          {(() => {
+                            // Debug: Log del estado actual
+                            console.log('Renderizando comentarios:', {
+                              selectedTicketId: selectedTicket.id,
+                              comentarios: selectedTicket.comentarios,
+                              comentariosLength: selectedTicket.comentarios?.length,
+                              isArray: Array.isArray(selectedTicket.comentarios),
+                            });
+                            
+                            const comentarios = Array.isArray(selectedTicket.comentarios) 
+                              ? selectedTicket.comentarios 
+                              : [];
+                            
+                            if (comentarios.length > 0) {
+                              return comentarios.map((comment: any) => (
+                                <div
+                                  key={comment.id || Math.random()}
+                                  className="rounded-2xl border border-border/70 p-3 text-sm"
+                                >
+                                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                    <span>{comment.autor?.nombre || comment.autor?.email || "Equipo VioTech"}</span>
+                                    <span>{formatDate(comment.createdAt || comment.created_at)}</span>
+                                  </div>
+                                  <p className="text-foreground mt-1">{comment.contenido}</p>
                                 </div>
-                                <p className="text-foreground mt-1">{comment.contenido}</p>
-                              </div>
-                            ))
-                          ) : (
-                            <p className="text-sm text-muted-foreground">Sin comentarios aún.</p>
-                          )}
+                              ));
+                            } else {
+                              return <p className="text-sm text-muted-foreground">Sin comentarios aún.</p>;
+                            }
+                          })()}
                         </div>
                       </div>
 
