@@ -623,6 +623,7 @@ export default function DashboardPage() {
         throw new Error(payload?.error || payload?.message || "No se pudo agregar el comentario.");
       }
       setTicketComment("");
+      // Refrescar tickets - processTickets y el useEffect actualizarán selectedTicket automáticamente
       await fetchTickets(token);
     } catch (commentError) {
       const message =
@@ -736,6 +737,31 @@ export default function DashboardPage() {
   useEffect(() => {
     setTicketComment("");
   }, [selectedTicket?.id]);
+
+  // Actualizar selectedTicket cuando tickets cambie (ej: después de agregar comentario)
+  useEffect(() => {
+    if (!selectedTicket || tickets.length === 0) return;
+    
+    // Buscar el ticket actualizado en la lista
+    const updatedTicket = tickets.find((t) => t.id === selectedTicket.id);
+    if (updatedTicket) {
+      // Comparar comentarios para detectar cambios
+      const currentCommentsCount = selectedTicket.comentarios?.length || 0;
+      const updatedCommentsCount = updatedTicket.comentarios?.length || 0;
+      
+      // Actualizar solo si hay diferencia en los comentarios
+      if (updatedCommentsCount !== currentCommentsCount) {
+        setSelectedTicket(updatedTicket);
+      } else if (updatedCommentsCount > 0) {
+        // Comparar IDs de comentarios para detectar nuevos comentarios
+        const currentCommentIds = (selectedTicket.comentarios || []).map(c => c.id).sort().join(',');
+        const updatedCommentIds = (updatedTicket.comentarios || []).map(c => c.id).sort().join(',');
+        if (currentCommentIds !== updatedCommentIds) {
+          setSelectedTicket(updatedTicket);
+        }
+      }
+    }
+  }, [tickets]); // Solo observar tickets, no selectedTicket para evitar loops
 
   const metrics = useMemo(() => {
     // Si tenemos métricas del backend, usarlas
