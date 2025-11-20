@@ -248,6 +248,7 @@ export default function DashboardPage() {
   const [ticketsError, setTicketsError] = useState<string | null>(null);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [createTicketOpen, setCreateTicketOpen] = useState(false);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [ticketForm, setTicketForm] = useState({
     titulo: "",
     descripcion: "",
