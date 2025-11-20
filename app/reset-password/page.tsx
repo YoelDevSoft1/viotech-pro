@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { buildApiUrl } from "@/lib/api";
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [token, setToken] = useState<string | null>(null);
@@ -186,6 +186,22 @@ export default function ResetPasswordPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-background px-6 py-24 flex items-center justify-center">
+          <div className="w-full max-w-md text-center">
+            <p className="text-muted-foreground">Cargando...</p>
+          </div>
+        </main>
+      }
+    >
+      <ResetPasswordForm />
+    </Suspense>
   );
 }
 
