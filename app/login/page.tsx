@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { buildApiUrl } from "@/lib/api";
+import { saveTokens } from "@/lib/auth";
 
 const testimonials = [
   {
@@ -33,6 +34,7 @@ const availability = [
   { metric: "< 2 min", label: "Promedio resolución" },
 ];
 
+// Legacy constants (mantenidos para compatibilidad)
 const TOKEN_STORAGE_KEY = "viotech_token";
 const USERNAME_STORAGE_KEY = "viotech_user_name";
 const LEGACY_TOKEN_STORAGE_KEY = "authTokenVioTech";
@@ -85,21 +87,13 @@ export default function LoginPage() {
       }
 
       const token: string = data.data.token;
+      const refreshToken: string = data.data.refreshToken || "";
       const nombre: string = data.data.nombre || data.data.user?.nombre || "";
 
+      // Guardar tokens usando la nueva función
+      saveTokens(token, refreshToken, nombre, rememberMe);
+
       if (typeof window !== "undefined") {
-        const preferredStorage = rememberMe ? window.localStorage : window.sessionStorage;
-        const secondaryStorage = rememberMe ? window.sessionStorage : window.localStorage;
-
-        preferredStorage.setItem(TOKEN_STORAGE_KEY, token);
-        preferredStorage.setItem(USERNAME_STORAGE_KEY, nombre);
-
-        secondaryStorage.removeItem(TOKEN_STORAGE_KEY);
-        secondaryStorage.removeItem(USERNAME_STORAGE_KEY);
-
-        window.localStorage.setItem(LEGACY_TOKEN_STORAGE_KEY, token);
-        window.localStorage.setItem(LEGACY_USERNAME_STORAGE_KEY, nombre);
-
         window.dispatchEvent(
           new CustomEvent("authChanged", {
             detail: { isAuthenticated: true, userName: nombre },
@@ -313,12 +307,12 @@ export default function LoginPage() {
                 />
                 Recordarme
               </label>
-              <a
-                href="mailto:contacto@viotech.com.co"
+              <Link
+                href="/forgot-password"
                 className="text-foreground hover:underline"
               >
                 ¿Olvidaste tu contraseña?
-              </a>
+              </Link>
             </div>
 
             {loginError && (

@@ -8,6 +8,7 @@ import {
   CalendarDays,
   CheckCircle2,
   Headphones,
+  Lock,
   LogOut,
   MessageSquare,
   Paperclip,
@@ -19,6 +20,8 @@ import {
 } from "lucide-react";
 import { buildApiUrl } from "@/lib/api";
 import { fetchDashboardMetrics, type DashboardMetrics } from "@/lib/metrics";
+import { logout } from "@/lib/auth";
+import ChangePasswordModal from "@/components/ChangePasswordModal";
 
 type Service = {
   id: string;
@@ -672,8 +675,8 @@ export default function DashboardPage() {
 
   const isTopTier = services.length > 0;
 
-  const handleLogout = () => {
-    clearStorages([...TOKEN_KEYS, ...USERNAME_KEYS]);
+  const handleLogout = async () => {
+    await logout();
     router.replace("/login");
   };
 
@@ -697,6 +700,13 @@ export default function DashboardPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
+              <button
+                className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-background transition-colors"
+                onClick={() => setChangePasswordOpen(true)}
+              >
+                <Lock className="w-4 h-4" />
+                Cambiar contraseña
+              </button>
               <button
                 className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-background transition-colors"
                 onClick={handleLogout}
@@ -1213,6 +1223,11 @@ export default function DashboardPage() {
           </section>
         )}
       </div>
+
+      <ChangePasswordModal
+        isOpen={changePasswordOpen}
+        onClose={() => setChangePasswordOpen(false)}
+      />
     </main>
   );
 }

@@ -501,22 +501,40 @@ CREATE INDEX idx_ticket_comments_created_at ON ticket_comments(created_at);
 
 ---
 
-### **Sprint 4: Métricas (Semana 4)**
-- [ ] Endpoint de métricas del dashboard
-- [ ] Cálculo de progreso en backend
-- [ ] KPIs y analytics básicos
+### **Sprint 4: Métricas (Semana 4)** ✅ COMPLETADO
+- [x] Endpoint de métricas del dashboard
+- [x] Cálculo de progreso en backend
+- [x] KPIs y analytics básicos
 
-**Entregable:** Dashboard con datos reales del backend
+**Entregable:** Dashboard con datos reales del backend ✅
+
+**Implementado:**
+- ✅ GET `/api/metrics/dashboard` - Endpoint de métricas
+- ✅ Métodos en `Service`: `getActiveServicesCount`, `getNextRenewalDate`, `getAverageProgress`
+- ✅ Métodos en `Ticket`: `getTicketStats` (tickets abiertos, resueltos, SLA cumplido)
+- ✅ Integración frontend: `lib/metrics.ts` con `fetchDashboardMetrics`
+- ✅ Frontend consume métricas en tiempo real
 
 ---
 
-### **Sprint 5: Autenticación Mejorada (Semana 5)**
-- [ ] Logout con blacklist
-- [ ] Refresh tokens
-- [ ] Cambio de contraseña
-- [ ] Recuperación de contraseña
+### **Sprint 5: Autenticación Mejorada (Semana 5)** ✅ COMPLETADO
+- [x] Logout con blacklist
+- [x] Refresh tokens
+- [x] Cambio de contraseña
+- [x] Recuperación de contraseña
 
-**Entregable:** Autenticación robusta
+**Entregable:** Autenticación robusta ✅
+
+**Implementado:**
+- ✅ POST `/api/auth/logout` - Logout con blacklist de tokens
+- ✅ POST `/api/auth/refresh` - Refresh tokens (access + refresh)
+- ✅ PUT `/api/auth/password` - Cambio de contraseña
+- ✅ POST `/api/auth/forgot-password` - Solicitar recuperación
+- ✅ POST `/api/auth/reset-password` - Reset con token
+- ✅ Sistema de blacklist en memoria
+- ✅ Sistema de tokens de reset de contraseña
+- ✅ Emails de notificación (cambio, reset, confirmación)
+- ✅ Validadores para todos los endpoints
 
 ---
 
