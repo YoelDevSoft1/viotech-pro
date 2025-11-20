@@ -676,7 +676,7 @@ export default function DashboardPage() {
 
     // Listener para detectar cambios en el storage (útil cuando se refresca el token)
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === TOKEN_STORAGE_KEY || e.key === 'viotech_token') {
+      if (e.key === 'viotech_token' || e.key === 'authTokenVioTech') {
         const newToken = getAccessToken();
         if (newToken && newToken !== token) {
           console.log('Token actualizado en storage, recargando...');
