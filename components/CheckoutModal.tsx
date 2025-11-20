@@ -206,8 +206,7 @@ export default function CheckoutModal({
           container: 'wompi-widget-container'
         });
 
-        // Inicializar widget de Wompi (usar la función disponible)
-        const widgetFunction = window.WompiWidget || window.Wompi || window.wompi;
+        // Inicializar widget de Wompi (usar la función ya verificada)
         widgetFunction({
           publicKey: widgetData.publicKey,
           currency: widgetData.currency,
