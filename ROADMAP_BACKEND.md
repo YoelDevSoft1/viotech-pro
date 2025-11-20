@@ -548,13 +548,22 @@ CREATE INDEX idx_ticket_comments_created_at ON ticket_comments(created_at);
 
 ---
 
-### **Sprint 8: Documentación (Semana 8)**
-- [ ] Swagger/OpenAPI
-- [ ] README actualizado
-- [ ] Postman collection
-- [ ] Guías de desarrollo
+### **Sprint 8: Documentación (Semana 8)** ✅ COMPLETADO
+- [x] Swagger/OpenAPI
+- [x] README actualizado
+- [x] Postman collection
+- [x] Guías de desarrollo
 
-**Entregable:** Documentación completa
+**Entregable:** Documentación completa ✅
+
+**Implementado:**
+- ✅ Configuración de Swagger/OpenAPI con `swagger-ui-express`
+- ✅ Documentación interactiva disponible en `/api-docs`
+- ✅ README.md completo con toda la información del backend
+- ✅ Collection de Postman con todos los endpoints
+- ✅ Guía de desarrollo completa (setup, arquitectura, convenciones)
+- ✅ Documentación de API en Markdown (`docs/API_DOCUMENTATION.md`)
+- ✅ Schemas de Swagger para todos los modelos (User, Ticket, Service, etc.)
 
 ---
 
