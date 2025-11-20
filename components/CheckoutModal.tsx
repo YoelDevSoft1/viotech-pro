@@ -41,28 +41,32 @@ export default function CheckoutModal({
   useEffect(() => {
     if (!isOpen) return;
 
-    // Verificar si ya está cargado
-    if (window.WompiWidget) {
+    // Verificar si ya está cargado y disponible
+    if (window.WompiWidget && typeof window.WompiWidget === 'function') {
+      console.log("WompiWidget ya está disponible");
       setScriptLoaded(true);
       return;
     }
 
     // Verificar si ya existe el script tag
-    if (document.getElementById("wompi-widget-script")) {
-      // Esperar a que cargue
+    const existingScript = document.getElementById("wompi-widget-script");
+    if (existingScript) {
+      // Esperar a que cargue con polling más agresivo
+      let attempts = 0;
+      const maxAttempts = 50; // 5 segundos máximo
       const checkLoaded = setInterval(() => {
-        if (window.WompiWidget) {
+        attempts++;
+        if (window.WompiWidget && typeof window.WompiWidget === 'function') {
+          console.log("WompiWidget detectado después de", attempts * 100, "ms");
           setScriptLoaded(true);
           clearInterval(checkLoaded);
+        } else if (attempts >= maxAttempts) {
+          console.warn("WompiWidget no disponible después de múltiples intentos");
+          clearInterval(checkLoaded);
+          // No mostrar error, simplemente usar redirect
+          setUseRedirect(true);
         }
       }, 100);
-
-      setTimeout(() => {
-        clearInterval(checkLoaded);
-        if (!window.WompiWidget) {
-          setError("No se pudo cargar el script de Wompi");
-        }
-      }, 5000);
 
       return () => clearInterval(checkLoaded);
     }
@@ -77,21 +81,37 @@ export default function CheckoutModal({
     script.id = "wompi-widget-script";
 
     script.onload = () => {
-      console.log("Wompi script cargado exitosamente");
-      setScriptLoaded(true);
-      scriptLoadingRef.current = false;
+      console.log("Wompi script cargado exitosamente, esperando inicialización...");
+      // Esperar a que WompiWidget esté disponible después de onload
+      let attempts = 0;
+      const maxAttempts = 50; // 5 segundos máximo
+      const checkWidget = setInterval(() => {
+        attempts++;
+        if (window.WompiWidget && typeof window.WompiWidget === 'function') {
+          console.log("WompiWidget inicializado después de", attempts * 100, "ms");
+          setScriptLoaded(true);
+          scriptLoadingRef.current = false;
+          clearInterval(checkWidget);
+        } else if (attempts >= maxAttempts) {
+          console.warn("WompiWidget no se inicializó después de cargar el script");
+          scriptLoadingRef.current = false;
+          clearInterval(checkWidget);
+          // No mostrar error, simplemente usar redirect
+          setUseRedirect(true);
+        }
+      }, 100);
     };
 
     script.onerror = () => {
       console.error("Error al cargar script de Wompi");
-      setError("Error al cargar el script de Wompi. Por favor recarga la página.");
       scriptLoadingRef.current = false;
+      // No mostrar error, simplemente usar redirect
+      setUseRedirect(true);
     };
 
     document.body.appendChild(script);
 
     return () => {
-      // No eliminar el script al cerrar, puede ser útil mantenerlo
       scriptLoadingRef.current = false;
     };
   }, [isOpen]);
@@ -124,7 +144,23 @@ export default function CheckoutModal({
 
   // Inicializar widget cuando los datos estén listos
   useEffect(() => {
-    if (!widgetData || !isOpen || !scriptLoaded) return;
+    if (!widgetData || !isOpen) return;
+    
+    // Si ya estamos usando redirect, no intentar inicializar el widget
+    if (useRedirect) return;
+
+    // Esperar a que el script esté cargado Y WompiWidget esté disponible
+    if (!scriptLoaded || !window.WompiWidget || typeof window.WompiWidget !== 'function') {
+      // Si el script no está cargado después de 3 segundos, cambiar a redirect
+      const redirectTimeout = setTimeout(() => {
+        if (!scriptLoaded || !window.WompiWidget) {
+          console.warn("Timeout esperando WompiWidget, cambiando a redirect");
+          setUseRedirect(true);
+        }
+      }, 3000);
+
+      return () => clearTimeout(redirectTimeout);
+    }
 
     // Pequeño delay para asegurar que el DOM esté listo
     const initTimeout = setTimeout(() => {
@@ -133,7 +169,6 @@ export default function CheckoutModal({
         const container = document.getElementById('wompi-widget-container');
         if (!container) {
           console.error("Contenedor wompi-widget-container no encontrado");
-          // Cambiar a redirect si el contenedor no existe
           setUseRedirect(true);
           return;
         }
@@ -141,10 +176,9 @@ export default function CheckoutModal({
         // Limpiar contenedor anterior
         container.innerHTML = '';
 
-        // Verificar que WompiWidget esté disponible
-        if (!window.WompiWidget) {
+        // Verificar nuevamente que WompiWidget esté disponible
+        if (!window.WompiWidget || typeof window.WompiWidget !== 'function') {
           console.error("WompiWidget no está disponible en window");
-          // En lugar de error, cambiar a redirect
           setUseRedirect(true);
           return;
         }
@@ -184,18 +218,17 @@ export default function CheckoutModal({
         });
 
         console.log("Widget de Wompi inicializado correctamente");
-        } catch (err: any) {
-          console.error("Error initializing Wompi widget:", err);
-          // En lugar de mostrar error, cambiar a redirect
-          console.warn("Cambiando a método redirect debido a error en widget");
-          setUseRedirect(true);
-        }
+      } catch (err: any) {
+        console.error("Error initializing Wompi widget:", err);
+        console.warn("Cambiando a método redirect debido a error en widget");
+        setUseRedirect(true);
+      }
     }, 500); // Delay de 500ms para asegurar que el DOM esté listo
 
     return () => {
       clearTimeout(initTimeout);
     };
-  }, [widgetData, isOpen, scriptLoaded, router, onSuccess, onError]);
+  }, [widgetData, isOpen, scriptLoaded, useRedirect, router, onSuccess, onError]);
 
   if (!isOpen) return null;
 
@@ -305,19 +338,41 @@ export default function CheckoutModal({
                   onClick={async () => {
                     try {
                       setLoading(true);
+                      setError(null);
+                      console.log("Creando transacción de pago para plan:", plan.id);
                       const transaction = await createWompiTransaction(plan.id);
+                      console.log("Transacción creada exitosamente:", transaction);
                       // Redirigir a checkout de Wompi
-                      window.location.href = transaction.checkout_url;
+                      if (transaction.checkout_url) {
+                        window.location.href = transaction.checkout_url;
+                      } else {
+                        throw new Error("No se recibió URL de checkout de Wompi");
+                      }
                     } catch (err: any) {
                       console.error("Error creando transacción:", err);
-                      setError(err.message || "Error al crear transacción de pago");
+                      const errorMessage = err.message || "Error al crear transacción de pago";
+                      setError(errorMessage);
                       setLoading(false);
+                      // Si el error es 422, puede ser un problema de validación
+                      if (err.message?.includes('422') || err.message?.includes('Unprocessable')) {
+                        setError("Error de validación. Por favor verifica que el plan sea válido y que estés autenticado correctamente.");
+                      }
                     }
                   }}
-                  className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background hover:scale-105 transition-transform"
+                  disabled={loading}
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Continuar al Checkout de Wompi
-                  <ArrowRight className="w-4 h-4" />
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Preparando pago...
+                    </>
+                  ) : (
+                    <>
+                      Continuar al Checkout de Wompi
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
                 </button>
               </div>
             ) : (

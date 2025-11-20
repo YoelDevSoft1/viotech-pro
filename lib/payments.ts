@@ -103,7 +103,13 @@ export async function createWompiTransaction(planId: string): Promise<WompiTrans
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ error: 'Error desconocido' }));
-    throw new Error(error.error || error.message || 'Error al crear transacción de pago');
+    const errorMessage = error.error || error.message || `Error al crear transacción de pago (${response.status})`;
+    console.error('Error del servidor al crear transacción:', {
+      status: response.status,
+      statusText: response.statusText,
+      error: error
+    });
+    throw new Error(errorMessage);
   }
 
   const data = await response.json();
