@@ -465,10 +465,17 @@ export default function DashboardPage() {
           }
         }
 
-        const response = await fetch(buildApiUrl("/tickets"), {
+        // Agregar timestamp para evitar caché del navegador
+        const timestamp = Date.now();
+        const url = `${buildApiUrl("/tickets")}?_t=${timestamp}`;
+        
+        const response = await fetch(url, {
+          method: 'GET',
           headers: { 
             Authorization: `Bearer ${tokenToUse}`,
-            'Cache-Control': 'no-cache',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
           },
           cache: 'no-store',
         });
@@ -480,10 +487,15 @@ export default function DashboardPage() {
           const newToken = await refreshAccessToken();
           if (newToken) {
             // Reintentar con nuevo token
-            const retryResponse = await fetch(buildApiUrl("/tickets"), {
+            const retryTimestamp = Date.now();
+            const retryUrl = `${buildApiUrl("/tickets")}?_t=${retryTimestamp}`;
+            const retryResponse = await fetch(retryUrl, {
+              method: 'GET',
               headers: { 
                 Authorization: `Bearer ${newToken}`,
-                'Cache-Control': 'no-cache',
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0',
               },
               cache: 'no-store',
             });
@@ -661,25 +673,64 @@ export default function DashboardPage() {
     };
 
     initializeAuth();
-  }, [router, fetchServices]);
+
+    // Listener para detectar cambios en el storage (útil cuando se refresca el token)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === TOKEN_STORAGE_KEY || e.key === 'viotech_token') {
+        const newToken = getAccessToken();
+        if (newToken && newToken !== token) {
+          console.log('Token actualizado en storage, recargando...');
+          setToken(newToken);
+          // Si estamos en la pestaña de tickets, recargar
+          if (activeTab === "tickets") {
+            fetchTickets(newToken);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [router, fetchServices, activeTab, fetchTickets, token]);
 
   useEffect(() => {
     if (activeTab !== "tickets") return;
     
-    // Obtener token actualizado siempre del storage (puede haber cambiado por refresh)
-    const currentToken = getAccessToken();
-    if (!currentToken) {
-      router.replace("/login?from=/dashboard&reason=no_token");
-      return;
-    }
+    const loadTickets = async () => {
+      // Obtener token actualizado siempre del storage (puede haber cambiado por refresh)
+      let currentToken = getAccessToken();
+      if (!currentToken) {
+        router.replace("/login?from=/dashboard&reason=no_token");
+        return;
+      }
+      
+      // Verificar si el token está expirado y refrescar si es necesario
+      if (isTokenExpired(currentToken)) {
+        console.log('Token expirado al cargar tickets, refrescando...');
+        const newToken = await refreshAccessToken();
+        if (newToken) {
+          currentToken = newToken;
+          setToken(newToken);
+        } else {
+          await logout();
+          router.replace("/login?from=/dashboard&reason=token_expired");
+          return;
+        }
+      }
+      
+      // Si el token cambió, actualizar el estado
+      if (currentToken !== token) {
+        setToken(currentToken);
+      }
+      
+      // Forzar recarga de tickets (evitar caché)
+      await fetchTickets(currentToken);
+    };
     
-    // Si el token cambió, actualizar el estado
-    if (currentToken !== token) {
-      setToken(currentToken);
-    }
-    
-    // Forzar recarga de tickets (evitar caché)
-    fetchTickets(currentToken);
+    loadTickets();
   }, [activeTab, fetchTickets, router]); // Remover token de dependencias para evitar loops
 
   useEffect(() => {
