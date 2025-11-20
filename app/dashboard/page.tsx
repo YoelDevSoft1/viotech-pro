@@ -394,7 +394,7 @@ export default function DashboardPage() {
         if (validTickets.length > 0) {
           setSelectedTicket((prev) => {
             if (!prev) return validTickets[0];
-            const found = validTickets.find((item) => item.id === prev.id);
+            const found = validTickets.find((item: Ticket) => item.id === prev.id);
             return found || validTickets[0];
           });
         } else {
