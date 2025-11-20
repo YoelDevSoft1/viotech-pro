@@ -181,10 +181,13 @@ const ServiceCard = ({ service }: { service: Service }) => {
         <span className="text-muted-foreground">
           {service.precio ? `$${service.precio?.toLocaleString("es-CO")}` : "Proyecto a medida"}
         </span>
-        <button className="inline-flex items-center gap-2 text-xs font-medium text-foreground hover:gap-3 transition-all">
-          Revisar entregables
+        <Link
+          href="/services"
+          className="inline-flex items-center gap-2 text-xs font-medium text-foreground hover:gap-3 transition-all"
+        >
+          Ver detalles
           <ArrowRight className="w-3 h-3" />
-        </button>
+        </Link>
       </div>
     </div>
   );
@@ -1048,13 +1051,28 @@ export default function DashboardPage() {
 
                 <section className="grid grid-cols-1 lg:grid-cols-[1.2fr,0.8fr] gap-8">
                   <div className="space-y-6">
-                    <h2 className="text-2xl font-medium text-foreground">Servicios activos</h2>
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-2xl font-medium text-foreground">Servicios activos</h2>
+                      <Link
+                        href="/services"
+                        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        Ver todos
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
+                    </div>
                     {services.length === 0 ? (
                       <div className="rounded-3xl border border-border/70 bg-background/80 p-8 text-center space-y-3">
                         <p className="text-lg text-foreground">Aún no has activado tu primer proyecto.</p>
                         <p className="text-sm text-muted-foreground">
                           Agenda un discovery call para priorizar el backlog y recibir un plan de acción.
                         </p>
+                        <Link
+                          href="/services/catalog"
+                          className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background hover:scale-105 transition-transform mt-4"
+                        >
+                          Ver Catálogo de Servicios
+                        </Link>
                         <a
                           href="https://wa.link/1r4ul7"
                           target="_blank"

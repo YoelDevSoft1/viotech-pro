@@ -655,6 +655,39 @@ CREATE INDEX idx_ticket_comments_created_at ON ticket_comments(created_at);
 
 ---
 
+### **Sprint 13-14: Inteligencia Artificial y Machine Learning (Semanas 13-14)** 🆕
+- [ ] Setup de infraestructura ML (TensorFlow.js)
+- [ ] Recolección y preparación de datos históricos
+- [ ] Desarrollo del modelo de predicción
+- [ ] API de predicción de tiempos y costos
+- [ ] Frontend de predicción con visualizaciones
+- [ ] Sistema de re-entrenamiento automático
+- [ ] Testing y validación del modelo
+
+**Entregable:** Sistema de predicción ML funcional
+
+**Implementación:**
+- ✅ POST `/api/predictions/project-timeline` - Predicción de tiempo y costo
+- ✅ GET `/api/predictions/model-status` - Estado del modelo ML
+- ✅ Componente frontend de predicción
+- ✅ Visualización de rangos de confianza
+- ✅ Identificación de factores de riesgo
+
+**Stack:**
+- TensorFlow.js para ML en Node.js
+- PostgreSQL para datos históricos
+- Redis para cache de predicciones
+- Next.js para visualización
+
+**ROI Esperado:**
+- Reducción del 30% en disputas sobre sobrecostos
+- Aumento del 25% en tasa de cierre de ventas
+- Premium pricing de 15-20%
+
+**Prioridad:** ⭐ High Impact, High Effort (Strategic)
+
+---
+
 ## 🎯 Priorización por Impacto
 
 ### **🔴 Crítico (Hacer Ahora)**
@@ -782,5 +815,7 @@ SENTRY_DSN=...
 
 ---
 
-**Última actualización:** Diciembre 2024  
+**Última actualización:** Diciembre 2025
 **Mantenido por:** Equipo VioTech
+
+**Ultima Actualizacion** 
