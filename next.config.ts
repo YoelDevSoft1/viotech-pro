@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.gstatic.com https://translate.googleapis.com",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.gstatic.com https://translate.googleapis.com https://checkout.wompi.co",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://www.gstatic.com",
               "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com https://www.gstatic.com",
               "font-src 'self' https://fonts.gstatic.com data:",
