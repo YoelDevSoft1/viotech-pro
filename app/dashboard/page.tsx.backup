@@ -18,7 +18,6 @@ import {
   Users2,
 } from "lucide-react";
 import { buildApiUrl } from "@/lib/api";
-import { fetchDashboardMetrics, type DashboardMetrics } from "@/lib/metrics";
 
 type Service = {
   id: string;
@@ -256,8 +255,6 @@ export default function DashboardPage() {
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [attachments, setAttachments] = useState<File[]>([]);
   const [attachmentsUploading, setAttachmentsUploading] = useState(false);
-  const [dashboardMetrics, setDashboardMetrics] = useState<DashboardMetrics | null>(null);
-  const [metricsLoading, setMetricsLoading] = useState(false);
 
   const uploadTicketAttachments = useCallback(async (files: File[]) => {
     if (!files.length) return [];
@@ -391,25 +388,6 @@ export default function DashboardPage() {
     [selectedTicket],
   );
 
-
-  const fetchMetrics = useCallback(
-    async (authToken: string) => {
-      if (!authToken) return;
-      setMetricsLoading(true);
-      try {
-        const metrics = await fetchDashboardMetrics(authToken);
-        setDashboardMetrics(metrics);
-      } catch (metricsError) {
-        console.error("Error al cargar métricas:", metricsError);
-        // No mostramos error al usuario, usamos fallback a cálculos locales
-        setDashboardMetrics(null);
-      } finally {
-        setMetricsLoading(false);
-      }
-    },
-    []
-  );
-
   const handleCreateTicket = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!token) {
@@ -527,50 +505,11 @@ export default function DashboardPage() {
   }, [selectedTicket?.id]);
 
   const metrics = useMemo(() => {
-    // Si tenemos métricas del backend, usarlas
-    if (dashboardMetrics) {
-      return [
-        {
-          title: "Servicios activos",
-          value: `${dashboardMetrics.serviciosActivos}`,
-          description: "Proyectos enterprise en ejecución",
-        },
-        {
-          title: "Próxima renovación",
-          value: dashboardMetrics.proximaRenovacion 
-            ? formatDate(dashboardMetrics.proximaRenovacion)
-            : "Por definir",
-          description: "Próximo servicio a renovar",
-        },
-        {
-          title: "Avance promedio",
-          value: `${dashboardMetrics.avancePromedio}%`,
-          description: "KPIs globales del trimestre",
-        },
-        {
-          title: "Tickets abiertos",
-          value: `${dashboardMetrics.ticketsAbiertos}`,
-          description: "Solicitudes de soporte activas",
-        },
-        {
-          title: "Tickets resueltos",
-          value: `${dashboardMetrics.ticketsResueltos}`,
-          description: "Casos cerrados exitosamente",
-        },
-        {
-          title: "SLA cumplido",
-          value: `${dashboardMetrics.slaCumplido}%`,
-          description: "Acuerdo activo para top tier",
-        },
-      ];
-    }
-
-    // Fallback: calcular métricas localmente si no hay datos del backend
     if (!services.length) {
       return [
         { title: "Servicios activos", value: "0", description: "Esperando tu próximo proyecto" },
         { title: "Próxima renovación", value: "Por definir", description: "Sin fechas programadas" },
-        { title: "Avance promedio", value: "0%", description: "KPIs globales del trimestre" },
+        { title: "SLA", value: "99.95%", description: "Acuerdo activo para top tier" },
       ];
     }
 
@@ -610,7 +549,7 @@ export default function DashboardPage() {
         description: "KPIs globales del trimestre",
       },
     ];
-  }, [services, dashboardMetrics]);
+  }, [services]);
 
   const timeline = useMemo<TimelineEvent[]>(() => {
     if (!services.length) return [];
