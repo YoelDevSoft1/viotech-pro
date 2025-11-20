@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { buildApiUrl } from "@/lib/api";
 import { fetchDashboardMetrics, type DashboardMetrics } from "@/lib/metrics";
-import { logout } from "@/lib/auth";
+import { logout, getAccessToken, refreshAccessToken, isTokenExpired } from "@/lib/auth";
 import ChangePasswordModal from "@/components/ChangePasswordModal";
 
 type Service = {
@@ -320,16 +320,62 @@ export default function DashboardPage() {
       setError(null);
 
       try {
-        const response = await fetch(buildApiUrl("/services/me"), {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const payload = await response.json().catch(() => null);
+        // Verificar y refrescar token si es necesario
+        let tokenToUse = token;
+        if (isTokenExpired(token)) {
+          const newToken = await refreshAccessToken();
+          if (newToken) {
+            tokenToUse = newToken;
+            setToken(newToken);
+          } else {
+            await logout();
+            router.replace("/login?from=/dashboard&reason=token_expired");
+            return;
+          }
+        }
 
-      if (response.status === 401) {
-        clearStorages([...TOKEN_KEYS, ...USERNAME_KEYS]);
-        router.replace("/login?from=/dashboard&reason=unauthorized");
-        return;
-      }
+        const response = await fetch(buildApiUrl("/services/me"), {
+          headers: { 
+            Authorization: `Bearer ${tokenToUse}`,
+            'Cache-Control': 'no-cache',
+          },
+          cache: 'no-store',
+        });
+        const payload = await response.json().catch(() => null);
+
+        // Si el token expiró durante la request, intentar refrescar
+        if (response.status === 401) {
+          const newToken = await refreshAccessToken();
+          if (newToken) {
+            // Reintentar con nuevo token
+            const retryResponse = await fetch(buildApiUrl("/services/me"), {
+              headers: { 
+                Authorization: `Bearer ${newToken}`,
+                'Cache-Control': 'no-cache',
+              },
+              cache: 'no-store',
+            });
+            const retryPayload = await retryResponse.json().catch(() => null);
+            if (!retryResponse.ok) {
+              throw new Error(retryPayload?.error || retryPayload?.message || "No se pudo cargar el panel.");
+            }
+            setToken(newToken);
+            const normalizedServices: Service[] = (retryPayload.data || []).map((service: Service) => ({
+              ...service,
+              progreso:
+                typeof service.progreso === "number"
+                  ? service.progreso
+                  : computeProgressFromDates(service),
+            }));
+            setServices(normalizedServices);
+            setLoading(false);
+            return;
+          } else {
+            await logout();
+            router.replace("/login?from=/dashboard&reason=unauthorized");
+            return;
+          }
+        }
 
       if (!response.ok || !Array.isArray(payload?.data)) {
         throw new Error(payload?.error || payload?.message || "No se pudo cargar el panel.");
@@ -355,66 +401,122 @@ export default function DashboardPage() {
     [router],
   );
 
+  // Función auxiliar para procesar tickets
+  const processTickets = (payload: any) => {
+    if (!payload?.data?.tickets) {
+      setTickets([]);
+      setSelectedTicket(null);
+      return;
+    }
+
+    const validTickets = (payload.data.tickets || [])
+      .filter((ticket: any) => ticket && ticket.id && ticket.titulo)
+      .map((ticket: Ticket) => ({
+        id: String(ticket.id),
+        titulo: String(ticket.titulo || 'Sin título'),
+        descripcion: ticket.descripcion || null,
+        estado: String(ticket.estado || 'abierto'),
+        prioridad: String(ticket.prioridad || 'media'),
+        slaObjetivo: ticket.slaObjetivo || null,
+        etiquetas: parseMaybeJson(
+          ticket.etiquetas,
+          [] as Array<{ name: string; url: string }>
+        ),
+        createdAt: ticket.createdAt || new Date().toISOString(),
+        comentarios: Array.isArray(ticket.comentarios) ? ticket.comentarios : [],
+      }));
+
+    console.log('Tickets recibidos:', {
+      total: payload.data.tickets?.length || 0,
+      validos: validTickets.length,
+      sample: validTickets[0],
+    });
+
+    setTickets(validTickets);
+
+    if (validTickets.length > 0) {
+      setSelectedTicket((prev) => {
+        if (!prev) return validTickets[0];
+        const found = validTickets.find((item: Ticket) => item.id === prev.id);
+        return found || validTickets[0];
+      });
+    } else {
+      setSelectedTicket(null);
+    }
+  };
+
   const fetchTickets = useCallback(
     async (authToken: string) => {
       setTicketsLoading(true);
       setTicketsError(null);
       try {
+        // Verificar y refrescar token si es necesario
+        let tokenToUse = authToken;
+        if (isTokenExpired(authToken)) {
+          console.log('Token expirado, intentando refrescar...');
+          const newToken = await refreshAccessToken();
+          if (newToken) {
+            tokenToUse = newToken;
+            setToken(newToken);
+          } else {
+            await logout();
+            router.replace("/login?from=/dashboard&reason=token_expired");
+            return;
+          }
+        }
+
         const response = await fetch(buildApiUrl("/tickets"), {
-          headers: { Authorization: `Bearer ${authToken}` },
+          headers: { 
+            Authorization: `Bearer ${tokenToUse}`,
+            'Cache-Control': 'no-cache',
+          },
+          cache: 'no-store',
         });
         const payload = await response.json().catch(() => null);
+        
+        // Si el token expiró durante la request, intentar refrescar y reintentar
+        if (response.status === 401) {
+          console.log('Token inválido en request, intentando refrescar...');
+          const newToken = await refreshAccessToken();
+          if (newToken) {
+            // Reintentar con nuevo token
+            const retryResponse = await fetch(buildApiUrl("/tickets"), {
+              headers: { 
+                Authorization: `Bearer ${newToken}`,
+                'Cache-Control': 'no-cache',
+              },
+              cache: 'no-store',
+            });
+            const retryPayload = await retryResponse.json().catch(() => null);
+            if (!retryResponse.ok) {
+              throw new Error(retryPayload?.error || retryPayload?.message || "No se pudieron cargar los tickets.");
+            }
+            setToken(newToken);
+            processTickets(retryPayload);
+            return;
+          } else {
+            await logout();
+            router.replace("/login?from=/dashboard&reason=token_expired");
+            return;
+          }
+        }
+        
         if (!response.ok) {
           throw new Error(payload?.error || payload?.message || "No se pudieron cargar los tickets.");
         }
         
-        // Filtrar tickets inválidos y normalizar
-        const validTickets = (payload?.data?.tickets || [])
-          .filter((ticket: any) => ticket && ticket.id && ticket.titulo) // Filtrar tickets inválidos
-          .map((ticket: Ticket) => ({
-            id: String(ticket.id),
-            titulo: String(ticket.titulo || 'Sin título'),
-            descripcion: ticket.descripcion || null,
-            estado: String(ticket.estado || 'abierto'),
-            prioridad: String(ticket.prioridad || 'media'),
-            slaObjetivo: ticket.slaObjetivo || null,
-            etiquetas: parseMaybeJson(
-              ticket.etiquetas,
-              [] as Array<{ name: string; url: string }>
-            ),
-            createdAt: ticket.createdAt || new Date().toISOString(),
-            comentarios: Array.isArray(ticket.comentarios) ? ticket.comentarios : [],
-          }));
-        
-        console.log('Tickets recibidos:', {
-          total: payload?.data?.tickets?.length || 0,
-          validos: validTickets.length,
-          sample: validTickets[0],
-        });
-        
-        setTickets(validTickets);
-        
-        // Actualizar selectedTicket solo si no existe o si el ticket actual ya no está en la lista
-        if (validTickets.length > 0) {
-          setSelectedTicket((prev) => {
-            if (!prev) return validTickets[0];
-            const found = validTickets.find((item: Ticket) => item.id === prev.id);
-            return found || validTickets[0];
-          });
-        } else {
-          setSelectedTicket(null);
-        }
+        processTickets(payload);
       } catch (ticketsError) {
         const message =
           ticketsError instanceof Error ? ticketsError.message : "Error desconocido al cargar tickets.";
         console.error('Error al cargar tickets:', ticketsError);
         setTicketsError(message);
-        setTickets([]); // Limpiar tickets en caso de error
+        setTickets([]);
       } finally {
         setTicketsLoading(false);
       }
     },
-    [], // Remover selectedTicket de las dependencias para evitar re-renders infinitos
+    [router],
   );
 
 
@@ -530,23 +632,55 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    const storedToken = getFromStorage(TOKEN_KEYS);
-    const storedName = getFromStorage(USERNAME_KEYS);
+    const initializeAuth = async () => {
+      let storedToken = getAccessToken();
+      const storedName = getFromStorage(USERNAME_KEYS);
 
-    if (!storedToken) {
-      router.replace("/login?from=/dashboard&reason=no_token");
-      return;
-    }
+      if (!storedToken) {
+        router.replace("/login?from=/dashboard&reason=no_token");
+        return;
+      }
 
-    setUserName(storedName);
-    setToken(storedToken);
-    fetchServices(storedToken);
+      // Verificar si el token está expirado y refrescar si es necesario
+      if (isTokenExpired(storedToken)) {
+        console.log('Token inicial expirado, refrescando...');
+        const newToken = await refreshAccessToken();
+        if (newToken) {
+          storedToken = newToken;
+        } else {
+          // No se pudo refrescar, redirigir a login
+          await logout();
+          router.replace("/login?from=/dashboard&reason=token_expired");
+          return;
+        }
+      }
+
+      setUserName(storedName);
+      setToken(storedToken);
+      fetchServices(storedToken);
+    };
+
+    initializeAuth();
   }, [router, fetchServices]);
 
   useEffect(() => {
-    if (activeTab !== "tickets" || !token) return;
-    fetchTickets(token);
-  }, [activeTab, token, fetchTickets]);
+    if (activeTab !== "tickets") return;
+    
+    // Obtener token actualizado siempre del storage (puede haber cambiado por refresh)
+    const currentToken = getAccessToken();
+    if (!currentToken) {
+      router.replace("/login?from=/dashboard&reason=no_token");
+      return;
+    }
+    
+    // Si el token cambió, actualizar el estado
+    if (currentToken !== token) {
+      setToken(currentToken);
+    }
+    
+    // Forzar recarga de tickets (evitar caché)
+    fetchTickets(currentToken);
+  }, [activeTab, fetchTickets, router]); // Remover token de dependencias para evitar loops
 
   useEffect(() => {
     setTicketComment("");
