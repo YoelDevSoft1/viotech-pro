@@ -612,13 +612,35 @@ CREATE INDEX idx_ticket_comments_created_at ON ticket_comments(created_at);
 
 ---
 
-### **Sprint 10: Performance (Semana 10)**
-- [ ] Redis para caching
-- [ ] Optimización de queries
-- [ ] Índices de base de datos
-- [ ] Load testing
+### **Sprint 10: Performance (Semana 10)** ✅ COMPLETADO
+- [x] Redis para caching
+- [x] Optimización de queries
+- [x] Índices de base de datos
+- [x] Load testing
 
-**Entregable:** Backend optimizado
+**Entregable:** Backend optimizado ✅
+
+**Implementado:**
+- ✅ **Redis para caching**: Sistema completo de caching con fallback a memoria
+  - Cache manager con soporte para Redis y fallback en memoria
+  - Integrado en endpoints de métricas, servicios y tickets
+  - Invalidación automática de cache cuando se modifican datos
+  - TTLs configurables por tipo de dato (métricas: 60s, servicios: 120s, catálogo: 1h)
+  - Utilidad: `CacheManager` en `utils/cache.js`
+- ✅ **Optimización de queries**: Mejoras en consultas existentes
+  - Queries paralelas con `Promise.all()` en métricas
+  - Batch queries para reducir N+1 en tickets (ya implementado en Sprint 1)
+  - Cache de resultados frecuentes
+- ✅ **Índices de base de datos**: Script SQL completo de optimización
+  - Índices compuestos para búsquedas frecuentes
+  - Índices parciales (WHERE) para reducir tamaño
+  - Índices para ordenamiento por fechas
+  - Script: `sql/optimize_indexes.sql`
+- ✅ **Load testing**: Scripts y herramientas de testing
+  - Script de load testing configurable (`scripts/load-test.js`)
+  - Escenarios predefinidos (`scripts/load-test-scenarios.js`)
+  - Comandos npm: `npm run load-test` y `npm run load-test:all`
+  - Métricas: requests/s, latency (P50, P90, P99), throughput, errores
 
 ---
 

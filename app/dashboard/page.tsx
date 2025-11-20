@@ -22,6 +22,7 @@ import { buildApiUrl } from "@/lib/api";
 import { fetchDashboardMetrics, type DashboardMetrics } from "@/lib/metrics";
 import { logout, getAccessToken, refreshAccessToken, isTokenExpired } from "@/lib/auth";
 import ChangePasswordModal from "@/components/ChangePasswordModal";
+import MFASettings from "@/components/MFASettings";
 
 type Service = {
   id: string;
@@ -941,13 +942,15 @@ export default function DashboardPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <button
-                className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-background transition-colors"
-                onClick={() => setChangePasswordOpen(true)}
-              >
-                <Lock className="w-4 h-4" />
-                Cambiar contraseña
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-background transition-colors"
+                  onClick={() => setChangePasswordOpen(true)}
+                >
+                  <Lock className="w-4 h-4" />
+                  Cambiar contraseña
+                </button>
+              </div>
               <button
                 className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-background transition-colors"
                 onClick={handleLogout}
@@ -1072,6 +1075,10 @@ export default function DashboardPage() {
                   </div>
 
                   <div className="space-y-6">
+                    <div>
+                      <h2 className="text-2xl font-medium text-foreground mb-4">Seguridad</h2>
+                      <MFASettings />
+                    </div>
                     <h2 className="text-2xl font-medium text-foreground">Roadmap inmediato</h2>
                     {timeline.length ? (
                       <div className="space-y-4">
