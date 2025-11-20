@@ -18,6 +18,8 @@ interface CheckoutModalProps {
 declare global {
   interface Window {
     WompiWidget?: (config: any) => void;
+    Wompi?: any;
+    wompi?: any;
   }
 }
 
@@ -82,18 +84,27 @@ export default function CheckoutModal({
 
     script.onload = () => {
       console.log("Wompi script cargado exitosamente, esperando inicialización...");
-      // Esperar a que WompiWidget esté disponible después de onload
+      // Verificar múltiples formas en que Wompi puede exponer su API
       let attempts = 0;
       const maxAttempts = 50; // 5 segundos máximo
       const checkWidget = setInterval(() => {
         attempts++;
-        if (window.WompiWidget && typeof window.WompiWidget === 'function') {
+        // Verificar diferentes formas en que Wompi puede exponer su widget
+        const widgetAvailable = 
+          (window.WompiWidget && typeof window.WompiWidget === 'function') ||
+          (window.Wompi && typeof window.Wompi === 'function') ||
+          (window.wompi && typeof window.wompi === 'function');
+        
+        if (widgetAvailable) {
           console.log("WompiWidget inicializado después de", attempts * 100, "ms");
           setScriptLoaded(true);
           scriptLoadingRef.current = false;
           clearInterval(checkWidget);
         } else if (attempts >= maxAttempts) {
           console.warn("WompiWidget no se inicializó después de cargar el script");
+          console.warn("window.WompiWidget:", window.WompiWidget);
+          console.warn("window.Wompi:", window.Wompi);
+          console.warn("window.wompi:", window.wompi);
           scriptLoadingRef.current = false;
           clearInterval(checkWidget);
           // No mostrar error, simplemente usar redirect
@@ -176,9 +187,13 @@ export default function CheckoutModal({
         // Limpiar contenedor anterior
         container.innerHTML = '';
 
-        // Verificar nuevamente que WompiWidget esté disponible
-        if (!window.WompiWidget || typeof window.WompiWidget !== 'function') {
+        // Verificar nuevamente que WompiWidget esté disponible (múltiples formas)
+        const widgetFunction = window.WompiWidget || window.Wompi || window.wompi;
+        if (!widgetFunction || typeof widgetFunction !== 'function') {
           console.error("WompiWidget no está disponible en window");
+          console.error("window.WompiWidget:", window.WompiWidget);
+          console.error("window.Wompi:", window.Wompi);
+          console.error("window.wompi:", window.wompi);
           setUseRedirect(true);
           return;
         }
@@ -191,8 +206,9 @@ export default function CheckoutModal({
           container: 'wompi-widget-container'
         });
 
-        // Inicializar widget de Wompi
-        window.WompiWidget({
+        // Inicializar widget de Wompi (usar la función disponible)
+        const widgetFunction = window.WompiWidget || window.Wompi || window.wompi;
+        widgetFunction({
           publicKey: widgetData.publicKey,
           currency: widgetData.currency,
           amountInCents: widgetData.amountInCents,
