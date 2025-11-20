@@ -363,19 +363,39 @@ export default function DashboardPage() {
         if (!response.ok) {
           throw new Error(payload?.error || payload?.message || "No se pudieron cargar los tickets.");
         }
-        const normalized: Ticket[] = (payload?.data?.tickets || []).map((ticket: Ticket) => ({
-          ...ticket,
-          etiquetas: parseMaybeJson(
-            ticket.etiquetas,
-            [] as Array<{ name: string; url: string }>
-          ),
-          comentarios: ticket.comentarios || [],
-        }));
-        setTickets(normalized);
-        if (normalized.length) {
+        
+        // Filtrar tickets inválidos y normalizar
+        const validTickets = (payload?.data?.tickets || [])
+          .filter((ticket: any) => ticket && ticket.id && ticket.titulo) // Filtrar tickets inválidos
+          .map((ticket: Ticket) => ({
+            id: String(ticket.id),
+            titulo: String(ticket.titulo || 'Sin título'),
+            descripcion: ticket.descripcion || null,
+            estado: String(ticket.estado || 'abierto'),
+            prioridad: String(ticket.prioridad || 'media'),
+            slaObjetivo: ticket.slaObjetivo || null,
+            etiquetas: parseMaybeJson(
+              ticket.etiquetas,
+              [] as Array<{ name: string; url: string }>
+            ),
+            createdAt: ticket.createdAt || new Date().toISOString(),
+            comentarios: Array.isArray(ticket.comentarios) ? ticket.comentarios : [],
+          }));
+        
+        console.log('Tickets recibidos:', {
+          total: payload?.data?.tickets?.length || 0,
+          validos: validTickets.length,
+          sample: validTickets[0],
+        });
+        
+        setTickets(validTickets);
+        
+        // Actualizar selectedTicket solo si no existe o si el ticket actual ya no está en la lista
+        if (validTickets.length > 0) {
           setSelectedTicket((prev) => {
-            if (!prev) return normalized[0];
-            return normalized.find((item) => item.id === prev.id) || normalized[0];
+            if (!prev) return validTickets[0];
+            const found = validTickets.find((item) => item.id === prev.id);
+            return found || validTickets[0];
           });
         } else {
           setSelectedTicket(null);
@@ -383,12 +403,14 @@ export default function DashboardPage() {
       } catch (ticketsError) {
         const message =
           ticketsError instanceof Error ? ticketsError.message : "Error desconocido al cargar tickets.";
+        console.error('Error al cargar tickets:', ticketsError);
         setTicketsError(message);
+        setTickets([]); // Limpiar tickets en caso de error
       } finally {
         setTicketsLoading(false);
       }
     },
-    [selectedTicket],
+    [], // Remover selectedTicket de las dependencias para evitar re-renders infinitos
   );
 
 
