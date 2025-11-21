@@ -40,6 +40,17 @@ const MAX_MESSAGES = 12;
 const isAffirmative = (text: string) =>
   /\b(si|sí|dale|crea(lo|la| el)?|hazlo|ok|listo|perfecto)\b/i.test(text.trim());
 
+const extractJsonFromText = (text: string) => {
+  if (!text) return null;
+  const match = text.match(/```json\n([\s\S]*?)\n```/i);
+  if (!match) return null;
+  try {
+    return JSON.parse(match[1]);
+  } catch {
+    return null;
+  }
+};
+
 export default function AITicketAssistant({ authToken }: AssistantProps) {
   const apiBase = useMemo(() => getApiBase(), []);
   const [messages, setMessages] = useState<Message[]>([
@@ -116,7 +127,9 @@ export default function AITicketAssistant({ authToken }: AssistantProps) {
       const data: AssistantResponse = payload.data || payload;
       setProvider(data.usedProvider || null);
       setModel(data.modelVersion || null);
-      setSuggestions(data.suggestions || null);
+      const extracted = extractJsonFromText(data.reply || "");
+      const mergedSuggestions = data.suggestions || extracted || null;
+      setSuggestions(mergedSuggestions);
 
       const assistantMessage: Message = {
         role: "assistant",
@@ -144,7 +157,7 @@ export default function AITicketAssistant({ authToken }: AssistantProps) {
 
       if (willAutoCreate) {
         if (authToken) {
-          await handleCreateTicket(nextMessages, data.suggestions);
+          await handleCreateTicket(nextMessages, mergedSuggestions);
         } else {
           setCreateError("Inicia sesión para crear el ticket automáticamente.");
         }
@@ -176,7 +189,7 @@ export default function AITicketAssistant({ authToken }: AssistantProps) {
     }
     setCreating(true);
     try {
-      const sug = suggestionsOverride || suggestions;
+      const sug = suggestionsOverride || suggestions || extractJsonFromText(messages[messages.length - 1]?.content || "");
       const draft =
         sug && typeof sug === "object"
           ? {
