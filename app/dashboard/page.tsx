@@ -79,6 +79,15 @@ type ModelStatus = {
   healthy?: boolean;
 };
 
+const getPredictorApiBase = () => {
+  const env =
+    process.env.NEXT_PUBLIC_BACKEND_API_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    "https://viotech-main.onrender.com";
+  const trimmed = env.replace(/\/+$/, "");
+  return trimmed.toLowerCase().endsWith("/api") ? trimmed : `${trimmed}/api`;
+};
+
 const formatDate = (value?: string | null) => {
   if (!value) return "Por definir";
   const date = new Date(value);
@@ -278,6 +287,7 @@ export default function DashboardPage() {
   const [modelStatus, setModelStatus] = useState<ModelStatus | null>(null);
   const [modelStatusError, setModelStatusError] = useState<string | null>(null);
   const [modelStatusLoading, setModelStatusLoading] = useState(false);
+  const predictorApiBase = useMemo(() => getPredictorApiBase(), []);
 
   const uploadTicketAttachments = useCallback(async (files: File[]) => {
     if (!files.length) return [];
@@ -600,7 +610,7 @@ export default function DashboardPage() {
     setModelStatusLoading(true);
     setModelStatusError(null);
     try {
-      const response = await fetch("/api/predictions/model-status", {
+      const response = await fetch(`${predictorApiBase}/predictions/model-status`, {
         headers: { "Cache-Control": "no-store" },
         cache: "no-store",
       });
@@ -633,7 +643,7 @@ export default function DashboardPage() {
     } finally {
       setModelStatusLoading(false);
     }
-  }, []);
+  }, [predictorApiBase]);
 
   const handleCreateTicket = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

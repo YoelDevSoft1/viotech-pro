@@ -32,6 +32,15 @@ const formatCOP = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value);
 
+const getPredictorApiBase = () => {
+  const env =
+    process.env.NEXT_PUBLIC_BACKEND_API_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    "https://viotech-main.onrender.com";
+  const trimmed = env.replace(/\/+$/, "");
+  return trimmed.toLowerCase().endsWith("/api") ? trimmed : `${trimmed}/api`;
+};
+
 export default function TimelinePredictor() {
   const [input, setInput] = useState<PredictionPayload>({
     serviceType: "web_app",
@@ -44,6 +53,7 @@ export default function TimelinePredictor() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<PredictionResponse | null>(null);
+  const apiBase = useMemo(() => getPredictorApiBase(), []);
 
   const handleChange = (field: keyof PredictionPayload, value: string) => {
     setInput((prev) => ({
@@ -67,7 +77,7 @@ export default function TimelinePredictor() {
     setError(null);
     setResult(null);
     try {
-      const response = await fetch("/api/predictions/project-timeline", {
+      const response = await fetch(`${apiBase}/predictions/project-timeline`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(input),
