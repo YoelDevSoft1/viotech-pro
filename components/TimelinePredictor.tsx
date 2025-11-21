@@ -263,7 +263,7 @@ export default function TimelinePredictor() {
           )}
           {result.modelVersion && (
             <p className="text-xs text-muted-foreground">
-              Modelo: {result.modelVersion} · Latencia < 200ms (mock)
+              Modelo: {result.modelVersion} · Latencia &lt; 200ms (mock)
             </p>
           )}
         </div>
