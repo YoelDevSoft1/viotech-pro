@@ -1517,7 +1517,7 @@ export default function DashboardPage() {
 
                 {ENABLE_AI_ASSISTANT && (
                   <div className="rounded-3xl border border-border/70 bg-background/80 p-4">
-                    <AITicketAssistant />
+                    <AITicketAssistant authToken={token} />
                   </div>
                 )}
               </div>

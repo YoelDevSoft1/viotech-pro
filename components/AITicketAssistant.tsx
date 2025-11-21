@@ -1,7 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Bot, Loader2, RefreshCcw, Send, Shield, ShieldOff, AlertTriangle } from "lucide-react";
+import {
+  Bot,
+  Loader2,
+  RefreshCcw,
+  Send,
+  Shield,
+  ShieldOff,
+  AlertTriangle,
+  PlusCircle,
+  CheckCircle2,
+} from "lucide-react";
 
 type Message = { role: "user" | "assistant"; content: string };
 
@@ -11,6 +21,10 @@ type AssistantResponse = {
   usedProvider?: string;
   modelVersion?: string;
   notes?: string;
+};
+
+type AssistantProps = {
+  authToken?: string | null;
 };
 
 const getApiBase = () => {
@@ -24,7 +38,7 @@ const getApiBase = () => {
 
 const MAX_MESSAGES = 12;
 
-export default function AITicketAssistant() {
+export default function AITicketAssistant({ authToken }: AssistantProps) {
   const apiBase = useMemo(() => getApiBase(), []);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -35,9 +49,13 @@ export default function AITicketAssistant() {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [createdTicketId, setCreatedTicketId] = useState<string | null>(null);
   const [provider, setProvider] = useState<string | null>(null);
   const [model, setModel] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<any | null>(null);
 
   useEffect(() => {
     setError(null);
@@ -83,6 +101,7 @@ export default function AITicketAssistant() {
       const data: AssistantResponse = payload.data || payload;
       setProvider(data.usedProvider || null);
       setModel(data.modelVersion || null);
+      setSuggestions(data.suggestions || null);
 
       addMessage({ role: "assistant", content: data.reply || "Listo." });
 
@@ -105,6 +124,58 @@ export default function AITicketAssistant() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreateTicket = async () => {
+    setCreateError(null);
+    setCreatedTicketId(null);
+    if (!authToken) {
+      setCreateError("Inicia sesión para crear el ticket.");
+      return;
+    }
+    setCreating(true);
+    try {
+      const response = await fetch(`${apiBase}/ai/ticket-assistant/create-ticket`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({ messages }),
+      });
+      const payload = await response.json().catch(() => null);
+
+      if (response.status === 429) {
+        throw new Error("Demasiadas solicitudes. Intenta en un minuto.");
+      }
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Sesión expirada. Inicia sesión nuevamente.");
+      }
+      if (!response.ok || !payload) {
+        throw new Error(
+          payload?.error ||
+            payload?.message ||
+            `No se pudo crear el ticket (${response.status}).`
+        );
+      }
+
+      const ticketId =
+        payload.data?.ticket?.id ||
+        payload.data?.ticketId ||
+        payload.data?.id ||
+        null;
+      setCreatedTicketId(ticketId);
+      if (payload.data?.usedProvider) setProvider(payload.data.usedProvider);
+      if (payload.data?.modelVersion) setModel(payload.data.modelVersion);
+    } catch (err) {
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Error desconocido al crear el ticket.";
+      setCreateError(msg);
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -158,6 +229,15 @@ export default function AITicketAssistant() {
         ))}
       </div>
 
+      {suggestions && (
+        <div className="rounded-2xl border border-border/70 bg-muted/20 p-3 text-xs space-y-2">
+          <p className="font-medium text-foreground">Sugerencias del asistente</p>
+          <pre className="whitespace-pre-wrap text-muted-foreground">
+            {JSON.stringify(suggestions, null, 2)}
+          </pre>
+        </div>
+      )}
+
       <div className="space-y-2">
         <textarea
           className="w-full rounded-2xl border border-border bg-transparent px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/30"
@@ -200,7 +280,38 @@ export default function AITicketAssistant() {
             <RefreshCcw className="w-4 h-4" />
             Limpiar
           </button>
+          <button
+            type="button"
+            onClick={handleCreateTicket}
+            disabled={creating || loading}
+            className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-foreground hover:bg-muted/40 disabled:opacity-60"
+          >
+            {creating ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Creando...
+              </>
+            ) : (
+              <>
+                <PlusCircle className="w-4 h-4" />
+                Crear ticket
+              </>
+            )}
+          </button>
         </div>
+
+        {createError && (
+          <div className="flex items-center gap-2 text-xs text-amber-700">
+            <AlertTriangle className="w-4 h-4" />
+            {createError}
+          </div>
+        )}
+        {createdTicketId && (
+          <div className="flex items-center gap-2 text-xs text-green-700">
+            <CheckCircle2 className="w-4 h-4" />
+            Ticket creado: #{createdTicketId}
+          </div>
+        )}
       </div>
     </div>
   );
