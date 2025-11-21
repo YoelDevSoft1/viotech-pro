@@ -72,6 +72,13 @@ const TOKEN_KEYS = ["viotech_token", "authTokenVioTech"];
 const USERNAME_KEYS = ["viotech_user_name", "userNameVioTech"];
 const ENABLE_PREDICTOR = process.env.NEXT_PUBLIC_ENABLE_PREDICTOR === "true";
 
+type ModelStatus = {
+  enabled: boolean;
+  modelVersion?: string;
+  notes?: string;
+  healthy?: boolean;
+};
+
 const formatDate = (value?: string | null) => {
   if (!value) return "Por definir";
   const date = new Date(value);
@@ -268,6 +275,9 @@ export default function DashboardPage() {
   const [attachmentsUploading, setAttachmentsUploading] = useState(false);
   const [dashboardMetrics, setDashboardMetrics] = useState<DashboardMetrics | null>(null);
   const [metricsLoading, setMetricsLoading] = useState(false);
+  const [modelStatus, setModelStatus] = useState<ModelStatus | null>(null);
+  const [modelStatusError, setModelStatusError] = useState<string | null>(null);
+  const [modelStatusLoading, setModelStatusLoading] = useState(false);
 
   const uploadTicketAttachments = useCallback(async (files: File[]) => {
     if (!files.length) return [];
@@ -585,6 +595,46 @@ export default function DashboardPage() {
     []
   );
 
+  const fetchModelStatus = useCallback(async () => {
+    if (!ENABLE_PREDICTOR) return;
+    setModelStatusLoading(true);
+    setModelStatusError(null);
+    try {
+      const response = await fetch("/api/predictions/model-status", {
+        headers: { "Cache-Control": "no-store" },
+        cache: "no-store",
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload) {
+        throw new Error(
+          payload?.error ||
+            payload?.message ||
+            `Backend respondió ${response.status}`
+        );
+      }
+
+      // Normalizar diferentes formas
+      const data = payload.data || payload;
+      const enabled = data.enabled ?? data.status === "ready";
+      const modelVersion = data.modelVersion || data.version || "desconocido";
+      const healthy = data.lastStatus?.healthy ?? data.modelLoaded ?? enabled;
+
+      setModelStatus({
+        enabled: Boolean(enabled),
+        modelVersion,
+        notes: data.notes,
+        healthy: Boolean(healthy),
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "No se pudo obtener el estado del modelo";
+      setModelStatusError(message);
+      setModelStatus(null);
+    } finally {
+      setModelStatusLoading(false);
+    }
+  }, []);
+
   const handleCreateTicket = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!token) {
@@ -731,6 +781,10 @@ export default function DashboardPage() {
       window.removeEventListener('storage', handleStorageChange);
     };
   }, [router, fetchServices, activeTab, fetchTickets, token]);
+
+  useEffect(() => {
+    fetchModelStatus();
+  }, [fetchModelStatus]);
 
   useEffect(() => {
     if (activeTab !== "tickets") return;
@@ -1196,6 +1250,28 @@ export default function DashboardPage() {
                           Usa el piloto heurístico mientras conectamos TensorFlow.js y datos históricos. Resultados
                           no guardan cambios ni afectan tickets actuales.
                         </p>
+                      </div>
+                      <div className="flex flex-col items-start gap-2">
+                        <span
+                          className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${
+                            modelStatus?.enabled && modelStatus?.healthy
+                              ? "border-green-500/40 text-green-700"
+                              : "border-amber-500/40 text-amber-700"
+                          }`}
+                        >
+                          {modelStatusLoading
+                            ? "Comprobando modelo..."
+                            : modelStatus?.enabled && modelStatus?.healthy
+                            ? `Modelo ${modelStatus.modelVersion || ""} operativo`
+                            : modelStatus?.modelVersion
+                            ? `Modelo ${modelStatus.modelVersion} deshabilitado`
+                            : "Estado del modelo no disponible"}
+                        </span>
+                        {modelStatusError && (
+                          <p className="text-xs text-amber-700">
+                            {modelStatusError}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <TimelinePredictor />
