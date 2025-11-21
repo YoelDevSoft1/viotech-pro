@@ -24,6 +24,7 @@ import { logout, getAccessToken, refreshAccessToken, isTokenExpired } from "@/li
 import ChangePasswordModal from "@/components/ChangePasswordModal";
 import MFASettings from "@/components/MFASettings";
 import TimelinePredictor from "@/components/TimelinePredictor";
+import AITicketAssistant from "@/components/AITicketAssistant";
 
 type Service = {
   id: string;
@@ -71,6 +72,7 @@ type Ticket = {
 const TOKEN_KEYS = ["viotech_token", "authTokenVioTech"];
 const USERNAME_KEYS = ["viotech_user_name", "userNameVioTech"];
 const ENABLE_PREDICTOR = process.env.NEXT_PUBLIC_ENABLE_PREDICTOR === "true";
+const ENABLE_AI_ASSISTANT = process.env.NEXT_PUBLIC_ENABLE_AI_ASSISTANT === "true";
 
 type ModelStatus = {
   enabled: boolean;
@@ -1352,7 +1354,7 @@ export default function DashboardPage() {
                 Sincronizando tickets...
               </div>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-[0.45fr,0.55fr] gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-[0.45fr,0.55fr] xl:grid-cols-[0.45fr,0.35fr,0.2fr] gap-6">
                 <div className="rounded-3xl border border-border/70 bg-background/80 p-4 space-y-3">
                   {tickets.length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-6">
@@ -1512,6 +1514,12 @@ export default function DashboardPage() {
                     </p>
                   )}
                 </div>
+
+                {ENABLE_AI_ASSISTANT && (
+                  <div className="rounded-3xl border border-border/70 bg-background/80 p-4">
+                    <AITicketAssistant />
+                  </div>
+                )}
               </div>
             )}
 
