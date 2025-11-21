@@ -176,6 +176,25 @@ export default function AITicketAssistant({ authToken }: AssistantProps) {
     }
     setCreating(true);
     try {
+      const sug = suggestionsOverride || suggestions;
+      const draft =
+        sug && typeof sug === "object"
+          ? {
+              titulo: sug.title || sug.titulo || "",
+              descripcion: sug.description || sug.descripcion || "",
+              prioridad: sug.priority || sug.prioridad || "media",
+              etiquetas: sug.tags || sug.etiquetas || [],
+            }
+          : null;
+
+      const messagesToSend = [...(messagesOverride || messages)];
+      if (draft && (draft.titulo || draft.descripcion)) {
+        messagesToSend.push({
+          role: "assistant",
+          content: `TICKET_DRAFT_JSON:${JSON.stringify(draft)}`,
+        });
+      }
+
       const response = await fetch(`${apiBase}/ai/ticket-assistant/create-ticket`, {
         method: "POST",
         headers: {
@@ -183,27 +202,8 @@ export default function AITicketAssistant({ authToken }: AssistantProps) {
           Authorization: `Bearer ${authToken}`,
         },
         body: JSON.stringify({
-          messages: messagesOverride || messages,
-          context: suggestionsOverride
-            ? {
-                suggestions: suggestionsOverride,
-                draft: suggestionsOverride
-                  ? {
-                      titulo: suggestionsOverride.title || suggestionsOverride.titulo,
-                      descripcion:
-                        suggestionsOverride.description || suggestionsOverride.descripcion,
-                      prioridad:
-                        suggestionsOverride.priority ||
-                        suggestionsOverride.prioridad ||
-                        "media",
-                      etiquetas:
-                        suggestionsOverride.tags ||
-                        suggestionsOverride.etiquetas ||
-                        [],
-                    }
-                  : undefined,
-              }
-            : undefined,
+          messages: messagesToSend,
+          context: draft ? { suggestions: sug, draft } : undefined,
         }),
       });
       const payload = await response.json().catch(() => null);
