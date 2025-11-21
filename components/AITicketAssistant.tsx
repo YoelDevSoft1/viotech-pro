@@ -184,7 +184,26 @@ export default function AITicketAssistant({ authToken }: AssistantProps) {
         },
         body: JSON.stringify({
           messages: messagesOverride || messages,
-          context: suggestionsOverride ? { suggestions: suggestionsOverride } : undefined,
+          context: suggestionsOverride
+            ? {
+                suggestions: suggestionsOverride,
+                draft: suggestionsOverride
+                  ? {
+                      titulo: suggestionsOverride.title || suggestionsOverride.titulo,
+                      descripcion:
+                        suggestionsOverride.description || suggestionsOverride.descripcion,
+                      prioridad:
+                        suggestionsOverride.priority ||
+                        suggestionsOverride.prioridad ||
+                        "media",
+                      etiquetas:
+                        suggestionsOverride.tags ||
+                        suggestionsOverride.etiquetas ||
+                        [],
+                    }
+                  : undefined,
+              }
+            : undefined,
         }),
       });
       const payload = await response.json().catch(() => null);
