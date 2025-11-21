@@ -23,6 +23,8 @@ type PredictionResponse = {
   };
   riskFactors: { label: string; recommendation: string }[];
   modelVersion?: string;
+  usedModel?: boolean;
+  notes?: string;
 };
 
 const formatCOP = (value: number) =>
@@ -100,6 +102,16 @@ export default function TimelinePredictor() {
     if (result.confidence >= 0.88) return "Alta confianza";
     if (result.confidence >= 0.8) return "Confianza media";
     return "Confianza vigilada";
+  }, [result]);
+
+  const modelStatusText = useMemo(() => {
+    if (!result) return null;
+    if (result.usedModel === false) {
+      return "Usando fallback heurístico (backend no aplicó modelo)";
+    }
+    if (result.notes) return result.notes;
+    if (result.modelVersion) return `Modelo ${result.modelVersion}`;
+    return null;
   }, [result]);
 
   return (
@@ -271,9 +283,9 @@ export default function TimelinePredictor() {
               </ul>
             </div>
           )}
-          {result.modelVersion && (
+          {modelStatusText && (
             <p className="text-xs text-muted-foreground">
-              Modelo: {result.modelVersion} · Latencia &lt; 200ms (mock)
+              {modelStatusText}
             </p>
           )}
         </div>

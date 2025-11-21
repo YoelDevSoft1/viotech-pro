@@ -1254,11 +1254,10 @@ export default function DashboardPage() {
                           IA · Predicción de tiempos y costos
                         </p>
                         <h3 className="text-2xl font-medium text-foreground">
-                          Estimaciones rápidas con modelo piloto
+                          Estimaciones rápidas con modelo en vivo
                         </h3>
                         <p className="text-sm text-muted-foreground max-w-2xl">
-                          Usa el piloto heurístico mientras conectamos TensorFlow.js y datos históricos. Resultados
-                          no guardan cambios ni afectan tickets actuales.
+                          Predicciones conectadas al backend de ML. Si el modelo está en fallback, se mostrará un aviso.
                         </p>
                       </div>
                       <div className="flex flex-col items-start gap-2">
@@ -1274,7 +1273,7 @@ export default function DashboardPage() {
                             : modelStatus?.enabled && modelStatus?.healthy
                             ? `Modelo ${modelStatus.modelVersion || ""} operativo`
                             : modelStatus?.modelVersion
-                            ? `Modelo ${modelStatus.modelVersion} deshabilitado`
+                            ? `Modelo ${modelStatus.modelVersion} en fallback`
                             : "Estado del modelo no disponible"}
                         </span>
                         {modelStatusError && (
