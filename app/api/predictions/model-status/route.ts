@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { NextResponse } from "next/server";
 
 const normalizeBase = (value: string) => {
@@ -26,7 +29,10 @@ export async function GET() {
 
     // Si backend responde OK, retornar tal cual
     if (response.ok && data) {
-      return NextResponse.json(data, { status: response.status });
+      return NextResponse.json(data, {
+        status: response.status,
+        headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+      });
     }
 
     // Si backend falla, caer a error controlado
@@ -35,9 +41,21 @@ export async function GET() {
         ? data.error || data.message || "No se pudo obtener el estado del modelo"
         : "No se pudo obtener el estado del modelo";
 
-    return NextResponse.json({ success: false, error: message }, { status: 502 });
+    return NextResponse.json(
+      { success: false, error: message },
+      {
+        status: 502,
+        headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+      },
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Error desconocido";
-    return NextResponse.json({ success: false, error: message }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: message },
+      {
+        status: 500,
+        headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+      },
+    );
   }
 }

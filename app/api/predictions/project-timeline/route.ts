@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { NextResponse } from "next/server";
 
 type Complexity = "low" | "medium" | "high";
@@ -62,16 +65,31 @@ export async function POST(req: Request) {
     const data = await response.json().catch(() => null);
 
     if (response.ok && data) {
-      return NextResponse.json(data, { status: response.status });
+      return NextResponse.json(data, {
+        status: response.status,
+        headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+      });
     }
 
     const message =
       (data && (data.error || data.message)) ||
       `El backend respondió ${response.status}`;
 
-    return NextResponse.json({ success: false, error: message }, { status: 502 });
+    return NextResponse.json(
+      { success: false, error: message },
+      {
+        status: 502,
+        headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+      },
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Error desconocido";
-    return NextResponse.json({ success: false, error: message }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: message },
+      {
+        status: 500,
+        headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+      },
+    );
   }
 }
