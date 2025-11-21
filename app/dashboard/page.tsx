@@ -23,6 +23,7 @@ import { fetchDashboardMetrics, type DashboardMetrics } from "@/lib/metrics";
 import { logout, getAccessToken, refreshAccessToken, isTokenExpired } from "@/lib/auth";
 import ChangePasswordModal from "@/components/ChangePasswordModal";
 import MFASettings from "@/components/MFASettings";
+import TimelinePredictor from "@/components/TimelinePredictor";
 
 type Service = {
   id: string;
@@ -69,6 +70,7 @@ type Ticket = {
 
 const TOKEN_KEYS = ["viotech_token", "authTokenVioTech"];
 const USERNAME_KEYS = ["viotech_user_name", "userNameVioTech"];
+const ENABLE_PREDICTOR = process.env.NEXT_PUBLIC_ENABLE_PREDICTOR === "true";
 
 const formatDate = (value?: string | null) => {
   if (!value) return "Por definir";
@@ -1179,6 +1181,26 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 </section>
+
+                {ENABLE_PREDICTOR && (
+                  <section className="rounded-3xl border border-border/70 bg-background/80 p-8 space-y-4">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                          IA · Predicción de tiempos y costos
+                        </p>
+                        <h3 className="text-2xl font-medium text-foreground">
+                          Estimaciones rápidas con modelo piloto
+                        </h3>
+                        <p className="text-sm text-muted-foreground max-w-2xl">
+                          Usa el piloto heurístico mientras conectamos TensorFlow.js y datos históricos. Resultados
+                          no guardan cambios ni afectan tickets actuales.
+                        </p>
+                      </div>
+                    </div>
+                    <TimelinePredictor />
+                  </section>
+                )}
 
                 <section className="rounded-3xl border border-border/70 bg-background/80 p-8 space-y-5">
                   <div className="flex items-center gap-3">
