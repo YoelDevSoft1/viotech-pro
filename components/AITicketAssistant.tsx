@@ -37,6 +37,8 @@ const getApiBase = () => {
 };
 
 const MAX_MESSAGES = 12;
+const isAffirmative = (text: string) =>
+  /\b(si|sí|dale|crea(lo|la| el)?|hazlo|ok|listo|perfecto)\b/i.test(text.trim());
 
 export default function AITicketAssistant({ authToken }: AssistantProps) {
   const apiBase = useMemo(() => getApiBase(), []);
@@ -68,9 +70,11 @@ export default function AITicketAssistant({ authToken }: AssistantProps) {
     if (!input.trim()) return;
     setLoading(true);
     setError(null);
+    setCreateError(null);
     const userMessage: Message = { role: "user", content: input.trim() };
     addMessage(userMessage);
     setInput("");
+    const willAutoCreate = isAffirmative(userMessage.content);
 
     try {
       const response = await fetch(`${apiBase}/ai/ticket-assistant`, {
@@ -112,6 +116,14 @@ export default function AITicketAssistant({ authToken }: AssistantProps) {
           content: `Sugerencia estructurada:\n${pretty}`,
         });
       }
+
+      if (willAutoCreate) {
+        if (authToken) {
+          await handleCreateTicket(data.suggestions);
+        } else {
+          setCreateError("Inicia sesión para crear el ticket automáticamente.");
+        }
+      }
     } catch (err) {
       const msg =
         err instanceof Error
@@ -127,7 +139,7 @@ export default function AITicketAssistant({ authToken }: AssistantProps) {
     }
   };
 
-  const handleCreateTicket = async () => {
+  const handleCreateTicket = async (suggestionsOverride?: any) => {
     setCreateError(null);
     setCreatedTicketId(null);
     if (!authToken) {
@@ -142,7 +154,10 @@ export default function AITicketAssistant({ authToken }: AssistantProps) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${authToken}`,
         },
-        body: JSON.stringify({ messages }),
+        body: JSON.stringify({
+          messages,
+          context: suggestionsOverride ? { suggestions: suggestionsOverride } : undefined,
+        }),
       });
       const payload = await response.json().catch(() => null);
 
@@ -282,7 +297,7 @@ export default function AITicketAssistant({ authToken }: AssistantProps) {
           </button>
           <button
             type="button"
-            onClick={handleCreateTicket}
+            onClick={() => handleCreateTicket(suggestions)}
             disabled={creating || loading}
             className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-foreground hover:bg-muted/40 disabled:opacity-60"
           >
