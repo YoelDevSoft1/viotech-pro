@@ -55,6 +55,7 @@ export default function AITicketAssistant({ authToken }: AssistantProps) {
   const [error, setError] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
   const [createdTicketId, setCreatedTicketId] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [provider, setProvider] = useState<string | null>(null);
   const [model, setModel] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<any | null>(null);
@@ -62,6 +63,15 @@ export default function AITicketAssistant({ authToken }: AssistantProps) {
   useEffect(() => {
     setError(null);
   }, [input]);
+
+  useEffect(() => {
+    if (createdTicketId) {
+      setShowSuccess(true);
+      const timer = setTimeout(() => setShowSuccess(false), 6000);
+      return () => clearTimeout(timer);
+    }
+    return () => {};
+  }, [createdTicketId]);
 
   const addMessage = (message: Message) =>
     setMessages((prev) => [...prev.slice(-(MAX_MESSAGES - 1)), message]);
@@ -72,7 +82,8 @@ export default function AITicketAssistant({ authToken }: AssistantProps) {
     setError(null);
     setCreateError(null);
     const userMessage: Message = { role: "user", content: input.trim() };
-    addMessage(userMessage);
+    const baseMessages = [...messages, userMessage];
+    setMessages((prev) => [...prev.slice(-(MAX_MESSAGES - 1)), userMessage]);
     setInput("");
     const willAutoCreate = isAffirmative(userMessage.content);
 
@@ -107,19 +118,33 @@ export default function AITicketAssistant({ authToken }: AssistantProps) {
       setModel(data.modelVersion || null);
       setSuggestions(data.suggestions || null);
 
-      addMessage({ role: "assistant", content: data.reply || "Listo." });
+      const assistantMessage: Message = {
+        role: "assistant",
+        content: data.reply || "Listo.",
+      };
+      const nextMessages = [...baseMessages, assistantMessage];
+      setMessages((prev) => [
+        ...prev.slice(-(MAX_MESSAGES - 2)),
+        assistantMessage,
+      ]);
 
       if (data.suggestions) {
         const pretty = JSON.stringify(data.suggestions, null, 2);
-        addMessage({
+        const sugMessage: Message = {
           role: "assistant",
           content: `Sugerencia estructurada:\n${pretty}`,
-        });
+        };
+        setMessages((prev) => [
+          ...prev.slice(-(MAX_MESSAGES - 2)),
+          assistantMessage,
+          sugMessage,
+        ]);
+        nextMessages.push(sugMessage);
       }
 
       if (willAutoCreate) {
         if (authToken) {
-          await handleCreateTicket(data.suggestions);
+          await handleCreateTicket(nextMessages, data.suggestions);
         } else {
           setCreateError("Inicia sesión para crear el ticket automáticamente.");
         }
@@ -139,7 +164,10 @@ export default function AITicketAssistant({ authToken }: AssistantProps) {
     }
   };
 
-  const handleCreateTicket = async (suggestionsOverride?: any) => {
+  const handleCreateTicket = async (
+    messagesOverride?: Message[],
+    suggestionsOverride?: any,
+  ) => {
     setCreateError(null);
     setCreatedTicketId(null);
     if (!authToken) {
@@ -155,7 +183,7 @@ export default function AITicketAssistant({ authToken }: AssistantProps) {
           Authorization: `Bearer ${authToken}`,
         },
         body: JSON.stringify({
-          messages,
+          messages: messagesOverride || messages,
           context: suggestionsOverride ? { suggestions: suggestionsOverride } : undefined,
         }),
       });
@@ -224,6 +252,23 @@ export default function AITicketAssistant({ authToken }: AssistantProps) {
           )}
         </div>
       </div>
+
+      {showSuccess && createdTicketId && (
+        <div className="flex items-center justify-between gap-3 rounded-2xl border border-green-500/40 bg-green-500/10 px-3 py-2 text-xs text-green-700">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4" />
+            <span>Ticket creado: #{createdTicketId}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowSuccess(false)}
+            className="text-green-700 hover:text-green-900"
+            aria-label="Cerrar notificación"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       <div className="h-48 overflow-y-auto space-y-3 pr-1">
         {messages.map((m, idx) => (
@@ -297,7 +342,7 @@ export default function AITicketAssistant({ authToken }: AssistantProps) {
           </button>
           <button
             type="button"
-            onClick={() => handleCreateTicket(suggestions)}
+            onClick={() => handleCreateTicket(undefined, suggestions)}
             disabled={creating || loading}
             className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-foreground hover:bg-muted/40 disabled:opacity-60"
           >
