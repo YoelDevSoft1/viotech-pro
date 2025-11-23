@@ -1432,9 +1432,9 @@ export default function DashboardPage() {
                               <div className="flex flex-wrap gap-3">
                                 {(
                                   selectedTicket.etiquetas as Array<{ name: string; url: string }>
-                                ).map((file) => (
+                                ).map((file, idx) => (
                                   <a
-                                    key={`${selectedTicket.id}-${file.url}`}
+                                    key={`${selectedTicket.id}-${file.url || file.name || idx}`}
                                     href={file.url}
                                     target="_blank"
                                     rel="noreferrer"
