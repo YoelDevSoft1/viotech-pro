@@ -2,48 +2,13 @@
 
 import Link from "next/link";
 import { useState, type ChangeEvent, type FormEvent } from "react";
-import {
-  ArrowRight,
-  ShieldCheck,
-  Lock,
-  Fingerprint,
-  Chrome,
-  Smartphone,
-  X,
-} from "lucide-react";
+import { ArrowRight, Lock, X } from "lucide-react";
 import { buildApiUrl } from "@/lib/api";
 import { saveTokens } from "@/lib/auth";
-
-const testimonials = [
-  {
-    quote:
-      "El Command Center nos da visibilidad inmediata sobre roadmaps, riesgos y decisiones críticas.",
-    author: "Laura Méndez",
-    role: "COO · MedicExpress",
-  },
-];
-
-const benefits = [
-  { icon: ShieldCheck, label: "ISO 27001 ready" },
-  { icon: Lock, label: "MFA + SSO" },
-  { icon: Fingerprint, label: "Auditoría en vivo" },
-];
-
-const availability = [
-  { metric: "99.95%", label: "SLA infraestructura" },
-  { metric: "< 2 min", label: "Promedio resolución" },
-];
-
-// Legacy constants (mantenidos para compatibilidad)
-const TOKEN_STORAGE_KEY = "viotech_token";
-const USERNAME_STORAGE_KEY = "viotech_user_name";
-const LEGACY_TOKEN_STORAGE_KEY = "authTokenVioTech";
-const LEGACY_USERNAME_STORAGE_KEY = "userNameVioTech";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
-  const [registerPasswordVisible, setRegisterPasswordVisible] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState<string | null>(null);
@@ -90,14 +55,13 @@ export default function LoginPage() {
       const refreshToken: string = data.data.refreshToken || "";
       const nombre: string = data.data.nombre || data.data.user?.nombre || "";
 
-      // Guardar tokens usando la nueva función
       saveTokens(token, refreshToken, nombre, rememberMe);
 
       if (typeof window !== "undefined") {
         window.dispatchEvent(
           new CustomEvent("authChanged", {
             detail: { isAuthenticated: true, userName: nombre },
-          })
+          }),
         );
       }
 
@@ -153,7 +117,7 @@ export default function LoginPage() {
       }
 
       setRegisterSuccess(
-        data?.message || "Cuenta creada correctamente. Inicia sesión con tus credenciales."
+        data?.message || "Cuenta creada. Inicia sesión con tus credenciales.",
       );
       setLoginEmail(registerEmail.trim());
       setRegisterName("");
@@ -171,92 +135,35 @@ export default function LoginPage() {
 
   const handleInputChange =
     (setter: (value: string) => void) =>
-    (event: ChangeEvent<HTMLInputElement>) => setter(event.target.value);
+    (event: ChangeEvent<HTMLInputElement>) =>
+      setter(event.target.value);
 
   return (
-    <main className="min-h-screen bg-background px-6 py-24">
-      <div className="max-w-6xl mx-auto grid gap-10 lg:grid-cols-[1.1fr,0.9fr]">
-        {/* Narrative panel */}
-        <section className="rounded-3xl border border-border/70 bg-muted/30 p-10 space-y-10">
-          <div className="space-y-4">
-            <p className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-1 text-xs uppercase tracking-[0.3em] text-muted-foreground">
-              Portal ejecutivo
+    <main className="min-h-screen bg-background px-6 py-16 flex items-center">
+      <div className="w-full max-w-5xl mx-auto grid gap-8 lg:grid-cols-[1fr,1fr]">
+        <section className="rounded-3xl border border-border/70 bg-muted/20 p-8 space-y-4">
+          <p className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-1 text-xs uppercase tracking-[0.3em] text-muted-foreground">
+            Acceso seguro
+          </p>
+          <h1 className="text-3xl font-medium text-foreground leading-tight">
+            Inicia sesión para administrar tus proyectos y tickets.
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Usa tu email y contraseña registrados. Si olvidaste tu acceso, recupera la
+            contraseña o crea tu cuenta.
+          </p>
+          <div className="text-xs text-muted-foreground">
+            <p>
+              ¿Problemas? <Link href="/forgot-password" className="underline">Recuperar contraseña</Link>
             </p>
-            <h1 className="text-4xl font-medium text-foreground leading-tight">
-              Controla tus proyectos, equipos y soporte desde un solo lugar.
-            </h1>
-            <p className="text-muted-foreground">
-              Accede al Command Center de VioTech para dar seguimiento a
-              roadmaps, aprobaciones, despliegues y KPIs compartidos con tu PM
-              dedicado.
-            </p>
-          </div>
-
-          <div className="space-y-6">
-            {testimonials.map((testimonial) => (
-              <blockquote
-                key={testimonial.author}
-                className="rounded-2xl border border-border/70 bg-background/70 p-6 text-sm text-muted-foreground"
-              >
-                “{testimonial.quote}”
-                <div className="mt-4 text-foreground">
-                  {testimonial.author}
-                  <span className="block text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                    {testimonial.role}
-                  </span>
-                </div>
-              </blockquote>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-            {benefits.map((benefit) => (
-              <div
-                key={benefit.label}
-                className="rounded-2xl border border-border/70 bg-background/60 p-4 flex items-center gap-3"
-              >
-                <benefit.icon className="w-4 h-4 text-foreground" />
-                <span>{benefit.label}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="rounded-2xl border border-border/60 bg-background/70 p-6 space-y-4">
-            <p className="text-sm text-muted-foreground">
-              ¿Aún no tienes acceso?
-            </p>
-            <Link
-              href="https://calendly.com/viotech/demo"
-              className="inline-flex items-center gap-2 text-sm font-medium text-foreground"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Agenda onboarding con nuestro equipo
-              <ArrowRight className="w-4 h-4" />
-            </Link>
           </div>
         </section>
 
-        {/* Login form */}
-        <section className="rounded-3xl border border-border/70 bg-background/80 p-10 space-y-8">
-          <div className="space-y-2 text-center">
-            <h2 className="text-3xl font-medium text-foreground">
-              Inicia sesión
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Accede con tus credenciales corporativas.
-            </p>
+        <section className="rounded-3xl border border-border/70 bg-background/80 p-8 space-y-6">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-foreground">Iniciar sesión</p>
+            <Lock className="w-4 h-4 text-muted-foreground" />
           </div>
-
-          <button className="w-full inline-flex items-center justify-center gap-2 rounded-full border border-border px-4 py-3 text-sm font-medium text-foreground hover:bg-muted transition-all duration-200 hover:scale-[1.02]">
-            <Chrome className="w-4 h-4" />
-            Iniciar sesión con Google Workspace
-          </button>
-
-          <p className="text-center text-xs uppercase tracking-[0.3em] text-muted-foreground">
-            o credenciales
-          </p>
-
           <form className="space-y-4" onSubmit={handleLoginSubmit}>
             <div className="space-y-2">
               <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
@@ -265,14 +172,12 @@ export default function LoginPage() {
               <input
                 type="email"
                 required
-                className="w-full rounded-2xl border border-border bg-transparent px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40"
-                placeholder="nombre@empresa.com"
+                className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40"
+                placeholder="tu@correo.com"
                 value={loginEmail}
                 onChange={handleInputChange(setLoginEmail)}
-                autoComplete="email"
               />
             </div>
-
             <div className="space-y-2">
               <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
                 Contraseña
@@ -281,37 +186,32 @@ export default function LoginPage() {
                 <input
                   type={showPassword ? "text" : "password"}
                   required
-                  className="w-full rounded-2xl border border-border bg-transparent px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40 pr-24"
-                  placeholder="••••••••"
+                  className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40 pr-24"
+                  placeholder="********"
                   value={loginPassword}
                   onChange={handleInputChange(setLoginPassword)}
-                  autoComplete="current-password"
                 />
                 <button
                   type="button"
                   className="absolute inset-y-1.5 right-1.5 rounded-full border border-border px-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
                   onClick={() => setShowPassword((prev) => !prev)}
                 >
-                  {showPassword ? "Ocultar" : "Mostrar"}
+                  {showPassword ? "Ocultar" : "Ver"}
                 </button>
               </div>
             </div>
-
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <label className="inline-flex items-center gap-2">
                 <input
                   type="checkbox"
-                  className="rounded border-border accent-foreground"
                   checked={rememberMe}
-                  onChange={(event) => setRememberMe(event.target.checked)}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="accent-foreground"
                 />
                 Recordarme
               </label>
-              <Link
-                href="/forgot-password"
-                className="text-foreground hover:underline"
-              >
-                ¿Olvidaste tu contraseña?
+              <Link href="/forgot-password" className="underline">
+                Olvidé mi contraseña
               </Link>
             </div>
 
@@ -321,63 +221,43 @@ export default function LoginPage() {
               </p>
             )}
             {loginSuccess && (
-              <p className="rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-xs text-green-500">
+              <p className="rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-xs text-green-600">
                 {loginSuccess}
               </p>
             )}
 
             <button
               type="submit"
-              className="w-full rounded-full bg-foreground px-4 py-3 text-sm font-medium text-background hover:scale-[1.02] transition-transform disabled:opacity-60"
               disabled={loginLoading}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-4 py-3 text-sm font-medium text-background hover:scale-[1.02] transition-transform disabled:opacity-60"
             >
-              {loginLoading ? "Conectando..." : "Entrar al panel"}
+              {loginLoading ? "Ingresando..." : "Iniciar sesión"}
             </button>
           </form>
 
-          <div className="rounded-2xl border border-border/70 bg-muted/20 p-5 space-y-4 text-sm text-muted-foreground">
-            <p className="flex items-center gap-2 text-foreground">
-              <Smartphone className="w-4 h-4" />
-              MFA obligatorio
-            </p>
-            <div className="grid grid-cols-2 gap-4 text-xs">
-              {availability.map((item) => (
-                <div
-                  key={item.label}
-                  className="rounded-xl border border-border/60 bg-background/70 p-3 text-center"
-                >
-                  <p className="text-xl font-medium text-foreground">
-                    {item.metric}
-                  </p>
-                  <p className="uppercase tracking-[0.3em] text-muted-foreground">
-                    {item.label}
-                  </p>
-                </div>
-              ))}
-            </div>
+          <div className="border-t border-border/60 pt-4 text-sm text-muted-foreground space-y-2">
+            <p>¿Aún no tienes cuenta?</p>
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-medium text-foreground hover:bg-background transition-all duration-200 hover:scale-[1.02]"
               onClick={() => setShowRegisterModal(true)}
+              className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-medium text-foreground hover:bg-muted/40"
             >
-              Registrar cuenta
-              <ArrowRight className="w-4 h-4" />
+              Crear cuenta
+              <ArrowRight className="w-3 h-3" />
             </button>
           </div>
         </section>
       </div>
 
       {showRegisterModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-sm px-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm px-4">
           <div className="w-full max-w-lg rounded-3xl border border-border bg-background p-8 space-y-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                  Crear cuenta
+                  Registro
                 </p>
-                <h4 className="text-2xl font-medium text-foreground">
-                  Registra tu acceso al Command Center
-                </h4>
+                <h4 className="text-2xl font-medium text-foreground">Crear cuenta</h4>
               </div>
               <button
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground"
@@ -386,18 +266,19 @@ export default function LoginPage() {
                 <X className="w-4 h-4" />
               </button>
             </div>
+
             <form className="space-y-4" onSubmit={handleRegisterSubmit}>
               <div className="space-y-2">
                 <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                  Nombre completo
+                  Nombre
                 </label>
                 <input
                   type="text"
-                  className="w-full rounded-2xl border border-border bg-transparent px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40"
+                  required
+                  className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40"
                   placeholder="Tu nombre"
                   value={registerName}
                   onChange={handleInputChange(setRegisterName)}
-                  required
                 />
               </div>
               <div className="space-y-2">
@@ -406,76 +287,63 @@ export default function LoginPage() {
                 </label>
                 <input
                   type="email"
-                  className="w-full rounded-2xl border border-border bg-transparent px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40"
-                  placeholder="tucorreo@empresa.com"
+                  required
+                  className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40"
+                  placeholder="tu@correo.com"
                   value={registerEmail}
                   onChange={handleInputChange(setRegisterEmail)}
-                  required
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
                   Contraseña
                 </label>
-                <div className="relative">
-                  <input
-                    type={registerPasswordVisible ? "text" : "password"}
-                    className="w-full rounded-2xl border border-border bg-transparent px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40 pr-24"
-                    placeholder="Mínimo 8 caracteres"
-                    value={registerPassword}
-                    onChange={handleInputChange(setRegisterPassword)}
-                    required
-                  />
-                  <button
-                    type="button"
-                    className="absolute inset-y-1.5 right-1.5 rounded-full border border-border px-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                    onClick={() => setRegisterPasswordVisible((prev) => !prev)}
-                  >
-                    {registerPasswordVisible ? "Ocultar" : "Mostrar"}
-                  </button>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                  Confirmar contraseña
-                </label>
                 <input
                   type="password"
+                  required
                   className="w-full rounded-2xl border border-border bg-transparent px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40"
-                  placeholder="Repite tu contraseña"
+                  placeholder="Mínimo 8 caracteres"
+                  value={registerPassword}
+                  onChange={handleInputChange(setRegisterPassword)}
+                />
+                <input
+                  type="password"
+                  required
+                  className="w-full rounded-2xl border border-border bg-transparent px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40"
+                  placeholder="Repite la contraseña"
                   value={registerConfirmPassword}
                   onChange={handleInputChange(setRegisterConfirmPassword)}
-                  required
                 />
               </div>
+
               {registerError && (
                 <p className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs text-red-500">
                   {registerError}
                 </p>
               )}
               {registerSuccess && (
-                <p className="rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-xs text-green-500">
+                <p className="rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-xs text-green-600">
                   {registerSuccess}
                 </p>
               )}
-              <button
-                type="submit"
-                className="w-full rounded-full bg-foreground px-4 py-3 text-sm font-medium text-background hover:scale-[1.02] transition-transform disabled:opacity-60"
-                disabled={registerLoading}
-              >
-                {registerLoading ? "Creando cuenta..." : "Crear cuenta"}
-              </button>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="submit"
+                  disabled={registerLoading}
+                  className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-xs font-medium text-background hover:scale-[1.02] transition-transform disabled:opacity-60"
+                >
+                  {registerLoading ? "Creando..." : "Crear cuenta"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowRegisterModal(false)}
+                  className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground"
+                >
+                  Cancelar
+                </button>
+              </div>
             </form>
-            <p className="text-center text-xs text-muted-foreground">
-              ¿Ya tienes cuenta?{" "}
-              <button
-                type="button"
-                className="text-foreground underline"
-                onClick={() => setShowRegisterModal(false)}
-              >
-                Iniciar sesión
-              </button>
-            </p>
           </div>
         </div>
       )}
