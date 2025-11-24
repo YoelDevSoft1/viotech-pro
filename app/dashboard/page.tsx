@@ -358,10 +358,10 @@ export default function DashboardPage() {
     async (token: string) => {
       setLoading(true);
       setError(null);
+      let tokenToUse = token;
 
       try {
         // Verificar y refrescar token si es necesario
-        let tokenToUse = token;
         if (isTokenExpired(token)) {
           const newToken = await refreshAccessToken();
           if (newToken) {
