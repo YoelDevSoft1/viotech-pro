@@ -25,6 +25,9 @@ type AssistantResponse = {
 
 type AssistantProps = {
   authToken?: string | null;
+  targetUserId?: string | null;
+  isPrivileged?: boolean;
+  organizationId?: string | null;
 };
 
 const getApiBase = () => {
@@ -51,7 +54,12 @@ const extractJsonFromText = (text: string) => {
   }
 };
 
-export default function AITicketAssistant({ authToken }: AssistantProps) {
+export default function AITicketAssistant({
+  authToken,
+  targetUserId,
+  isPrivileged = false,
+  organizationId,
+}: AssistantProps) {
   const apiBase = useMemo(() => getApiBase(), []);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -216,7 +224,21 @@ export default function AITicketAssistant({ authToken }: AssistantProps) {
         },
         body: JSON.stringify({
           messages: messagesToSend,
-          context: draft ? { suggestions: sug, draft } : undefined,
+          context: draft
+            ? {
+                suggestions: sug,
+                draft,
+                usuarioObjetivoId: isPrivileged && targetUserId ? targetUserId : undefined,
+                organizationId: organizationId || undefined,
+              }
+            : isPrivileged && targetUserId
+              ? {
+                  usuarioObjetivoId: targetUserId,
+                  organizationId: organizationId || undefined,
+                }
+              : organizationId
+                ? { organizationId }
+                : undefined,
         }),
       });
       const payload = await response.json().catch(() => null);
@@ -284,6 +306,12 @@ export default function AITicketAssistant({ authToken }: AssistantProps) {
           )}
         </div>
       </div>
+
+      {isPrivileged && targetUserId && (
+        <div className="text-xs text-muted-foreground">
+          Creando en nombre de usuario: <span className="font-medium">{targetUserId}</span>
+        </div>
+      )}
 
       {showSuccess && createdTicketId && (
         <div className="flex items-center justify-between gap-3 rounded-2xl border border-green-500/40 bg-green-500/10 px-3 py-2 text-xs text-green-700">

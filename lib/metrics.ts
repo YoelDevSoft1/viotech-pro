@@ -18,12 +18,17 @@ export type DashboardMetrics = {
  * @returns Métricas del dashboard
  */
 export async function fetchDashboardMetrics(
-  token: string
+  token: string,
+  organizationId?: string
 ): Promise<DashboardMetrics> {
-  const response = await fetch(buildApiUrl("/metrics/dashboard"), {
+  const url = organizationId
+    ? `${buildApiUrl("/metrics/dashboard")}?organizationId=${organizationId}`
+    : buildApiUrl("/metrics/dashboard");
+  const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
+    cache: "no-store",
   });
 
   const payload = await response.json();

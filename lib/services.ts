@@ -28,7 +28,7 @@ export interface ServicePlan {
 /**
  * Obtiene todos los servicios del usuario autenticado
  */
-export async function fetchUserServices(): Promise<Service[]> {
+export async function fetchUserServices(organizationId?: string): Promise<Service[]> {
   let token = getAccessToken();
   
   if (!token) {
@@ -45,7 +45,11 @@ export async function fetchUserServices(): Promise<Service[]> {
     }
   }
 
-  const response = await fetch(buildApiUrl('/services/me'), {
+  const url = organizationId
+    ? `${buildApiUrl('/services/me')}?organizationId=${organizationId}`
+    : buildApiUrl('/services/me');
+
+  const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${token}`,
       'Cache-Control': 'no-store',

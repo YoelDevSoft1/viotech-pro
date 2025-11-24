@@ -15,29 +15,25 @@ import {
 import { buildApiUrl } from "@/lib/api";
 import { getAccessToken, isTokenExpired, refreshAccessToken } from "@/lib/auth";
 
-type Role = "admin" | "ops" | "support" | "viewer";
-type UserStatus = "activo" | "suspendido" | "bloqueado";
+type Role = "admin" | "agente" | "cliente";
 
 type UserRecord = {
   id: string;
   nombre: string;
   email: string;
   rol: Role;
-  estado: UserStatus;
   permisos?: string[];
   ultimoAcceso?: string;
 };
 
 type PendingAction =
   | { type: "role"; userId: string }
-  | { type: "estado"; userId: string }
   | null;
 
 const ROLE_OPTIONS: { value: Role; label: string; description: string }[] = [
   { value: "admin", label: "Admin", description: "Acceso total al panel y datos críticos." },
-  { value: "ops", label: "Operaciones", description: "Gestiona servicios y pagos." },
-  { value: "support", label: "Soporte", description: "Resuelve tickets y ve historial." },
-  { value: "viewer", label: "Solo lectura", description: "Monitorea métricas sin editar." },
+  { value: "agente", label: "Agente", description: "Gestiona tickets de todos los usuarios." },
+  { value: "cliente", label: "Cliente", description: "Solo sus propios tickets." },
 ];
 
 const MOCK_USERS: UserRecord[] = [
@@ -46,24 +42,21 @@ const MOCK_USERS: UserRecord[] = [
     nombre: "Ana Torres",
     email: "ana@example.com",
     rol: "admin",
-    estado: "activo",
     permisos: ["usuarios:write", "tickets:write", "pagos:write"],
   },
   {
     id: "2",
     nombre: "Luis Pérez",
     email: "luis@example.com",
-    rol: "ops",
-    estado: "activo",
-    permisos: ["servicios:write", "pagos:write"],
+    rol: "agente",
+    permisos: ["tickets:write"],
     ultimoAcceso: new Date().toISOString(),
   },
   {
     id: "3",
     nombre: "Marta Díaz",
     email: "marta@example.com",
-    rol: "support",
-    estado: "suspendido",
+    rol: "cliente",
     permisos: ["tickets:read"],
   },
 ];
@@ -71,7 +64,7 @@ const MOCK_USERS: UserRecord[] = [
 const ADMIN_MOCK = process.env.NEXT_PUBLIC_ADMIN_MOCK === "true";
 
 /**
- * RoleManager muestra y gestiona roles/estados de usuarios admins.
+ * RoleManager muestra y gestiona roles de usuarios admins.
  * - Mobile first: cards apiladas; tabla solo en md+.
  * - Accesible: labels explícitos, aria-live para feedback, focus visible.
  * - Rendimiento: fetch con AbortController, memo de filtros y estado optimista.
@@ -114,7 +107,8 @@ export default function RoleManager() {
 
       try {
         const token = await getValidToken();
-        const response = await fetch(`${apiBase}/admin/users`, {
+        // Backend: usa /api/users para listar, admin puede ver todos
+        const response = await fetch(`${apiBase}/users`, {
           headers: { Authorization: `Bearer ${token}` },
           cache: "no-store",
           signal: controller.signal,
@@ -129,14 +123,12 @@ export default function RoleManager() {
         setUsers(
           data.map(
             (u: any): UserRecord => {
-              const normalizedRole = (u.rol || u.role || "viewer").toLowerCase() as Role;
-              const normalizedStatus = (u.estado || u.status || "activo").toLowerCase() as UserStatus;
+              const normalizedRole = (u.rol || u.role || "cliente").toLowerCase() as Role;
               return {
                 id: String(u.id),
                 nombre: u.nombre || u.name || "Sin nombre",
                 email: u.email || "sin-email",
                 rol: normalizedRole,
-                estado: normalizedStatus,
                 permisos: u.permisos || u.permissions || [],
                 ultimoAcceso: u.ultimoAcceso || u.lastLogin,
               };
@@ -167,11 +159,7 @@ export default function RoleManager() {
     );
   }, [filter, users]);
 
-  const mutateUser = async (
-    userId: string,
-    payload: { rol?: Role; estado?: UserStatus },
-    action: PendingAction,
-  ) => {
+  const mutateUser = async (userId: string, payload: { rol: Role }, action: PendingAction) => {
     const previous = users;
     setPending(action);
     setFeedback(null);
@@ -183,7 +171,6 @@ export default function RoleManager() {
           ? {
               ...u,
               rol: payload.rol ?? u.rol,
-              estado: payload.estado ?? u.estado,
             }
           : u,
       ),
@@ -197,8 +184,8 @@ export default function RoleManager() {
 
     try {
       const token = await getValidToken();
-      const response = await fetch(`${apiBase}/admin/users/${userId}`, {
-        method: "PATCH",
+      const response = await fetch(`${apiBase}/users/${userId}/role`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -225,17 +212,13 @@ export default function RoleManager() {
     mutateUser(userId, { rol: newRole }, { type: "role", userId });
   };
 
-  const handleStatusChange = (userId: string, nextStatus: UserStatus) => {
-    mutateUser(userId, { estado: nextStatus }, { type: "estado", userId });
-  };
-
   const rolePill = (role: Role) => {
     const icon =
       role === "admin" ? (
         <Shield className="w-3.5 h-3.5" />
-      ) : role === "ops" ? (
+      ) : role === "agente" ? (
         <ShieldCheck className="w-3.5 h-3.5" />
-      ) : role === "support" ? (
+      ) : role === "cliente" ? (
         <ShieldQuestion className="w-3.5 h-3.5" />
       ) : (
         <ShieldOff className="w-3.5 h-3.5" />
@@ -244,9 +227,9 @@ export default function RoleManager() {
     const tone =
       role === "admin"
         ? "bg-foreground text-background"
-        : role === "ops"
+        : role === "agente"
           ? "bg-muted text-foreground"
-          : role === "support"
+          : role === "cliente"
             ? "bg-amber-500/20 text-amber-600"
             : "bg-border text-muted-foreground";
 
@@ -337,31 +320,6 @@ export default function RoleManager() {
                   {rolePill(user.rol)}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <span
-                    className={`rounded-full px-2 py-1 ${
-                      user.estado === "activo"
-                        ? "bg-green-500/10 text-green-600"
-                        : user.estado === "suspendido"
-                          ? "bg-amber-500/10 text-amber-600"
-                          : "bg-red-500/10 text-red-600"
-                    }`}
-                  >
-                    {user.estado}
-                  </span>
-                  {user.ultimoAcceso && (
-                    <span className="text-muted-foreground">
-                      Último acceso:{" "}
-                      {new Date(user.ultimoAcceso).toLocaleDateString("es-CO", {
-                        day: "2-digit",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  )}
-                </div>
-
                 <div className="flex flex-col gap-2">
                   <label className="text-xs font-medium text-muted-foreground">
                     Rol
@@ -379,26 +337,6 @@ export default function RoleManager() {
                     </select>
                   </label>
 
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleStatusChange(user.id, "activo")}
-                      className="flex-1 rounded-xl border border-border px-3 py-2 text-sm hover:bg-muted transition-colors disabled:opacity-60"
-                      disabled={pending?.userId === user.id || user.estado === "activo"}
-                    >
-                      <RefreshCcw className="inline h-4 w-4 mr-1" />
-                      Reactivar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleStatusChange(user.id, "suspendido")}
-                      className="flex-1 rounded-xl border border-amber-500/60 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 hover:bg-amber-500/20 transition-colors disabled:opacity-60"
-                      disabled={pending?.userId === user.id || user.estado === "suspendido"}
-                    >
-                      <Ban className="inline h-4 w-4 mr-1" />
-                      Suspender
-                    </button>
-                  </div>
                 </div>
               </article>
             ))}
@@ -406,11 +344,10 @@ export default function RoleManager() {
 
           {/* Vista escritorio: tabla densa con controles inline */}
           <div className="hidden md:block rounded-2xl border border-border/70 bg-background/80 overflow-hidden">
-            <div className="grid grid-cols-[1.6fr,1.4fr,1fr,1fr,1.4fr] bg-muted/30 px-4 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            <div className="grid grid-cols-[1.6fr,1.4fr,1fr,1.4fr] bg-muted/30 px-4 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
               <span>Usuario</span>
               <span>Email</span>
               <span>Rol</span>
-              <span>Estado</span>
               <span>Acciones</span>
             </div>
 
@@ -418,7 +355,7 @@ export default function RoleManager() {
               {filtered.map((user) => (
                 <div
                   key={user.id}
-                  className="grid grid-cols-[1.6fr,1.4fr,1fr,1fr,1.4fr] items-center gap-2 border-t border-border/60 px-4 py-3 text-sm"
+                  className="grid grid-cols-[1.6fr,1.4fr,1fr,1.4fr] items-center gap-2 border-t border-border/60 px-4 py-3 text-sm"
                 >
                   <div className="space-y-0.5">
                     <p className="text-foreground font-medium">{user.nombre}</p>
@@ -439,20 +376,6 @@ export default function RoleManager() {
                   <p className="text-muted-foreground">{user.email}</p>
                   {rolePill(user.rol)}
 
-                  <div className="flex items-center gap-2 text-xs">
-                    <span
-                      className={`rounded-full px-2 py-1 ${
-                        user.estado === "activo"
-                          ? "bg-green-500/10 text-green-600"
-                          : user.estado === "suspendido"
-                            ? "bg-amber-500/10 text-amber-700"
-                            : "bg-red-500/10 text-red-600"
-                      }`}
-                    >
-                      {user.estado}
-                    </span>
-                  </div>
-
                   <div className="flex items-center gap-2">
                     <label className="sr-only" htmlFor={`role-${user.id}`}>
                       Cambiar rol de {user.nombre}
@@ -470,25 +393,6 @@ export default function RoleManager() {
                         </option>
                       ))}
                     </select>
-
-                    <button
-                      type="button"
-                      onClick={() => handleStatusChange(user.id, "activo")}
-                      className="rounded-xl border border-border px-2 py-1 text-xs hover:bg-muted transition-colors disabled:opacity-60"
-                      disabled={pending?.userId === user.id || user.estado === "activo"}
-                    >
-                      <RefreshCcw className="inline h-4 w-4 mr-1" />
-                      Reactivar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleStatusChange(user.id, "suspendido")}
-                      className="rounded-xl border border-amber-500/60 bg-amber-500/10 px-2 py-1 text-xs text-amber-700 hover:bg-amber-500/20 transition-colors disabled:opacity-60"
-                      disabled={pending?.userId === user.id || user.estado === "suspendido"}
-                    >
-                      <Ban className="inline h-4 w-4 mr-1" />
-                      Suspender
-                    </button>
                   </div>
                 </div>
               ))}

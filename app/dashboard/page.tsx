@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
+  ArrowLeft,
   CalendarDays,
   CheckCircle2,
   Headphones,
@@ -25,6 +26,9 @@ import ChangePasswordModal from "@/components/ChangePasswordModal";
 import MFASettings from "@/components/MFASettings";
 import TimelinePredictor from "@/components/TimelinePredictor";
 import AITicketAssistant from "@/components/AITicketAssistant";
+import OrgSelector, { type Org } from "@/components/OrgSelector";
+import { Select } from "@/components/ui/Select";
+import { useToast } from "@/components/ui/ToastProvider";
 
 type Service = {
   id: string;
@@ -73,6 +77,7 @@ const TOKEN_KEYS = ["viotech_token", "authTokenVioTech"];
 const USERNAME_KEYS = ["viotech_user_name", "userNameVioTech"];
 const ENABLE_PREDICTOR = process.env.NEXT_PUBLIC_ENABLE_PREDICTOR === "true";
 const ENABLE_AI_ASSISTANT = process.env.NEXT_PUBLIC_ENABLE_AI_ASSISTANT === "true";
+const SHOW_DASHBOARD_ASSISTANT = false; // IA avanzada movida a vista dedicada
 
 type ModelStatus = {
   enabled: boolean;
@@ -265,12 +270,15 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string>("cliente");
   const [token, setToken] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"overview" | "tickets">("overview");
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [ticketsLoading, setTicketsLoading] = useState(false);
   const [ticketsError, setTicketsError] = useState<string | null>(null);
+  const [ticketsSuccess, setTicketsSuccess] = useState<string | null>(null);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const [ticketFilters, setTicketFilters] = useState({ estado: "", prioridad: "" });
   const [createTicketOpen, setCreateTicketOpen] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [ticketForm, setTicketForm] = useState({
@@ -279,6 +287,7 @@ export default function DashboardPage() {
     prioridad: "media",
     slaObjetivo: "",
   });
+  const [ticketTargetUserId, setTicketTargetUserId] = useState("");
   const [ticketSubmitting, setTicketSubmitting] = useState(false);
   const [ticketComment, setTicketComment] = useState("");
   const [commentSubmitting, setCommentSubmitting] = useState(false);
@@ -286,10 +295,13 @@ export default function DashboardPage() {
   const [attachmentsUploading, setAttachmentsUploading] = useState(false);
   const [dashboardMetrics, setDashboardMetrics] = useState<DashboardMetrics | null>(null);
   const [metricsLoading, setMetricsLoading] = useState(false);
+  const [organizationId, setOrganizationId] = useState<string>("");
+  const isPrivileged = userRole !== "cliente";
   const [modelStatus, setModelStatus] = useState<ModelStatus | null>(null);
   const [modelStatusError, setModelStatusError] = useState<string | null>(null);
   const [modelStatusLoading, setModelStatusLoading] = useState(false);
   const predictorApiBase = useMemo(() => getPredictorApiBase(), []);
+  const { notify } = useToast();
 
   const uploadTicketAttachments = useCallback(async (files: File[]) => {
     if (!files.length) return [];
@@ -362,7 +374,11 @@ export default function DashboardPage() {
           }
         }
 
-        const response = await fetch(buildApiUrl("/services/me"), {
+        const servicesUrl = organizationId
+          ? `${buildApiUrl("/services/me")}?organizationId=${organizationId}`
+          : buildApiUrl("/services/me");
+
+        const response = await fetch(servicesUrl, {
           headers: { 
             Authorization: `Bearer ${tokenToUse}`,
             'Cache-Control': 'no-cache',
@@ -376,7 +392,10 @@ export default function DashboardPage() {
           const newToken = await refreshAccessToken();
           if (newToken) {
             // Reintentar con nuevo token
-            const retryResponse = await fetch(buildApiUrl("/services/me"), {
+            const retryUrl = organizationId
+              ? `${buildApiUrl("/services/me")}?organizationId=${organizationId}`
+              : buildApiUrl("/services/me");
+            const retryResponse = await fetch(retryUrl, {
               headers: { 
                 Authorization: `Bearer ${newToken}`,
                 'Cache-Control': 'no-cache',
@@ -426,7 +445,7 @@ export default function DashboardPage() {
         setLoading(false);
       }
     },
-    [router],
+    [router, organizationId],
   );
 
   // Función auxiliar para procesar tickets
@@ -506,6 +525,7 @@ export default function DashboardPage() {
     async (authToken: string) => {
       setTicketsLoading(true);
       setTicketsError(null);
+      setTicketsSuccess(null);
       try {
         // Verificar y refrescar token si es necesario
         let tokenToUse = authToken;
@@ -524,7 +544,12 @@ export default function DashboardPage() {
 
         // Agregar timestamp para evitar caché del navegador
         const timestamp = Date.now();
-        const url = `${buildApiUrl("/tickets")}?_t=${timestamp}`;
+        const ticketsUrl = new URL(buildApiUrl("/tickets"));
+        ticketsUrl.searchParams.set("_t", String(timestamp));
+        if (organizationId) ticketsUrl.searchParams.set("organizationId", organizationId);
+        if (ticketFilters.estado) ticketsUrl.searchParams.set("estado", ticketFilters.estado);
+        if (ticketFilters.prioridad) ticketsUrl.searchParams.set("prioridad", ticketFilters.prioridad);
+        const url = ticketsUrl.toString();
         
         const response = await fetch(url, {
           method: 'GET',
@@ -545,7 +570,12 @@ export default function DashboardPage() {
           if (newToken) {
             // Reintentar con nuevo token
             const retryTimestamp = Date.now();
-            const retryUrl = `${buildApiUrl("/tickets")}?_t=${retryTimestamp}`;
+            const retryUrlObj = new URL(buildApiUrl("/tickets"));
+            retryUrlObj.searchParams.set("_t", String(retryTimestamp));
+            if (organizationId) retryUrlObj.searchParams.set("organizationId", organizationId);
+            if (ticketFilters.estado) retryUrlObj.searchParams.set("estado", ticketFilters.estado);
+            if (ticketFilters.prioridad) retryUrlObj.searchParams.set("prioridad", ticketFilters.prioridad);
+            const retryUrl = retryUrlObj.toString();
             const retryResponse = await fetch(retryUrl, {
               method: 'GET',
               headers: { 
@@ -579,13 +609,59 @@ export default function DashboardPage() {
         const message =
           ticketsError instanceof Error ? ticketsError.message : "Error desconocido al cargar tickets.";
         console.error('Error al cargar tickets:', ticketsError);
+
+        // Fallback: si el backend aún no soporta organizationId, reintentar sin el filtro
+        const needsOrgFallback =
+          organizationId &&
+          typeof message === "string" &&
+          message.toLowerCase().includes("organizationid");
+
+        if (needsOrgFallback) {
+          try {
+            const retryUrlObj = new URL(buildApiUrl("/tickets"));
+            retryUrlObj.searchParams.set("_t", String(Date.now()));
+            if (ticketFilters.estado) retryUrlObj.searchParams.set("estado", ticketFilters.estado);
+            if (ticketFilters.prioridad) retryUrlObj.searchParams.set("prioridad", ticketFilters.prioridad);
+            const retryUrl = retryUrlObj.toString();
+
+            const retryResponse = await fetch(retryUrl, {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${authToken}`,
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                Pragma: "no-cache",
+                Expires: "0",
+              },
+              cache: "no-store",
+            });
+            const retryPayload = await retryResponse.json().catch(() => null);
+            if (retryResponse.ok) {
+              processTickets(retryPayload);
+              setTicketsError(null);
+              notify({
+                title: "Cargado sin filtro de organización",
+                message: "El backend aún no soporta organizationId; se muestran todos tus tickets.",
+                variant: "info",
+              });
+              return;
+            }
+          } catch (fallbackError) {
+            console.error("Fallback sin organizationId falló:", fallbackError);
+          }
+        }
+
         setTicketsError(message);
         setTickets([]);
+        notify({
+          title: "Error al cargar tickets",
+          message,
+          variant: "error",
+        });
       } finally {
         setTicketsLoading(false);
       }
     },
-    [router],
+    [router, organizationId, ticketFilters, notify, processTickets],
   );
 
 
@@ -594,17 +670,16 @@ export default function DashboardPage() {
       if (!authToken) return;
       setMetricsLoading(true);
       try {
-        const metrics = await fetchDashboardMetrics(authToken);
+        const metrics = await fetchDashboardMetrics(authToken, organizationId || undefined);
         setDashboardMetrics(metrics);
       } catch (metricsError) {
         console.error("Error al cargar métricas:", metricsError);
-        // No mostramos error al usuario, usamos fallback a cálculos locales
         setDashboardMetrics(null);
       } finally {
         setMetricsLoading(false);
       }
     },
-    []
+    [organizationId]
   );
 
   const fetchModelStatus = useCallback(async () => {
@@ -676,6 +751,11 @@ export default function DashboardPage() {
           prioridad: ticketForm.prioridad,
           slaObjetivo: ticketForm.slaObjetivo || undefined,
           etiquetas: uploads.length ? uploads : undefined,
+          usuarioId:
+            isPrivileged && ticketTargetUserId.trim()
+              ? ticketTargetUserId.trim()
+              : undefined,
+          organizationId: organizationId || undefined,
         }),
       });
       const payload = await response.json().catch(() => null);
@@ -690,11 +770,23 @@ export default function DashboardPage() {
       });
       setAttachments([]);
       setCreateTicketOpen(false);
+      setTicketsSuccess("Ticket creado exitosamente.");
+      notify({
+        title: "Ticket creado",
+        message: "Se registró el ticket en tu organización.",
+        variant: "success",
+      });
+      setTimeout(() => setTicketsSuccess(null), 3500);
       await fetchTickets(token);
     } catch (creationError) {
       const message =
         creationError instanceof Error ? creationError.message : "Error desconocido al crear ticket.";
       setTicketsError(message);
+      notify({
+        title: "Error",
+        message,
+        variant: "error",
+      });
     } finally {
       setTicketSubmitting(false);
       setAttachmentsUploading(false);
@@ -722,12 +814,22 @@ export default function DashboardPage() {
       setTicketComment("");
       // Refrescar tickets - processTickets y el useEffect actualizarán selectedTicket automáticamente
       await fetchTickets(token);
+      notify({
+        title: "Comentario agregado",
+        message: "Tu comentario se publicó correctamente.",
+        variant: "success",
+      });
     } catch (commentError) {
       const message =
         commentError instanceof Error
           ? commentError.message
           : "Error desconocido al agregar comentario.";
       setTicketsError(message);
+      notify({
+        title: "Error",
+        message,
+        variant: "error",
+      });
     } finally {
       setCommentSubmitting(false);
     }
@@ -742,7 +844,7 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    const initializeAuth = async () => {
+  const initializeAuth = async () => {
       let storedToken = getAccessToken();
       const storedName = getFromStorage(USERNAME_KEYS);
 
@@ -768,6 +870,25 @@ export default function DashboardPage() {
       setUserName(storedName);
       setToken(storedToken);
       fetchServices(storedToken);
+      // Obtener rol
+      try {
+      const res = await fetch(buildApiUrl("/auth/me"), {
+        headers: { Authorization: `Bearer ${storedToken}` },
+        cache: "no-store",
+      });
+        const payload = await res.json().catch(() => null);
+        if (res.ok && payload) {
+          const data = payload.data || payload;
+          const role = data.rol || data.role || "cliente";
+          setUserRole(String(role).toLowerCase());
+          const orgFromProfile = data.organizationId || data.organization_id;
+          if (orgFromProfile && typeof orgFromProfile === "string") {
+            setOrganizationId(orgFromProfile);
+          }
+        }
+      } catch {
+        // Ignorar error de rol, se queda cliente
+      }
     };
 
     initializeAuth();
@@ -797,6 +918,18 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchModelStatus();
   }, [fetchModelStatus]);
+
+  useEffect(() => {
+    // Recargar tickets y métricas cuando cambie la org o filtros
+    const storedToken = getAccessToken();
+    if (storedToken) {
+      fetchServices(storedToken);
+      if (activeTab === "tickets") {
+        fetchTickets(storedToken);
+      }
+      fetchMetrics(storedToken);
+    }
+  }, [organizationId, ticketFilters, activeTab, fetchServices, fetchTickets, fetchMetrics]);
 
   useEffect(() => {
     if (activeTab !== "tickets") return;
@@ -1200,7 +1333,11 @@ export default function DashboardPage() {
                   </div>
                 </section>
 
-                <section className="rounded-3xl border border-border/70 bg-muted/20 p-8 space-y-6">
+        <section className="rounded-3xl border border-border/70 bg-muted/20 p-8 space-y-6">
+          <OrgSelector onChange={(org: Org | null) => setOrganizationId(org?.id || "")} />
+        </section>
+
+        <section className="rounded-3xl border border-border/70 bg-muted/20 p-8 space-y-6">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
                       <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
@@ -1255,37 +1392,26 @@ export default function DashboardPage() {
                         <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
                           IA · Predicción de tiempos y costos
                         </p>
-                        <h3 className="text-2xl font-medium text-foreground">
-                          Estimaciones rápidas con modelo en vivo
-                        </h3>
+                        <h3 className="text-2xl font-medium text-foreground">Vista dedicada</h3>
                         <p className="text-sm text-muted-foreground max-w-2xl">
-                          Predicciones conectadas al backend de ML. Si el modelo está en fallback, se mostrará un aviso.
+                          Usa la página de predicciones para trabajar con el modelo ML.
                         </p>
                       </div>
-                      <div className="flex flex-col items-start gap-2">
-                        <span
-                          className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${
-                            modelStatus?.enabled && modelStatus?.healthy
-                              ? "border-green-500/40 text-green-700"
-                              : "border-amber-500/40 text-amber-700"
-                          }`}
-                        >
-                          {modelStatusLoading
-                            ? "Comprobando modelo..."
-                            : modelStatus?.enabled && modelStatus?.healthy
-                            ? `Modelo ${modelStatus.modelVersion || ""} operativo`
-                            : modelStatus?.modelVersion
-                            ? `Modelo ${modelStatus.modelVersion} en fallback`
-                            : "Estado del modelo no disponible"}
-                        </span>
-                        {modelStatusError && (
-                          <p className="text-xs text-amber-700">
-                            {modelStatusError}
-                          </p>
-                        )}
-                      </div>
+                      <Link
+                        href="/client/ia/predictor"
+                        className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background hover:scale-[1.02] transition-transform"
+                      >
+                        Abrir predicciones
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
+                      <Link
+                        href="/client/ia/asistente"
+                        className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted/30 transition-colors"
+                      >
+                        Ir al asistente IA
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
                     </div>
-                    <TimelinePredictor />
                   </section>
                 )}
 
@@ -1348,6 +1474,55 @@ export default function DashboardPage() {
                 {ticketsError}
               </div>
             )}
+            {ticketsSuccess && !ticketsError && (
+              <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-600">
+                {ticketsSuccess}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                  Organización
+                </label>
+                <OrgSelector onChange={(org: Org | null) => setOrganizationId(org?.id || "")} />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                  Estado
+                </label>
+                <select
+                  className="w-full rounded-2xl border border-border bg-transparent px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
+                  value={ticketFilters.estado}
+                  onChange={(event) =>
+                    setTicketFilters((prev) => ({ ...prev, estado: event.target.value }))
+                  }
+                >
+                  <option value="">Todos</option>
+                  <option value="abierto">Abierto</option>
+                  <option value="en_progreso">En progreso</option>
+                  <option value="resuelto">Resuelto</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                  Prioridad
+                </label>
+                <select
+                  className="w-full rounded-2xl border border-border bg-transparent px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
+                  value={ticketFilters.prioridad}
+                  onChange={(event) =>
+                    setTicketFilters((prev) => ({ ...prev, prioridad: event.target.value }))
+                  }
+                >
+                  <option value="">Todas</option>
+                  <option value="baja">Baja</option>
+                  <option value="media">Media</option>
+                  <option value="alta">Alta</option>
+                  <option value="critica">Crítica</option>
+                </select>
+              </div>
+            </div>
 
             {ticketsLoading ? (
               <div className="rounded-3xl border border-border/60 bg-background/70 p-8 text-center text-muted-foreground">
@@ -1515,9 +1690,13 @@ export default function DashboardPage() {
                   )}
                 </div>
 
-                {ENABLE_AI_ASSISTANT && (
+                {ENABLE_AI_ASSISTANT && SHOW_DASHBOARD_ASSISTANT && (
                   <div className="rounded-3xl border border-border/70 bg-background/80 p-4">
-                    <AITicketAssistant authToken={token} />
+                    <AITicketAssistant
+                      authToken={token}
+                      targetUserId={isPrivileged ? ticketTargetUserId || null : null}
+                      isPrivileged={isPrivileged}
+                    />
                   </div>
                 )}
               </div>
@@ -1605,6 +1784,23 @@ export default function DashboardPage() {
                       </p>
                     )}
                   </div>
+                  {isPrivileged && (
+                    <div className="space-y-2">
+                      <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                        Asignar a usuario (ID)
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full rounded-2xl border border-border bg-transparent px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
+                        placeholder="ID de usuario destino"
+                        value={ticketTargetUserId}
+                        onChange={(event) => setTicketTargetUserId(event.target.value)}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Solo agentes/admin pueden crear para otros usuarios.
+                      </p>
+                    </div>
+                  )}
                 </div>
                 <button
                   type="submit"
