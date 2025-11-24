@@ -27,6 +27,7 @@ const PUBLIC_NAV: NavItem[] = [
 const AUTH_NAV: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
   { label: "Tickets", href: "/client/tickets", icon: <Ticket className="w-4 h-4" /> },
+  { label: "Admin", href: "/admin", icon: <User className="w-4 h-4" /> },
 ];
 
 export default function Header() {

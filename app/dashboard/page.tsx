@@ -295,6 +295,7 @@ export default function DashboardPage() {
   const [attachmentsUploading, setAttachmentsUploading] = useState(false);
   const [dashboardMetrics, setDashboardMetrics] = useState<DashboardMetrics | null>(null);
   const [metricsLoading, setMetricsLoading] = useState(false);
+  const [metricsCooldownUntil, setMetricsCooldownUntil] = useState<number>(0);
   const [organizationId, setOrganizationId] = useState<string>("");
   const isPrivileged = userRole !== "cliente";
   const [modelStatus, setModelStatus] = useState<ModelStatus | null>(null);
@@ -725,6 +726,10 @@ export default function DashboardPage() {
   const fetchMetrics = useCallback(
     async (authToken: string) => {
       if (!authToken) return;
+      const now = Date.now();
+      if (metricsCooldownUntil && now < metricsCooldownUntil) {
+        return;
+      }
       setMetricsLoading(true);
       try {
         const metrics = await fetchDashboardMetrics(authToken, organizationId || undefined);
@@ -768,6 +773,20 @@ export default function DashboardPage() {
           }
         }
 
+        const isRateLimit =
+          (metricsError as any)?.status === 429 ||
+          (typeof message === "string" && message.toLowerCase().includes("demasiadas solicitudes"));
+        if (isRateLimit) {
+          setMetricsCooldownUntil(Date.now() + 60_000); // pausa 60s
+          setDashboardMetrics(null);
+          notify({
+            title: "Límite de solicitudes",
+            message: "Espera un momento antes de volver a cargar las métricas.",
+            variant: "info",
+          });
+          return;
+        }
+
         setDashboardMetrics(null);
         notify({
           title: "Error al cargar métricas",
@@ -778,7 +797,7 @@ export default function DashboardPage() {
         setMetricsLoading(false);
       }
     },
-    [organizationId, notify]
+    [organizationId, notify, metricsCooldownUntil]
   );
 
   const fetchModelStatus = useCallback(async () => {
