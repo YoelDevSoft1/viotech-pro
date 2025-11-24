@@ -166,28 +166,40 @@ export default function LoginPage() {
           </div>
           <form className="space-y-4" onSubmit={handleLoginSubmit}>
             <div className="space-y-2">
-              <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+              <label
+                htmlFor="login-email"
+                className="text-xs uppercase tracking-[0.3em] text-muted-foreground"
+              >
                 Correo electrónico
               </label>
               <input
+                id="login-email"
+                name="email"
                 type="email"
                 required
                 className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40"
                 placeholder="tu@correo.com"
+                autoComplete="email"
                 value={loginEmail}
                 onChange={handleInputChange(setLoginEmail)}
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+              <label
+                htmlFor="login-password"
+                className="text-xs uppercase tracking-[0.3em] text-muted-foreground"
+              >
                 Contraseña
               </label>
               <div className="relative">
                 <input
+                  id="login-password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
                   required
                   className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40 pr-24"
                   placeholder="********"
+                  autoComplete="current-password"
                   value={loginPassword}
                   onChange={handleInputChange(setLoginPassword)}
                 />
@@ -201,8 +213,10 @@ export default function LoginPage() {
               </div>
             </div>
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <label className="inline-flex items-center gap-2">
+              <label className="inline-flex items-center gap-2" htmlFor="login-remember">
                 <input
+                  id="login-remember"
+                  name="remember"
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
@@ -269,48 +283,69 @@ export default function LoginPage() {
 
             <form className="space-y-4" onSubmit={handleRegisterSubmit}>
               <div className="space-y-2">
-                <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                <label
+                  htmlFor="register-name"
+                  className="text-xs uppercase tracking-[0.3em] text-muted-foreground"
+                >
                   Nombre
                 </label>
                 <input
+                  id="register-name"
+                  name="name"
                   type="text"
                   required
                   className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40"
                   placeholder="Tu nombre"
+                  autoComplete="name"
                   value={registerName}
                   onChange={handleInputChange(setRegisterName)}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                <label
+                  htmlFor="register-email"
+                  className="text-xs uppercase tracking-[0.3em] text-muted-foreground"
+                >
                   Correo electrónico
                 </label>
                 <input
+                  id="register-email"
+                  name="email"
                   type="email"
                   required
                   className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40"
                   placeholder="tu@correo.com"
+                  autoComplete="email"
                   value={registerEmail}
                   onChange={handleInputChange(setRegisterEmail)}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                <label
+                  htmlFor="register-password"
+                  className="text-xs uppercase tracking-[0.3em] text-muted-foreground"
+                >
                   Contraseña
                 </label>
                 <input
+                  id="register-password"
+                  name="password"
                   type="password"
                   required
                   className="w-full rounded-2xl border border-border bg-transparent px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40"
                   placeholder="Mínimo 8 caracteres"
+                  autoComplete="new-password"
                   value={registerPassword}
                   onChange={handleInputChange(setRegisterPassword)}
                 />
                 <input
+                  id="register-confirm-password"
+                  name="confirmPassword"
                   type="password"
                   required
                   className="w-full rounded-2xl border border-border bg-transparent px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40"
                   placeholder="Repite la contraseña"
+                  autoComplete="new-password"
                   value={registerConfirmPassword}
                   onChange={handleInputChange(setRegisterConfirmPassword)}
                 />

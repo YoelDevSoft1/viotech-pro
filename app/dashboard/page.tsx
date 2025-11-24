@@ -440,12 +440,69 @@ export default function DashboardPage() {
     } catch (fetchError) {
       const message =
         fetchError instanceof Error ? fetchError.message : "Error desconocido al cargar el panel.";
-      setError(message);
-      } finally {
-        setLoading(false);
+
+      // Fallback: si el backend no soporta organizationId aún, reintentar sin filtro
+      const needsOrgFallback =
+        organizationId &&
+        typeof message === "string" &&
+        message.toLowerCase().includes("organization");
+
+      if (needsOrgFallback) {
+        try {
+          const retryResponse = await fetch(buildApiUrl("/services/me"), {
+            headers: {
+              Authorization: `Bearer ${tokenToUse}`,
+              "Cache-Control": "no-cache",
+            },
+            cache: "no-store",
+          });
+          const retryPayload = await retryResponse.json().catch(() => null);
+          if (!retryResponse.ok) {
+            throw new Error(
+              retryPayload?.error || retryPayload?.message || "No se pudo cargar el panel."
+            );
+          }
+          const normalizedRetry: Service[] = (retryPayload.data || []).map((service: Service) => ({
+            ...service,
+            progreso:
+              typeof service.progreso === "number"
+                ? service.progreso
+                : computeProgressFromDates(service),
+          }));
+          setServices(normalizedRetry);
+          setError(null);
+          notify({
+            title: "Cargado sin organización",
+            message: "El backend aún no soporta organizationId para servicios; mostramos todos.",
+            variant: "info",
+          });
+          return;
+        } catch (retryError) {
+          const retryMessage =
+            retryError instanceof Error
+              ? retryError.message
+              : "Error al cargar servicios sin filtro.";
+          setError(retryMessage);
+          notify({
+            title: "Error al cargar servicios",
+            message: retryMessage,
+            variant: "error",
+          });
+          return;
+        }
       }
-    },
-    [router, organizationId],
+
+      setError(message);
+      notify({
+        title: "Error al cargar servicios",
+        message,
+        variant: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  },
+  [router, organizationId, notify],
   );
 
   // Función auxiliar para procesar tickets
@@ -674,12 +731,54 @@ export default function DashboardPage() {
         setDashboardMetrics(metrics);
       } catch (metricsError) {
         console.error("Error al cargar métricas:", metricsError);
+
+        const message =
+          metricsError instanceof Error
+            ? metricsError.message
+            : "No se pudieron cargar las métricas.";
+
+        // Fallback sin organizationId si el backend aún no lo soporta
+        const needsOrgFallback =
+          organizationId &&
+          typeof message === "string" &&
+          message.toLowerCase().includes("organization");
+
+        if (needsOrgFallback) {
+          try {
+            const metrics = await fetchDashboardMetrics(authToken);
+            setDashboardMetrics(metrics);
+            notify({
+              title: "Métricas sin organización",
+              message: "El backend aún no soporta organizationId en métricas; mostramos globales.",
+              variant: "info",
+            });
+            return;
+          } catch (retryError) {
+            const retryMsg =
+              retryError instanceof Error
+                ? retryError.message
+                : "No se pudieron cargar las métricas (fallback).";
+            setDashboardMetrics(null);
+            notify({
+              title: "Error al cargar métricas",
+              message: retryMsg,
+              variant: "error",
+            });
+            return;
+          }
+        }
+
         setDashboardMetrics(null);
+        notify({
+          title: "Error al cargar métricas",
+          message,
+          variant: "error",
+        });
       } finally {
         setMetricsLoading(false);
       }
     },
-    [organizationId]
+    [organizationId, notify]
   );
 
   const fetchModelStatus = useCallback(async () => {

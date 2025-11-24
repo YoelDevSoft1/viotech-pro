@@ -22,12 +22,18 @@ type UserRecord = {
   nombre: string;
   email: string;
   rol: Role;
+  estado?: string;
+  tier?: string;
+  organizationId?: string;
   permisos?: string[];
   ultimoAcceso?: string;
 };
 
 type PendingAction =
   | { type: "role"; userId: string }
+  | { type: "tier"; userId: string }
+  | { type: "state"; userId: string }
+  | { type: "org"; userId: string }
   | null;
 
 const ROLE_OPTIONS: { value: Role; label: string; description: string }[] = [
@@ -76,6 +82,7 @@ export default function RoleManager() {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<PendingAction>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [orgs, setOrgs] = useState<{ id: string; nombre: string }[]>([]);
 
   const apiBase = useMemo(() => buildApiUrl("").replace(/\/+$/, ""), []);
 
@@ -129,6 +136,9 @@ export default function RoleManager() {
                 nombre: u.nombre || u.name || "Sin nombre",
                 email: u.email || "sin-email",
                 rol: normalizedRole,
+                estado: u.estado || u.state || "activo",
+                tier: u.tier || "standard",
+                organizationId: u.organizationId || u.organization_id || "",
                 permisos: u.permisos || u.permissions || [],
                 ultimoAcceso: u.ultimoAcceso || u.lastLogin,
               };
@@ -144,7 +154,29 @@ export default function RoleManager() {
       }
     };
 
+    const fetchOrgs = async () => {
+      try {
+        const token = await getValidToken();
+        const res = await fetch(`${apiBase}/organizations`, {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        const payload = await res.json().catch(() => null);
+        if (!res.ok || !payload) return;
+        const list = payload.data || payload;
+        setOrgs(
+          Array.isArray(list)
+            ? list.map((o: any) => ({ id: String(o.id), nombre: o.nombre || o.name || o.id }))
+            : [],
+        );
+      } catch {
+        // ignore org errors for now
+      }
+    };
+
     fetchUsers();
+    fetchOrgs();
     return () => controller.abort();
   }, [apiBase, getValidToken]);
 
@@ -210,6 +242,105 @@ export default function RoleManager() {
 
   const handleRoleChange = (userId: string, newRole: Role) => {
     mutateUser(userId, { rol: newRole }, { type: "role", userId });
+  };
+
+  const handleTierChange = async (userId: string, tier: string) => {
+    const prev = users;
+    setPending({ type: "tier", userId });
+    setUsers((curr) => curr.map((u) => (u.id === userId ? { ...u, tier } : u)));
+    if (ADMIN_MOCK) {
+      setPending(null);
+      setFeedback("Cambios simulados en modo mock.");
+      return;
+    }
+    try {
+      const token = await getValidToken();
+      const res = await fetch(`${apiBase}/users/${userId}/tier`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ tier }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.error || data?.message || "No se pudo actualizar el tier");
+      }
+      setFeedback("Tier actualizado.");
+    } catch (err) {
+      setUsers(prev);
+      setFeedback(null);
+      setError(err instanceof Error ? err.message : "Error al actualizar tier");
+    } finally {
+      setPending(null);
+    }
+  };
+
+  const handleStateChange = async (userId: string, estado: string) => {
+    const prev = users;
+    setPending({ type: "state", userId });
+    setUsers((curr) => curr.map((u) => (u.id === userId ? { ...u, estado } : u)));
+    if (ADMIN_MOCK) {
+      setPending(null);
+      setFeedback("Cambios simulados en modo mock.");
+      return;
+    }
+    try {
+      const token = await getValidToken();
+      const res = await fetch(`${apiBase}/users/${userId}/state`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ estado }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.error || data?.message || "No se pudo actualizar estado");
+      }
+      setFeedback("Estado actualizado.");
+    } catch (err) {
+      setUsers(prev);
+      setFeedback(null);
+      setError(err instanceof Error ? err.message : "Error al actualizar estado");
+    } finally {
+      setPending(null);
+    }
+  };
+
+  const handleOrgChange = async (userId: string, organizationId: string) => {
+    const prev = users;
+    setPending({ type: "org", userId });
+    setUsers((curr) => curr.map((u) => (u.id === userId ? { ...u, organizationId } : u)));
+    if (ADMIN_MOCK) {
+      setPending(null);
+      setFeedback("Cambios simulados en modo mock.");
+      return;
+    }
+    try {
+      const token = await getValidToken();
+      const res = await fetch(`${apiBase}/users/${userId}/organization`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ organizationId }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.error || data?.message || "No se pudo actualizar la organización");
+      }
+      setFeedback("Organización asignada.");
+    } catch (err) {
+      setUsers(prev);
+      setFeedback(null);
+      setError(err instanceof Error ? err.message : "Error al actualizar organización");
+    } finally {
+      setPending(null);
+    }
   };
 
   const rolePill = (role: Role) => {
@@ -336,7 +467,45 @@ export default function RoleManager() {
                       ))}
                     </select>
                   </label>
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Tier
+                    <input
+                      className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
+                      value={user.tier || ""}
+                      onChange={(e) => handleTierChange(user.id, e.target.value)}
+                      disabled={pending?.userId === user.id}
+                    />
+                  </label>
 
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Estado
+                    <select
+                      className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
+                      value={user.estado || "activo"}
+                      onChange={(e) => handleStateChange(user.id, e.target.value)}
+                      disabled={pending?.userId === user.id}
+                    >
+                      <option value="activo">Activo</option>
+                      <option value="inactivo">Inactivo</option>
+                    </select>
+                  </label>
+
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Organización
+                    <select
+                      className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
+                      value={user.organizationId || ""}
+                      onChange={(e) => handleOrgChange(user.id, e.target.value)}
+                      disabled={pending?.userId === user.id}
+                    >
+                      <option value="">Sin asignar</option>
+                      {orgs.map((org) => (
+                        <option key={org.id} value={org.id}>
+                          {org.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
                 </div>
               </article>
             ))}
@@ -344,18 +513,20 @@ export default function RoleManager() {
 
           {/* Vista escritorio: tabla densa con controles inline */}
           <div className="hidden md:block rounded-2xl border border-border/70 bg-background/80 overflow-hidden">
-            <div className="grid grid-cols-[1.6fr,1.4fr,1fr,1.4fr] bg-muted/30 px-4 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            <div className="grid grid-cols-[1.4fr,1.3fr,0.8fr,0.9fr,0.9fr,1.1fr] bg-muted/30 px-4 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
               <span>Usuario</span>
               <span>Email</span>
               <span>Rol</span>
-              <span>Acciones</span>
+              <span>Tier</span>
+              <span>Estado</span>
+              <span>Organización</span>
             </div>
 
             <div aria-busy={Boolean(pending)}>
               {filtered.map((user) => (
                 <div
                   key={user.id}
-                  className="grid grid-cols-[1.6fr,1.4fr,1fr,1.4fr] items-center gap-2 border-t border-border/60 px-4 py-3 text-sm"
+                  className="grid grid-cols-[1.4fr,1.3fr,0.8fr,0.9fr,0.9fr,1.1fr] items-center gap-2 border-t border-border/60 px-4 py-3 text-sm"
                 >
                   <div className="space-y-0.5">
                     <p className="text-foreground font-medium">{user.nombre}</p>
@@ -394,6 +565,40 @@ export default function RoleManager() {
                       ))}
                     </select>
                   </div>
+
+                  <input
+                    aria-label={`Tier de ${user.nombre}`}
+                    className="w-28 rounded-xl border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-foreground/40"
+                    value={user.tier || ""}
+                    onChange={(e) => handleTierChange(user.id, e.target.value)}
+                    disabled={pending?.userId === user.id}
+                  />
+
+                  <select
+                    aria-label={`Estado de ${user.nombre}`}
+                    className="w-28 rounded-xl border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-foreground/40"
+                    value={user.estado || "activo"}
+                    onChange={(e) => handleStateChange(user.id, e.target.value)}
+                    disabled={pending?.userId === user.id}
+                  >
+                    <option value="activo">Activo</option>
+                    <option value="inactivo">Inactivo</option>
+                  </select>
+
+                  <select
+                    aria-label={`Organización de ${user.nombre}`}
+                    className="w-full rounded-xl border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-foreground/40"
+                    value={user.organizationId || ""}
+                    onChange={(e) => handleOrgChange(user.id, e.target.value)}
+                    disabled={pending?.userId === user.id}
+                  >
+                    <option value="">Sin asignar</option>
+                    {orgs.map((org) => (
+                      <option key={org.id} value={org.id}>
+                        {org.nombre}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               ))}
             </div>
