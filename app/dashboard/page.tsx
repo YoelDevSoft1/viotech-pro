@@ -449,7 +449,7 @@ export default function DashboardPage() {
   );
 
   // Función auxiliar para procesar tickets
-  const processTickets = (payload: any) => {
+  const processTickets = useCallback((payload: any) => {
     if (!payload?.data?.tickets) {
       setTickets([]);
       setSelectedTicket(null);
@@ -519,7 +519,7 @@ export default function DashboardPage() {
     } else {
       setSelectedTicket(null);
     }
-  };
+  }, []);
 
   const fetchTickets = useCallback(
     async (authToken: string) => {
