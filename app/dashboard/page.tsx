@@ -987,7 +987,6 @@ export default function DashboardPage() {
 
       setUserName(storedName);
       setToken(storedToken);
-      fetchServices(storedToken);
       // Obtener rol
       try {
       const res = await fetch(buildApiUrl("/auth/me"), {
@@ -1031,23 +1030,26 @@ export default function DashboardPage() {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [router, fetchServices, activeTab, fetchTickets, token]);
+  }, [router]);
 
   useEffect(() => {
     fetchModelStatus();
   }, [fetchModelStatus]);
 
   useEffect(() => {
-    // Recargar tickets y métricas cuando cambie la org o filtros
     const storedToken = getAccessToken();
-    if (storedToken) {
-      fetchServices(storedToken);
-      if (activeTab === "tickets") {
-        fetchTickets(storedToken);
-      }
-      fetchMetrics(storedToken);
-    }
-  }, [organizationId, ticketFilters, activeTab, fetchServices, fetchTickets, fetchMetrics]);
+    if (!storedToken) return;
+    if (activeTab !== "overview") return;
+    fetchServices(storedToken);
+    fetchMetrics(storedToken);
+  }, [organizationId, activeTab, fetchServices, fetchMetrics]);
+
+  useEffect(() => {
+    const storedToken = getAccessToken();
+    if (!storedToken) return;
+    if (activeTab !== "tickets") return;
+    fetchTickets(storedToken);
+  }, [organizationId, ticketFilters, activeTab, fetchTickets]);
 
   useEffect(() => {
     if (activeTab !== "tickets") return;
