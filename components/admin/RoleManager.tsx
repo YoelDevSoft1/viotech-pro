@@ -455,149 +455,71 @@ export default function RoleManager() {
           No se encontraron usuarios con ese criterio.
         </div>
       ) : (
-        <>
-          {/* Vista mobile: cards apiladas para lectura rápida */}
-          <div className="space-y-3 md:hidden" aria-busy={Boolean(pending)}>
-            {filtered.map((user) => (
-              <article
-                key={user.id}
-                className="rounded-2xl border border-border/70 bg-background/80 p-4 space-y-3"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-base font-semibold text-foreground">{user.nombre}</p>
-                    <p className="text-xs text-muted-foreground">{user.email}</p>
-                    <p className="text-[11px] text-muted-foreground mt-1">ID: {user.id}</p>
-                  </div>
-                  {rolePill(user.rol)}
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3" aria-busy={Boolean(pending)}>
+          {filtered.map((user) => (
+            <article
+              key={user.id}
+              className="rounded-2xl border border-border/70 bg-background/80 p-4 space-y-3"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <p className="text-base font-semibold text-foreground">{user.nombre}</p>
+                  <p className="text-xs text-muted-foreground">{user.email}</p>
+                  <p className="text-[11px] text-muted-foreground">ID: {user.id}</p>
+                  {user.ultimoAcceso && (
+                    <p className="text-[11px] text-muted-foreground">
+                      Último acceso:{" "}
+                      {new Date(user.ultimoAcceso).toLocaleDateString("es-CO", {
+                        day: "2-digit",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  )}
                 </div>
-
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-medium text-muted-foreground">
-                    Rol
-                    <select
-                      className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
-                      value={user.rol}
-                      onChange={(e) => handleRoleChange(user.id, e.target.value as Role)}
-                      disabled={pending?.userId === user.id}
-                    >
-                      {ROLE_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="text-xs font-medium text-muted-foreground">
-                    Tier
-                    <input
-                      className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
-                      value={user.tier || ""}
-                      onChange={(e) => handleTierChange(user.id, e.target.value)}
-                      disabled={pending?.userId === user.id}
-                    />
-                  </label>
-
-                  <label className="text-xs font-medium text-muted-foreground">
-                    Estado
-                    <select
-                      className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
-                      value={user.estado || "activo"}
-                      onChange={(e) => handleStateChange(user.id, e.target.value)}
-                      disabled={pending?.userId === user.id}
-                    >
-                      <option value="activo">Activo</option>
-                      <option value="inactivo">Inactivo</option>
-                    </select>
-                  </label>
-
-                  <label className="text-xs font-medium text-muted-foreground">
-                    Organización
-                    <select
-                      className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
-                      value={user.organizationId || ""}
-                      onChange={(e) => handleOrgChange(user.id, e.target.value)}
-                      disabled={pending?.userId === user.id}
-                    >
-                      <option value="">Sin asignar</option>
-                      {orgs.map((org) => (
-                        <option key={org.id} value={org.id}>
-                          {org.nombre}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          {/* Vista escritorio: tabla densa con controles inline */}
-          <div className="hidden md:block rounded-2xl border border-border/70 bg-background/80 overflow-hidden">
-            <div className="grid grid-cols-[1.4fr,1.3fr,0.8fr,0.9fr,0.9fr,1.1fr] bg-muted/30 px-4 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-              <span>Usuario</span>
-              <span>Email</span>
-              <span>Rol</span>
-              <span>Tier</span>
-              <span>Estado</span>
-              <span>Organización</span>
-            </div>
-
-            <div aria-busy={Boolean(pending)}>
-              {filtered.map((user) => (
-                <div
-                  key={user.id}
-                  className="grid grid-cols-[1.4fr,1.3fr,0.8fr,0.9fr,0.9fr,1.1fr] items-center gap-2 border-t border-border/60 px-4 py-3 text-sm"
-                >
-                  <div className="space-y-0.5">
-                    <p className="text-foreground font-medium">{user.nombre}</p>
-                    <p className="text-[11px] text-muted-foreground">ID: {user.id}</p>
-                    {user.ultimoAcceso && (
-                      <p className="text-[11px] text-muted-foreground">
-                        Último acceso:{" "}
-                        {new Date(user.ultimoAcceso).toLocaleDateString("es-CO", {
-                          day: "2-digit",
-                          month: "short",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </p>
-                    )}
-                  </div>
-
-                  <p className="text-muted-foreground">{user.email}</p>
+                <div className="flex flex-col items-end gap-2">
                   {rolePill(user.rol)}
+                  <span className="text-[11px] rounded-full border border-border px-2 py-0.5 text-muted-foreground">
+                    Estado: {user.estado || "activo"}
+                  </span>
+                  <span className="text-[11px] rounded-full border border-border px-2 py-0.5 text-muted-foreground">
+                    Tier: {user.tier || "standard"}
+                  </span>
+                </div>
+              </div>
 
-                  <div className="flex items-center gap-2">
-                    <label className="sr-only" htmlFor={`role-${user.id}`}>
-                      Cambiar rol de {user.nombre}
-                    </label>
-                    <select
-                      id={`role-${user.id}`}
-                      className="w-32 rounded-xl border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-foreground/40"
-                      value={user.rol}
-                      onChange={(e) => handleRoleChange(user.id, e.target.value as Role)}
-                      disabled={pending?.userId === user.id}
-                    >
-                      {ROLE_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+              <div className="grid grid-cols-1 gap-3">
+                <label className="text-xs font-medium text-muted-foreground flex flex-col gap-1">
+                  Rol
+                  <select
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
+                    value={user.rol}
+                    onChange={(e) => handleRoleChange(user.id, e.target.value as Role)}
+                    disabled={pending?.userId === user.id}
+                  >
+                    {ROLE_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
 
+                <label className="text-xs font-medium text-muted-foreground flex flex-col gap-1">
+                  Tier
                   <input
-                    aria-label={`Tier de ${user.nombre}`}
-                    className="w-28 rounded-xl border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-foreground/40"
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
                     value={user.tier || ""}
                     onChange={(e) => handleTierChange(user.id, e.target.value)}
                     disabled={pending?.userId === user.id}
                   />
+                </label>
 
+                <label className="text-xs font-medium text-muted-foreground flex flex-col gap-1">
+                  Estado
                   <select
-                    aria-label={`Estado de ${user.nombre}`}
-                    className="w-28 rounded-xl border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-foreground/40"
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
                     value={user.estado || "activo"}
                     onChange={(e) => handleStateChange(user.id, e.target.value)}
                     disabled={pending?.userId === user.id}
@@ -605,10 +527,12 @@ export default function RoleManager() {
                     <option value="activo">Activo</option>
                     <option value="inactivo">Inactivo</option>
                   </select>
+                </label>
 
+                <label className="text-xs font-medium text-muted-foreground flex flex-col gap-1">
+                  Organización
                   <select
-                    aria-label={`Organización de ${user.nombre}`}
-                    className="w-full rounded-xl border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-foreground/40"
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
                     value={user.organizationId || ""}
                     onChange={(e) => handleOrgChange(user.id, e.target.value)}
                     disabled={pending?.userId === user.id}
@@ -620,11 +544,11 @@ export default function RoleManager() {
                       </option>
                     ))}
                   </select>
-                </div>
-              ))}
-            </div>
-          </div>
-        </>
+                </label>
+              </div>
+            </article>
+          ))}
+        </div>
       )}
     </section>
   );
