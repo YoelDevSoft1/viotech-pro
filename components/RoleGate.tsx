@@ -50,7 +50,8 @@ export default function RoleGate({ allowedRoles, children, fallbackHref }: Props
         if (!res.ok || !payload) throw new Error("No autorizado");
         const data: MePayload = payload.data || payload;
         const role = String(data.rol || data.role || "").toLowerCase();
-        if (!role || !allowedRoles.includes(role)) {
+        const isAdmin = role === "admin";
+        if (!role || (!isAdmin && !allowedRoles.includes(role))) {
           setMessage("No tienes permisos para ver esta sección.");
           setState("denied");
           return;

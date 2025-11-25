@@ -6,5 +6,5 @@ export const metadata = {
 };
 
 export default function ClientLayout({ children }: { children: ReactNode }) {
-  return <RoleGate allowedRoles={["cliente"]}>{children}</RoleGate>;
+  return <RoleGate allowedRoles={["cliente", "agente", "admin"]}>{children}</RoleGate>;
 }
