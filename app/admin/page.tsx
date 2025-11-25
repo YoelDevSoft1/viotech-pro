@@ -78,7 +78,7 @@ export default function AdminDashboardPage() {
       setCountsError(null);
       try {
         const headers: HeadersInit = (await getAuthHeader()) || {};
-        const baseOptions = { cache: "no-store", credentials: "include" as const, headers };
+        const baseOptions: RequestInit = { cache: "no-store" as RequestCache, credentials: "include", headers };
 
         // Usuarios
         const usersRes = await fetch(buildApiUrl("/users"), baseOptions);
