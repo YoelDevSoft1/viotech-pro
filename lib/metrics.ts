@@ -34,12 +34,11 @@ export async function fetchDashboardMetrics(
   const payload = await response.json();
 
   if (!response.ok) {
-    const errMsg =
-      payload?.error || payload?.message || "No se pudieron cargar las métricas";
+    const errMsg = payload?.error || payload?.message || "No se pudieron cargar las métricas";
     if (response.status === 429) {
       const error: any = new Error(errMsg);
       error.status = 429;
-      throw error;
+      return Promise.reject(error);
     }
     throw new Error(errMsg);
   }

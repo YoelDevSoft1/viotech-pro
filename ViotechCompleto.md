@@ -13,9 +13,9 @@ Sin tiempos, solo orden lógico y cajitas marcables.
 - [x] Permisos en tickets: cliente solo sus tickets; agente/admin acceso global en list/get/update/comentarios/adjuntos.
 - [x] Asistente IA con creación de tickets (`/api/ai/ticket-assistant/create-ticket`) y autocompletado de campos; soporta OpenAI/Gemini.
 - [x] Predictor ML operativo (`/api/predictions/*`) con modelo entrenado dev; tablas `ml_training_data`/`ml_predictions` y dataset sintético cargado.
-- [ ] Multi-tenant (org/proyecto) pendiente de modelar (fase 2).
+- [⚠️] Multi-tenant (org/proyecto): modelos y endpoints creados (organizations, projects, orgId en users/tickets/services), selector de org en front; falta middleware global y pulir índices.
 - [ ] Testing/Jest + CI/CD aún pendientes (fase 4).
-- [ ] Portales front (admin/internal/client) pendientes (fase 3).
+- [✅] Portales front (admin/internal/client) creados y rutas protegidas por rol/guard.
 
 Voy a marcar:
 
@@ -34,7 +34,7 @@ Voy a marcar:
 - [✅] Estructura de trabajo: mantener repos separados (frontend Next, backend Express/Prisma); monorepo no adoptado (decisión documentada aquí).
 
 1.2. Arquitectura base clara  
-- [⚠️] Backend: diagrama pendiente en su repo (API, integraciones: Supabase, Wompi, Resend, Redis, TF.js).  
+- [⚠️] Backend: diagrama/`ARCHITECTURE.md` pendiente (API, integraciones: Supabase, Wompi, Resend, Redis, TF.js).  
 - [✅] Frontend: documentada arquitectura Next (layouts, rutas protegidas, server/client components, flags) en `ARCHITECTURE.md`.  
 - [⚠️] Falta `ARCHITECTURE.md` en backend.
 
@@ -45,54 +45,32 @@ Tu backend ya es fuerte en usuario/ticket. Ahora hay que modelar bien “empresa
 2.1. Modelo de Organización / Cliente
 
  [BE] Asegurar modelo Organization en Prisma:
-
- Campos: nombre, NIT, sector, país, contacto, estado (prospecto/activo/pausado).
-
- Índices: por estado, por nombre.
+  - [⚠️] Campos básicos creados; falta completar NIT/sector/país/contacto/estado e índices.
 
  [BE] Verificar que las tablas clave tienen organizationId:
-
- Tickets
-
- Services/Subscriptions
-
- Users (relación N:N vía UserOrganization si aplica)
-
- Documents / Contracts (cuando los tengas)
+  - [✅] Tickets
+  - [✅] Services/Subscriptions
+  - [✅] Users (relación directa; N:N opcional)
+  - [ ] Documents / Contracts (pendiente)
 
  [BE] Añadir middleware global:
-
- Resolver orgId desde token o contexto de sesión.
-
- Filtrar siempre por organizationId en queries multi-tenant.
+  - [⚠️] Falta resolver orgId desde token y filtrar todas las queries.
 
  [FE] Ajustar front para contexto de organización:
-
- Selector de organización para usuarios de VioTech (cuando gestionan varias).
-
- Persistir org seleccionada en estado (contexto/URL).
+  - [✅] Selector de organización persistente (OrgSelector sin mocks) y propagación a dashboards/tickets/proyectos.
 
 2.2. Proyectos de cliente (Consultoría + Desarrollo)
 
  [BE] Crear modelo Project en Prisma:
-
- belong to Organization
-
- tipo (CONSULTORIA_TI, DESARROLLO, SOPORTE_CONTINUO, etc.)
-
- estado (en descubrimiento, en ejecución, en soporte, cerrado).
+  - [✅] Modelo Project creado con organizationId/tipo/estado.
 
  [BE] Relacionar:
-
- Tickets → projectId (cuando apliquen).
-
- Documentos → projectId (diagnósticos, especificaciones, entregables).
+  - [✅] Tickets → projectId soportado.
+  - [ ] Documentos → projectId (pendiente).
 
  [FE] Crear vistas:
-
- Lista de proyectos por organización.
-
- Detalle de proyecto: resumen, tickets asociados, documentos clave, métricas.
+  - [✅] Lista de proyectos por organización (`/internal/projects`).
+  - [✅] Detalle de proyecto (`/internal/projects/[id]` con tickets asociados).
 
 🖥️ FASE 3 · Frontend VioTech OPS: Admin, Interno y Cliente
 
@@ -101,86 +79,49 @@ Tu backend ya tiene mucha potencia. Ahora toca que el front la exprese de forma 
 3.1. Portales y layouts
 
  [FE] Definir y crear layouts separados:
-
- AdminLayout → para rol OWNER/ADMIN_VIOTECH.
-
- InternalLayout → para devs/consultores de VioTech.
-
- ClientLayout → para usuarios de los clientes.
+  - [✅] AdminLayout, InternalLayout, ClientLayout con guards de rol.
 
  [FE] Estructurar rutas:
+  - [✅] /admin/* (usuarios, servicios, health, tickets admin).
+  - [✅] /internal/* (dashboard interno, proyectos, tickets globales).
+  - [✅] /client/* (dashboard cliente, tickets, IA).
 
- /admin/* (organizaciones, contratos, billing, métricas globales).
-
- /internal/* (proyectos, tickets de clientes, backlog interno).
-
- /client/* (tickets, servicios, métricas del cliente).
-
- [FE] Middleware de Next:
-
- Cargar sesión y rol antes de resolver layout.
-
- Redirigir si no tiene permiso.
+ [FE] Middleware/guards:
+  - [✅] Guards por rol en layouts y pages (admin/internal/client).
 
 3.2. Panel Cliente (MVP sólido)
 
  [FE] Vista “Resumen”:
-
- Tickets abiertos/cerrados.
-
- Servicios activos y progreso.
-
- Próximas renovaciones.
+  - [✅] Resumen con servicios, métricas, renovaciones en dashboard.
 
  [FE] Vista “Tickets”:
-
- Listar tickets de su organización.
-
- Crear ticket (categoría, prioridad, descripción, adjuntos).
-
- Ver detalle (estado, comentarios, SLA estimado y real).
+  - [✅] Listar tickets de su organización, crear ticket con adjuntos, ver detalle/comentarios.
 
  [FE/BE] Flujos:
-
- El cliente puede comentar.
-
- El cambio de estado dispara mails/notificaciones (ya tienes Resend).
+  - [✅] Cliente puede comentar; estado cambia desde backend (notificación por mail pendiente).
 
 3.3. Panel Interno VioTech
 
  [FE] Vista “Tickets por cliente”:
-
- Filtro por cliente, prioridad, estado.
-
- Ver rápidamente “qué está quemando”.
+  - [✅] Filtros por org/estado/prioridad, tickets globales en `/internal/tickets` y `/admin/tickets`.
 
  [FE] Vista “Proyectos”:
-
- Lista proyectos activos.
-
- Ver estado, milestones, tickets asociados.
+  - [✅] Lista y detalle de proyectos activos con tickets asociados.
 
  [FE] Vista “Board interno”:
-
- Tareas internas (COMERCIAL, BACKOFFICE, refactors, etc.) como columnas tipo Kanban.
+  - [ ] Pendiente (Kanban interno no implementado).
 
 3.4. Component library y diseño consistente
 
  [FE/UX] Definir Design System mínimo:
-
- Paleta, tipografías, espaciados.
-
- Variantes de botones, inputs, tarjetas, alerts.
+  - [⚠️] Parcial: botones/cards/selects/alerts básicos; falta documentación y tablas/skeletons.
 
  [FE] Crear set de componentes reutilizables:
-
- Button, Input, Select, Modal, Card, Badge, Table, Alert, Skeleton.
-
- Wrapper para gráficos de métricas (charts, KPI cards).
+  - [✅] Button, Select, Card, Alert/Toast; MFA modal, OrgSelector; falta Table/Skeleton formales.
+  - [⚠️] Wrapper de gráficos/KPI cards pendiente de consolidar.
 
  [FE] Documentar uso (Storybook opcional):
-
- Para que el día de mañana otros devs no rompan la coherencia visual.
+  - [ ] Pendiente.
 
 🧮 FASE 4 · Calidad: testing, CI/CD y estabilidad
 

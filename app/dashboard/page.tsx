@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -303,6 +303,9 @@ export default function DashboardPage() {
   const [modelStatusLoading, setModelStatusLoading] = useState(false);
   const predictorApiBase = useMemo(() => getPredictorApiBase(), []);
   const { notify } = useToast();
+  const ticketsInFlight = useRef(false);
+  const servicesInFlight = useRef(false);
+  const metricsInFlight = useRef(false);
 
   const uploadTicketAttachments = useCallback(async (files: File[]) => {
     if (!files.length) return [];
@@ -357,6 +360,14 @@ export default function DashboardPage() {
 
   const fetchServices = useCallback(
     async (token: string) => {
+      if (!organizationId) {
+        setServices([]);
+        setLoading(false);
+        setError(null);
+        return;
+      }
+      if (servicesInFlight.current) return;
+      servicesInFlight.current = true;
       setLoading(true);
       setError(null);
       let tokenToUse = token;
@@ -438,60 +449,9 @@ export default function DashboardPage() {
       }));
 
       setServices(normalizedServices);
-    } catch (fetchError) {
+      } catch (fetchError) {
       const message =
         fetchError instanceof Error ? fetchError.message : "Error desconocido al cargar el panel.";
-
-      // Fallback: si el backend no soporta organizationId aún, reintentar sin filtro
-      const needsOrgFallback =
-        organizationId &&
-        typeof message === "string" &&
-        message.toLowerCase().includes("organization");
-
-      if (needsOrgFallback) {
-        try {
-          const retryResponse = await fetch(buildApiUrl("/services/me"), {
-            headers: {
-              Authorization: `Bearer ${tokenToUse}`,
-              "Cache-Control": "no-cache",
-            },
-            cache: "no-store",
-          });
-          const retryPayload = await retryResponse.json().catch(() => null);
-          if (!retryResponse.ok) {
-            throw new Error(
-              retryPayload?.error || retryPayload?.message || "No se pudo cargar el panel."
-            );
-          }
-          const normalizedRetry: Service[] = (retryPayload.data || []).map((service: Service) => ({
-            ...service,
-            progreso:
-              typeof service.progreso === "number"
-                ? service.progreso
-                : computeProgressFromDates(service),
-          }));
-          setServices(normalizedRetry);
-          setError(null);
-          notify({
-            title: "Cargado sin organización",
-            message: "El backend aún no soporta organizationId para servicios; mostramos todos.",
-            variant: "info",
-          });
-          return;
-        } catch (retryError) {
-          const retryMessage =
-            retryError instanceof Error
-              ? retryError.message
-              : "Error al cargar servicios sin filtro.";
-          setError(retryMessage);
-          notify({
-            title: "Error al cargar servicios",
-            message: retryMessage,
-            variant: "error",
-          });
-          return;
-        }
-      }
 
       setError(message);
       notify({
@@ -499,11 +459,12 @@ export default function DashboardPage() {
         message,
         variant: "error",
       });
-    } finally {
-      setLoading(false);
-    }
-  },
-  [router, organizationId, notify],
+      } finally {
+        setLoading(false);
+        servicesInFlight.current = false;
+      }
+    },
+    [router, organizationId, notify],
   );
 
   // Función auxiliar para procesar tickets
@@ -581,6 +542,8 @@ export default function DashboardPage() {
 
   const fetchTickets = useCallback(
     async (authToken: string) => {
+      if (ticketsInFlight.current) return;
+      ticketsInFlight.current = true;
       setTicketsLoading(true);
       setTicketsError(null);
       setTicketsSuccess(null);
@@ -668,46 +631,6 @@ export default function DashboardPage() {
           ticketsError instanceof Error ? ticketsError.message : "Error desconocido al cargar tickets.";
         console.error('Error al cargar tickets:', ticketsError);
 
-        // Fallback: si el backend aún no soporta organizationId, reintentar sin el filtro
-        const needsOrgFallback =
-          organizationId &&
-          typeof message === "string" &&
-          message.toLowerCase().includes("organizationid");
-
-        if (needsOrgFallback) {
-          try {
-            const retryUrlObj = new URL(buildApiUrl("/tickets"));
-            retryUrlObj.searchParams.set("_t", String(Date.now()));
-            if (ticketFilters.estado) retryUrlObj.searchParams.set("estado", ticketFilters.estado);
-            if (ticketFilters.prioridad) retryUrlObj.searchParams.set("prioridad", ticketFilters.prioridad);
-            const retryUrl = retryUrlObj.toString();
-
-            const retryResponse = await fetch(retryUrl, {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${authToken}`,
-                "Cache-Control": "no-cache, no-store, must-revalidate",
-                Pragma: "no-cache",
-                Expires: "0",
-              },
-              cache: "no-store",
-            });
-            const retryPayload = await retryResponse.json().catch(() => null);
-            if (retryResponse.ok) {
-              processTickets(retryPayload);
-              setTicketsError(null);
-              notify({
-                title: "Cargado sin filtro de organización",
-                message: "El backend aún no soporta organizationId; se muestran todos tus tickets.",
-                variant: "info",
-              });
-              return;
-            }
-          } catch (fallbackError) {
-            console.error("Fallback sin organizationId falló:", fallbackError);
-          }
-        }
-
         setTicketsError(message);
         setTickets([]);
         notify({
@@ -717,6 +640,7 @@ export default function DashboardPage() {
         });
       } finally {
         setTicketsLoading(false);
+        ticketsInFlight.current = false;
       }
     },
     [router, organizationId, ticketFilters, notify, processTickets],
@@ -726,10 +650,17 @@ export default function DashboardPage() {
   const fetchMetrics = useCallback(
     async (authToken: string) => {
       if (!authToken) return;
+      if (!organizationId) {
+        setDashboardMetrics(null);
+        setMetricsLoading(false);
+        return;
+      }
       const now = Date.now();
       if (metricsCooldownUntil && now < metricsCooldownUntil) {
         return;
       }
+      if (metricsInFlight.current) return;
+      metricsInFlight.current = true;
       setMetricsLoading(true);
       try {
         const metrics = await fetchDashboardMetrics(authToken, organizationId || undefined);
@@ -742,43 +673,13 @@ export default function DashboardPage() {
             ? metricsError.message
             : "No se pudieron cargar las métricas.";
 
-        // Fallback sin organizationId si el backend aún no lo soporta
-        const needsOrgFallback =
-          organizationId &&
-          typeof message === "string" &&
-          message.toLowerCase().includes("organization");
-
-        if (needsOrgFallback) {
-          try {
-            const metrics = await fetchDashboardMetrics(authToken);
-            setDashboardMetrics(metrics);
-            notify({
-              title: "Métricas sin organización",
-              message: "El backend aún no soporta organizationId en métricas; mostramos globales.",
-              variant: "info",
-            });
-            return;
-          } catch (retryError) {
-            const retryMsg =
-              retryError instanceof Error
-                ? retryError.message
-                : "No se pudieron cargar las métricas (fallback).";
-            setDashboardMetrics(null);
-            notify({
-              title: "Error al cargar métricas",
-              message: retryMsg,
-              variant: "error",
-            });
-            return;
-          }
-        }
-
         const isRateLimit =
           (metricsError as any)?.status === 429 ||
           (typeof message === "string" && message.toLowerCase().includes("demasiadas solicitudes"));
         if (isRateLimit) {
           setMetricsCooldownUntil(Date.now() + 60_000); // pausa 60s
           setDashboardMetrics(null);
+          // No mostrar error en consola para 429; solo avisar
           notify({
             title: "Límite de solicitudes",
             message: "Espera un momento antes de volver a cargar las métricas.",
@@ -795,6 +696,7 @@ export default function DashboardPage() {
         });
       } finally {
         setMetricsLoading(false);
+        metricsInFlight.current = false;
       }
     },
     [organizationId, notify, metricsCooldownUntil]
@@ -1330,14 +1232,27 @@ export default function DashboardPage() {
 
         {activeTab === "overview" && (
           <>
-            {loading && (
+            {(loading || !organizationId) && (
               <section className="rounded-3xl border border-border/70 bg-background/80 p-10 text-center space-y-4">
-                <p className="text-lg text-muted-foreground">
-                  Sincronizando con tu Command Center...
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Tus datos se cargan con cifrado end-to-end.
-                </p>
+                {!organizationId ? (
+                  <>
+                    <p className="text-lg text-muted-foreground">
+                      Selecciona una organización para cargar tu Command Center.
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Usa el selector de organización en la parte superior.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-lg text-muted-foreground">
+                      Sincronizando con tu Command Center...
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Tus datos se cargan con cifrado end-to-end.
+                    </p>
+                  </>
+                )}
               </section>
             )}
 
