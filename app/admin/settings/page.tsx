@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Shield, User, Building2, RefreshCcw, AlertTriangle, CheckCircle2, Lock } from "lucide-react";
+import { Shield, User, Building2, RefreshCcw, AlertTriangle, CheckCircle2, Lock, Users } from "lucide-react";
 import { buildApiUrl } from "@/lib/api";
 import { getAccessToken, refreshAccessToken, isTokenExpired, logout } from "@/lib/auth";
 import { Card } from "@/components/ui/Card";
@@ -25,6 +25,18 @@ type MfaStatus = {
   lastVerifiedAt?: string | null;
 };
 
+type SimpleUser = {
+  id: string;
+  nombre: string;
+  email: string;
+  rol: string;
+  tier?: string;
+  estado?: string;
+  organizationId?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export default function AdminSettingsPage() {
   const [me, setMe] = useState<MeResponse | null>(null);
   const [mfa, setMfa] = useState<MfaStatus | null>(null);
@@ -32,6 +44,9 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mfaError, setMfaError] = useState<string | null>(null);
+  const [users, setUsers] = useState<SimpleUser[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [usersError, setUsersError] = useState<string | null>(null);
 
   const loadProfile = async () => {
     setLoading(true);
@@ -56,7 +71,10 @@ export default function AdminSettingsPage() {
       });
       const payload = await res.json().catch(() => null);
       if (!res.ok || !payload) throw new Error(payload?.error || payload?.message || "No se pudo cargar el perfil");
-      const data = payload.data || payload.user || payload;
+      const data =
+        (payload.data && (payload.data.user || payload.data)) ||
+        payload.user ||
+        payload;
       setMe(data);
       setOrgFromProfile(data.organizationId || data.organization_id || null);
     } catch (err) {
@@ -90,7 +108,7 @@ export default function AdminSettingsPage() {
       if (!res.ok || !payload) throw new Error(payload?.error || payload?.message || "No se pudo cargar MFA");
       const data = payload.data || payload;
       setMfa({
-        enabled: Boolean(data.enabled),
+        enabled: Boolean(data.enabled ?? data.mfaEnabled),
         enrolled: data.enrolled,
         lastVerifiedAt: data.lastVerifiedAt || data.last_verified_at || null,
       });
@@ -104,7 +122,41 @@ export default function AdminSettingsPage() {
   useEffect(() => {
     loadProfile();
     loadMfa();
+    loadUsers();
   }, []);
+
+  const loadUsers = async () => {
+    setUsersLoading(true);
+    setUsersError(null);
+    let token = getAccessToken();
+    if (token && isTokenExpired(token)) {
+      const refreshed = await refreshAccessToken();
+      if (refreshed) token = refreshed;
+      else {
+        await logout();
+        setUsersError("Sesión expirada. Vuelve a iniciar sesión.");
+        setUsersLoading(false);
+        return;
+      }
+    }
+    try {
+      const res = await fetch(buildApiUrl("/users"), {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        cache: "no-store",
+        credentials: "include",
+      });
+      const payload = await res.json().catch(() => null);
+      if (!res.ok || !payload) throw new Error(payload?.error || payload?.message || "No se pudieron cargar usuarios");
+      const arr = payload.data?.users || payload.users || payload.data || [];
+      setUsers(Array.isArray(arr) ? arr : []);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Error al cargar usuarios";
+      setUsersError(msg);
+      setUsers([]);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-background px-6 py-16">
@@ -139,6 +191,10 @@ export default function AdminSettingsPage() {
               <p className="text-sm font-medium text-foreground">Cuenta</p>
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Cuenta (ID)</p>
+                <p className="text-foreground font-mono text-xs">{me?.id || "—"}</p>
+              </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Nombre</p>
                 <p className="text-foreground">{me?.nombre || me?.name || "—"}</p>
@@ -212,6 +268,60 @@ export default function AdminSettingsPage() {
             label="Selecciona organización"
             onChange={(org: Org | null) => setOrgFromProfile(org?.id || null)}
           />
+        </Card>
+
+        <Card className="space-y-3 p-5">
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-foreground" />
+            <p className="text-sm font-medium text-foreground">Usuarios (admin)</p>
+          </div>
+          {usersError && (
+            <div className="flex items-center gap-2 rounded-xl border border-amber-500/60 bg-amber-500/10 px-3 py-2 text-xs text-amber-700">
+              <AlertTriangle className="w-4 h-4" />
+              {usersError}
+            </div>
+          )}
+          {usersLoading ? (
+            <p className="text-sm text-muted-foreground">Cargando usuarios...</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead className="text-xs uppercase text-muted-foreground">
+                  <tr>
+                    <th className="text-left py-2 pr-3">Cuenta</th>
+                    <th className="text-left py-2 pr-3">Nombre</th>
+                    <th className="text-left py-2 pr-3">Correo</th>
+                    <th className="text-left py-2 pr-3">Rol</th>
+                    <th className="text-left py-2 pr-3">Tier</th>
+                    <th className="text-left py-2 pr-3">Estado</th>
+                    <th className="text-left py-2">Org</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {users.map((u) => (
+                    <tr key={u.id}>
+                      <td className="py-2 pr-3 font-mono text-xs text-muted-foreground">
+                        {u.id.slice(0, 6)}…
+                      </td>
+                      <td className="py-2 pr-3">{u.nombre || "—"}</td>
+                      <td className="py-2 pr-3">{u.email}</td>
+                      <td className="py-2 pr-3">{u.rol}</td>
+                      <td className="py-2 pr-3">{u.tier || "—"}</td>
+                      <td className="py-2 pr-3">{u.estado || "—"}</td>
+                      <td className="py-2">{u.organizationId || "—"}</td>
+                    </tr>
+                  ))}
+                  {users.length === 0 && (
+                    <tr>
+                      <td className="py-3 text-sm text-muted-foreground" colSpan={7}>
+                        No hay usuarios.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </Card>
       </div>
     </main>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Shield, Users, Ticket, Cpu, Activity, HeartPulse } from "lucide-react";
 import Link from "next/link";
 import { buildApiUrl } from "@/lib/api";
+import { getAccessToken, refreshAccessToken, isTokenExpired, logout } from "@/lib/auth";
 
 export default function AdminDashboardPage() {
   const [healthStatus, setHealthStatus] = useState<"ok" | "down" | "">("");
@@ -13,6 +14,21 @@ export default function AdminDashboardPage() {
   const [usersCount, setUsersCount] = useState<string>("—");
   const [ticketsCount, setTicketsCount] = useState<string>("—");
   const [countsLoading, setCountsLoading] = useState(false);
+  const [countsError, setCountsError] = useState<string | null>(null);
+
+  const getAuthHeader = async () => {
+    let token = getAccessToken();
+    if (token && isTokenExpired(token)) {
+      const refreshed = await refreshAccessToken();
+      if (refreshed) token = refreshed;
+      else {
+        await logout();
+        return null;
+      }
+    }
+    if (!token) return null;
+    return { Authorization: `Bearer ${token}` } as HeadersInit;
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -23,14 +39,9 @@ export default function AdminDashboardPage() {
         const healthPayload = await healthRes.json().catch(() => null);
         if (healthRes.ok && healthPayload) {
           const data = healthPayload.data || healthPayload;
-          const entries = Array.isArray(data) ? data : Object.values(data || {});
-          const anyDown = entries.some((entry: any) => {
-            const st = (entry?.status || "").toString().toLowerCase();
-            if (["ok", "up", "ready", "healthy"].includes(st)) return false;
-            if (entry?.healthy === true) return false;
-            return true;
-          });
-          setHealthStatus(anyDown ? "down" : "ok");
+          const overall = (healthPayload.status || data.status || "").toString().toLowerCase();
+          const overallOk = ["ok", "up", "ready", "healthy"].includes(overall);
+          setHealthStatus(overallOk ? "ok" : "down");
           setHealthError(null);
         } else {
           setHealthStatus("down");
@@ -64,37 +75,47 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const loadCounts = async () => {
       setCountsLoading(true);
+      setCountsError(null);
       try {
-        const headers: HeadersInit = {};
-        try {
-          const stored = localStorage.getItem("access_token");
-          if (stored) headers.Authorization = `Bearer ${stored}`;
-        } catch {
-          // ignore storage errors
-        }
+        const headers: HeadersInit = (await getAuthHeader()) || {};
+        const baseOptions = { cache: "no-store", credentials: "include" as const, headers };
 
         // Usuarios
-        const usersRes = await fetch(buildApiUrl("/users"), { headers, cache: "no-store" });
+        const usersRes = await fetch(buildApiUrl("/users"), baseOptions);
         const usersPayload = await usersRes.json().catch(() => null);
         if (usersRes.ok && usersPayload) {
           const arr = usersPayload.data?.users || usersPayload.users || usersPayload.data || [];
           if (Array.isArray(arr)) setUsersCount(String(arr.length));
+          const totalUsers =
+            usersPayload.data?.pagination?.total ||
+            usersPayload.pagination?.total ||
+            usersPayload.total ||
+            usersPayload.count ||
+            (Array.isArray(usersPayload.data) ? usersPayload.data.length : undefined);
+          if (totalUsers !== undefined) setUsersCount(String(totalUsers));
+        } else if (usersRes.status === 401) {
+          setUsersCount("N/D");
+          setCountsError("Sesión requerida para leer usuarios");
+        } else {
+          setUsersCount("N/D");
         }
 
         // Tickets (usa un límite pequeño y toma total si viene)
-        const ticketsRes = await fetch(buildApiUrl("/tickets?page=1&limit=20"), {
-          headers,
-          cache: "no-store",
-        });
+        const ticketsRes = await fetch(buildApiUrl("/tickets?page=1&limit=20"), baseOptions);
         const ticketsPayload = await ticketsRes.json().catch(() => null);
         if (ticketsRes.ok && ticketsPayload) {
           const total =
+            ticketsPayload.data?.pagination?.total ||
+            ticketsPayload.pagination?.total ||
             ticketsPayload.total ||
             ticketsPayload.count ||
-            ticketsPayload.data?.total ||
-            ticketsPayload.data?.count ||
             (Array.isArray(ticketsPayload.data?.tickets) ? ticketsPayload.data.tickets.length : undefined);
           if (total !== undefined) setTicketsCount(String(total));
+        } else if (ticketsRes.status === 401) {
+          setTicketsCount("N/D");
+          setCountsError("Sesión requerida para leer tickets");
+        } else {
+          setTicketsCount("N/D");
         }
       } finally {
         setCountsLoading(false);
@@ -211,8 +232,12 @@ export default function AdminDashboardPage() {
             <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Usuarios</p>
             <Users className="w-4 h-4 text-foreground" />
           </div>
-          <p className="text-3xl font-semibold text-foreground">—</p>
-          <p className="text-xs text-muted-foreground">Total usuarios activos (conecta /api/users para contar).</p>
+          <p className="text-3xl font-semibold text-foreground">
+            {countsLoading ? "…" : usersCount}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Total usuarios activos
+          </p>
         </div>
 
         <div className="rounded-2xl border border-border/70 bg-background/80 p-4 space-y-3">
@@ -220,10 +245,20 @@ export default function AdminDashboardPage() {
             <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Tickets</p>
             <Ticket className="w-4 h-4 text-foreground" />
           </div>
-          <p className="text-3xl font-semibold text-foreground">—</p>
-          <p className="text-xs text-muted-foreground">Abiertos / SLA crítico (conecta /api/tickets para contar).</p>
+          <p className="text-3xl font-semibold text-foreground">
+            {countsLoading ? "…" : ticketsCount}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Abiertos / SLA crítico
+          </p>
         </div>
       </section>
+
+      {countsError && (
+        <div className="rounded-2xl border border-amber-500/60 bg-amber-500/10 px-3 py-2 text-sm text-amber-700">
+          {countsError}
+        </div>
+      )}
 
       <section className="rounded-2xl border border-border/70 bg-background/80 p-5">
         <div className="flex items-center gap-2 mb-3">

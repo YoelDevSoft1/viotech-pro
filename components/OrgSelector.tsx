@@ -16,6 +16,7 @@ export default function OrgSelector({ onChange, label }: Props) {
   const [orgId, setOrgId] = useState("");
   const [customOrg, setCustomOrg] = useState("");
   const [orgs, setOrgs] = useState<Org[]>([]);
+  const [initialized, setInitialized] = useState(false);
 
   const loadOrgs = useCallback(async () => {
     let token = getAccessToken();
@@ -37,12 +38,18 @@ export default function OrgSelector({ onChange, label }: Props) {
           id: String(o.id),
           nombre: o.nombre || o.name || String(o.id),
         }));
-        if (mapped.length) setOrgs(mapped);
+        if (mapped.length) {
+          setOrgs(mapped);
+          if (!orgId && !initialized) {
+            setOrgId(mapped[0].id);
+            setInitialized(true);
+          }
+        }
       }
     } catch {
       // si falla, no poblamos mock
     }
-  }, []);
+  }, [initialized]);
 
   useEffect(() => {
     const saved = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
