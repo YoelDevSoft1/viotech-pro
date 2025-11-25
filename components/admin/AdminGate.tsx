@@ -12,11 +12,14 @@ type Props = {
 type MeResponse = {
   role?: string;
   rol?: string;
+  user?: { role?: string; rol?: string };
   permisos?: string[];
   permissions?: string[];
 };
 
-const ENABLE_ADMIN = process.env.NEXT_PUBLIC_ENABLE_ADMIN === "true";
+const ENABLE_ADMIN =
+  process.env.NEXT_PUBLIC_ENABLE_ADMIN === "true" ||
+  process.env.NEXT_PUBLIC_ENABLE_ADMIN === undefined;
 const ADMIN_ROLES = ["admin", "superadmin", "ops", "support", "soporte"];
 
 export default function AdminGate({ children }: Props) {
@@ -58,7 +61,7 @@ export default function AdminGate({ children }: Props) {
           throw new Error(payload?.error || payload?.message || "No autorizado");
         }
         const data: MeResponse = payload.data || payload;
-        const role = data.role || data.rol || "";
+        const role = data.user?.rol || data.user?.role || data.role || data.rol || "";
         const hasAccess = ADMIN_ROLES.includes(role.toLowerCase());
         if (!hasAccess) {
           setMessage("No tienes permisos para acceder al panel administrativo.");
