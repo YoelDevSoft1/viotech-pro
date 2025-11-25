@@ -172,11 +172,19 @@ export default function RoleManager() {
         });
         const payload = await res.json().catch(() => null);
         if (!res.ok || !payload) return;
-        const list = payload.data || payload;
+        const raw = payload.data || payload.organizations || payload || [];
+        const list = Array.isArray(raw?.organizations)
+          ? raw.organizations
+          : Array.isArray(raw)
+            ? raw
+            : Array.isArray(raw.data)
+              ? raw.data
+              : [];
         setOrgs(
-          Array.isArray(list)
-            ? list.map((o: any) => ({ id: String(o.id), nombre: o.nombre || o.name || o.id }))
-            : [],
+          list.map((o: any) => ({
+            id: String(o.id),
+            nombre: o.nombre || o.name || o.id,
+          })),
         );
       } catch {
         // ignore org errors for now
@@ -412,6 +420,11 @@ export default function RoleManager() {
           <div className="flex items-center gap-2 rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-600">
             <AlertCircle className="w-4 h-4" />
             {error}
+          </div>
+        )}
+        {!error && users.length === 0 && !loading && (
+          <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
+            No hay usuarios disponibles para mostrar.
           </div>
         )}
       </header>
