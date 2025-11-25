@@ -312,6 +312,23 @@ export default function DashboardPage() {
   const authInFlight = useRef(false);
   const organizationsInFlight = useRef(false);
   const mfaInFlight = useRef(false);
+  const quickLinks = useMemo(
+    () => [
+      { href: "/client/tickets", label: "Tickets & Soporte", icon: MessageSquare },
+      { href: "/client/ia/predictor", label: "Predictor IA", icon: Sparkles },
+      { href: "/services", label: "Servicios", icon: Shield },
+      { href: "/admin", label: "Admin", icon: Lock },
+      { href: "/admin/health", label: "Salud", icon: Shield },
+      { href: "/admin/settings", label: "Configuración", icon: Users2 },
+    ],
+    []
+  );
+  const primaryQuickLinks = quickLinks.slice(0, 3);
+  const overflowQuickLinks = quickLinks.slice(3);
+  const handleQuickLinkChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    if (value) router.push(value);
+  };
 
   const uploadTicketAttachments = useCallback(async (files: File[]) => {
     if (!files.length) return [];
@@ -1196,8 +1213,40 @@ export default function DashboardPage() {
                 roadmap compartido y priorizamos tus hitos estratégicos.
               </p>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 w-full sm:w-auto">
+              <div className="flex flex-wrap gap-2">
+                {primaryQuickLinks.map((link) => {
+                  const Icon = link.icon;
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-background transition-colors"
+                    >
+                      <Icon className="w-4 h-4" />
+                      {link.label}
+                    </Link>
+                  );
+                })}
+                {overflowQuickLinks.length > 0 && (
+                  <select
+                    aria-label="Más accesos"
+                    className="rounded-full border border-border px-3 py-2 text-xs font-medium text-muted-foreground bg-background"
+                    defaultValue=""
+                    onChange={handleQuickLinkChange}
+                  >
+                    <option value="" disabled>
+                      Más accesos
+                    </option>
+                    {overflowQuickLinks.map((link) => (
+                      <option key={link.href} value={link.href}>
+                        {link.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
                 <button
                   className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-background transition-colors"
                   onClick={() => setChangePasswordOpen(true)}
@@ -1205,23 +1254,23 @@ export default function DashboardPage() {
                   <Lock className="w-4 h-4" />
                   Cambiar contraseña
                 </button>
+                <button
+                  className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-background transition-colors"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="w-4 h-4" />
+                  Cerrar sesión
+                </button>
+                <a
+                  href="https://calendly.com/viotech/demo"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-xs font-medium text-background hover:scale-105 transition-transform"
+                >
+                  Agendar reunión ejecutiva
+                  <ArrowRight className="w-3 h-3" />
+                </a>
               </div>
-              <button
-                className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-background transition-colors"
-                onClick={handleLogout}
-              >
-                <LogOut className="w-4 h-4" />
-                Cerrar sesión
-              </button>
-              <a
-                href="https://calendly.com/viotech/demo"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-xs font-medium text-background hover:scale-105 transition-transform"
-              >
-                Agendar reunión ejecutiva
-                <ArrowRight className="w-3 h-3" />
-              </a>
             </div>
           </div>
           {isTopTier ? (

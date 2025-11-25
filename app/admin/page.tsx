@@ -14,6 +14,7 @@ export default function AdminDashboardPage() {
   const [usersCount, setUsersCount] = useState<string>("N/D");
   const [ticketsCount, setTicketsCount] = useState<string>("N/D");
   const [servicesCount, setServicesCount] = useState<string>("N/D");
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [cooldownUntil, setCooldownUntil] = useState<number>(0);
   const [summaryError, setSummaryError] = useState<string | null>(null);
@@ -58,11 +59,12 @@ export default function AdminDashboardPage() {
       });
       const authPayload = await authRes.json().catch(() => null);
       if (!authRes.ok || !authPayload) throw new Error(authPayload?.error || "No se pudo leer perfil");
-      const authData = authPayload.data || authPayload.user || authPayload;
+      const authData = authPayload.user || authPayload.data?.user || authPayload.data || authPayload;
       const org = authData.organizationId || authData.organization_id;
       if (org && typeof org === "string") {
         setOrganizationId(org);
         orgRef.current = org;
+        setSummaryError(null);
       } else {
         setSummaryError("No hay organización asignada");
         inFlight.current = false;
@@ -125,8 +127,9 @@ export default function AdminDashboardPage() {
       if (servicesRes.status === "fulfilled") {
         const payload = await servicesRes.value.json().catch(() => null);
         if (servicesRes.value.status === 429) setCooldownUntil(Date.now() + 60_000);
-        if (servicesRes.value.ok && Array.isArray(payload?.data)) {
-          setServicesCount(String(payload.data.length));
+        const servicesArr = payload?.data?.services || payload?.services || payload?.data;
+        if (servicesRes.value.ok && Array.isArray(servicesArr)) {
+          setServicesCount(String(servicesArr.length));
         } else {
           setServicesCount("N/D");
         }
