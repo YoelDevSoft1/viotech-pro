@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { buildApiUrl } from "@/lib/api";
 import { getAccessToken, isTokenExpired, refreshAccessToken } from "@/lib/auth";
 
@@ -17,8 +17,10 @@ export default function OrgSelector({ onChange, label }: Props) {
   const [customOrg, setCustomOrg] = useState("");
   const [orgs, setOrgs] = useState<Org[]>([]);
   const [initialized, setInitialized] = useState(false);
+  const loadingRef = useRef(false);
 
   const loadOrgs = useCallback(async () => {
+    if (loadingRef.current) return;
     let token = getAccessToken();
     if (!token) return;
     if (isTokenExpired(token)) {
@@ -26,6 +28,7 @@ export default function OrgSelector({ onChange, label }: Props) {
       if (refreshed) token = refreshed;
       else return;
     }
+    loadingRef.current = true;
     try {
       const res = await fetch(buildApiUrl("/organizations"), {
         headers: { Authorization: `Bearer ${token}` },
@@ -48,6 +51,8 @@ export default function OrgSelector({ onChange, label }: Props) {
       }
     } catch {
       // si falla, no poblamos mock
+    } finally {
+      loadingRef.current = false;
     }
   }, [initialized]);
 

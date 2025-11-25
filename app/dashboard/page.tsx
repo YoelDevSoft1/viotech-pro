@@ -306,6 +306,9 @@ export default function DashboardPage() {
   const ticketsInFlight = useRef(false);
   const servicesInFlight = useRef(false);
   const metricsInFlight = useRef(false);
+  const authInFlight = useRef(false);
+  const organizationsInFlight = useRef(false);
+  const mfaInFlight = useRef(false);
 
   const uploadTicketAttachments = useCallback(async (files: File[]) => {
     if (!files.length) return [];
@@ -360,14 +363,15 @@ export default function DashboardPage() {
 
   const fetchServices = useCallback(
     async (token: string) => {
+      if (servicesInFlight.current) return;
+      servicesInFlight.current = true;
       if (!organizationId) {
         setServices([]);
         setLoading(false);
         setError(null);
+        servicesInFlight.current = false;
         return;
       }
-      if (servicesInFlight.current) return;
-      servicesInFlight.current = true;
       setLoading(true);
       setError(null);
       let tokenToUse = token;
