@@ -37,12 +37,8 @@ export default function AdminSettingsPage() {
     setLoading(true);
     setError(null);
     let token = getAccessToken();
-    if (!token) {
-      setError("No autenticado. Inicia sesión nuevamente.");
-      setLoading(false);
-      return;
-    }
-    if (isTokenExpired(token)) {
+    // Si no hay token, intentamos con cookies (Render envía token en header?); si hay token expirado, refrescamos.
+    if (token && isTokenExpired(token)) {
       const refreshed = await refreshAccessToken();
       if (refreshed) token = refreshed;
       else {
@@ -54,8 +50,9 @@ export default function AdminSettingsPage() {
     }
     try {
       const res = await fetch(buildApiUrl("/auth/me"), {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         cache: "no-store",
+        credentials: "include",
       });
       const payload = await res.json().catch(() => null);
       if (!res.ok || !payload) throw new Error(payload?.error || payload?.message || "No se pudo cargar el perfil");
@@ -87,10 +84,16 @@ export default function AdminSettingsPage() {
       const res = await fetch(buildApiUrl("/mfa/status"), {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         cache: "no-store",
+        credentials: "include",
       });
       const payload = await res.json().catch(() => null);
       if (!res.ok || !payload) throw new Error(payload?.error || payload?.message || "No se pudo cargar MFA");
-      setMfa(payload.data || payload);
+      const data = payload.data || payload;
+      setMfa({
+        enabled: Boolean(data.enabled),
+        enrolled: data.enrolled,
+        lastVerifiedAt: data.lastVerifiedAt || data.last_verified_at || null,
+      });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Error al cargar MFA";
       setMfaError(msg);
@@ -138,7 +141,7 @@ export default function AdminSettingsPage() {
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Nombre</p>
-                <p className="text-foreground">{me?.nombre || "—"}</p>
+                <p className="text-foreground">{me?.nombre || me?.name || "—"}</p>
               </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Correo</p>
@@ -175,16 +178,16 @@ export default function AdminSettingsPage() {
               </p>
             )}
             <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between rounded-xl border border-border/70 bg-muted/20 px-3 py-2">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Estado MFA</p>
-                  <p className="text-foreground">
-                    {mfa ? (mfa.enabled ? "Habilitado" : "Deshabilitado") : "—"}
-                  </p>
-                </div>
-                {mfa?.enabled ? (
-                  <CheckCircle2 className="w-4 h-4 text-green-600" />
-                ) : (
+                <div className="flex items-center justify-between rounded-xl border border-border/70 bg-muted/20 px-3 py-2">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Estado MFA</p>
+                    <p className="text-foreground">
+                      {mfa ? (mfa.enabled ? "Habilitado" : "Deshabilitado") : "—"}
+                    </p>
+                  </div>
+                  {mfa?.enabled ? (
+                    <CheckCircle2 className="w-4 h-4 text-green-600" />
+                  ) : (
                   <AlertTriangle className="w-4 h-4 text-amber-600" />
                 )}
               </div>
