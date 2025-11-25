@@ -78,14 +78,26 @@ export default function AdminHealthPage() {
       if (!res.ok || !payload) {
         throw new Error(payload?.error || payload?.message || "No se pudo obtener salud del sistema");
       }
-      const entries: HealthEntry[] = Array.isArray(payload.data)
-        ? payload.data
-        : Object.entries(payload.data || payload).map(([name, value]: any) => ({
-            name,
-            status: value?.status || value?.healthy ? "ok" : "down",
-            error: value?.error || null,
-          }));
+      const data = payload.data || payload;
+      const overallOk = (payload.status || data.status || "").toString().toLowerCase() === "ok";
+      const entries: HealthEntry[] = Array.isArray(data)
+        ? data
+        : Object.entries(data).map(([name, value]: any) => {
+            if (value && typeof value === "object") {
+              return {
+                name,
+                status: value.status || value.healthy ? "ok" : "down",
+                error: value.error || null,
+              };
+            }
+            return {
+              name,
+              status: overallOk ? "ok" : "down",
+              error: null,
+            };
+          });
       setHealth(entries);
+      setError(null);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Error al cargar salud";
       setError(msg);
@@ -121,8 +133,9 @@ export default function AdminHealthPage() {
       });
       const payload = await res.json().catch(() => null);
       if (!res.ok || !payload) throw new Error("No se pudo leer auth");
-      const data = payload.data || payload.user || payload;
-      setAuthRole(data.rol || data.role || "");
+      const data = payload.data || payload;
+      const user = data.user || data;
+      setAuthRole(user.rol || user.role || "");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Error al validar rol";
       setAuthError(msg);
