@@ -126,9 +126,17 @@ export default function RoleManager() {
           throw new Error(payload?.error || payload?.message || "No se pudo cargar usuarios");
         }
 
-        const data = payload.data || payload.users || [];
+        const dataRaw = payload.data || payload.users || payload || [];
+        const list = Array.isArray(dataRaw?.users)
+          ? dataRaw.users
+          : Array.isArray(dataRaw)
+            ? dataRaw
+            : Array.isArray(dataRaw.data)
+              ? dataRaw.data
+              : [];
+
         setUsers(
-          data.map(
+          list.map(
             (u: any): UserRecord => {
               const normalizedRole = (u.rol || u.role || "cliente").toLowerCase() as Role;
               return {
