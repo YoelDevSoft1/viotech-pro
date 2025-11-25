@@ -12,6 +12,7 @@ type HealthEntry = {
   name: string;
   status: string;
   error?: string | null;
+  value?: string | null;
 };
 
 type ModelStatus = {
@@ -53,6 +54,12 @@ export default function AdminHealthPage() {
     if (organizationId) url.searchParams.set("organizationId", organizationId);
     return url.toString();
   }, [organizationId]);
+  const labelMap: Record<string, string> = {
+    status: "Estado",
+    message: "Mensaje",
+    timestamp: "Fecha/hora",
+    environment: "Entorno",
+  };
 
   const loadHealth = async () => {
     setLoading(true);
@@ -84,21 +91,24 @@ export default function AdminHealthPage() {
       const entries: HealthEntry[] = Array.isArray(data)
         ? data
         : Object.entries(data).map(([name, value]: any) => {
+            const label = labelMap[name] || name;
             if (value && typeof value === "object") {
               const st = (value.status || "").toString().toLowerCase();
               return {
-                name,
+                name: label,
                 status:
                   ["ok", "up", "ready", "healthy"].includes(st) || value.healthy
                     ? "ok"
                     : "down",
                 error: value.error || null,
+                value: value.message || null,
               };
             }
             return {
-              name,
+              name: label,
               status: overallOk ? "ok" : "down",
               error: null,
+              value: value !== undefined && value !== null ? String(value) : null,
             };
           });
       setHealth(entries);
