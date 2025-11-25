@@ -197,7 +197,7 @@ export default function AdminSettingsPage() {
               </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Nombre</p>
-                <p className="text-foreground">{me?.nombre || me?.name || "—"}</p>
+                <p className="text-foreground">{me?.nombre || "—"}</p>
               </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Correo</p>
