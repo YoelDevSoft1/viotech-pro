@@ -10,6 +10,9 @@ export default function AdminDashboardPage() {
   const [modelStatus, setModelStatus] = useState<{ enabled: boolean; healthy: boolean; version: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [healthError, setHealthError] = useState<string | null>(null);
+  const [usersCount, setUsersCount] = useState<string>("—");
+  const [ticketsCount, setTicketsCount] = useState<string>("—");
+  const [countsLoading, setCountsLoading] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -19,10 +22,14 @@ export default function AdminDashboardPage() {
         const healthRes = await fetch(buildApiUrl("/health"), { cache: "no-store" });
         const healthPayload = await healthRes.json().catch(() => null);
         if (healthRes.ok && healthPayload) {
-          const entries = Array.isArray(healthPayload.data)
-            ? healthPayload.data
-            : Object.values(healthPayload.data || healthPayload || {});
-          const anyDown = entries.some((entry: any) => entry?.status !== "ok" && entry?.healthy === false);
+          const data = healthPayload.data || healthPayload;
+          const entries = Array.isArray(data) ? data : Object.values(data || {});
+          const anyDown = entries.some((entry: any) => {
+            const st = (entry?.status || "").toString().toLowerCase();
+            if (["ok", "up", "ready", "healthy"].includes(st)) return false;
+            if (entry?.healthy === true) return false;
+            return true;
+          });
           setHealthStatus(anyDown ? "down" : "ok");
           setHealthError(null);
         } else {
@@ -52,6 +59,48 @@ export default function AdminDashboardPage() {
       }
     };
     load();
+  }, []);
+
+  useEffect(() => {
+    const loadCounts = async () => {
+      setCountsLoading(true);
+      try {
+        const headers: HeadersInit = {};
+        try {
+          const stored = localStorage.getItem("access_token");
+          if (stored) headers.Authorization = `Bearer ${stored}`;
+        } catch {
+          // ignore storage errors
+        }
+
+        // Usuarios
+        const usersRes = await fetch(buildApiUrl("/users"), { headers, cache: "no-store" });
+        const usersPayload = await usersRes.json().catch(() => null);
+        if (usersRes.ok && usersPayload) {
+          const arr = usersPayload.data?.users || usersPayload.users || usersPayload.data || [];
+          if (Array.isArray(arr)) setUsersCount(String(arr.length));
+        }
+
+        // Tickets (usa un límite pequeño y toma total si viene)
+        const ticketsRes = await fetch(buildApiUrl("/tickets?page=1&limit=20"), {
+          headers,
+          cache: "no-store",
+        });
+        const ticketsPayload = await ticketsRes.json().catch(() => null);
+        if (ticketsRes.ok && ticketsPayload) {
+          const total =
+            ticketsPayload.total ||
+            ticketsPayload.count ||
+            ticketsPayload.data?.total ||
+            ticketsPayload.data?.count ||
+            (Array.isArray(ticketsPayload.data?.tickets) ? ticketsPayload.data.tickets.length : undefined);
+          if (total !== undefined) setTicketsCount(String(total));
+        }
+      } finally {
+        setCountsLoading(false);
+      }
+    };
+    loadCounts();
   }, []);
 
   return (

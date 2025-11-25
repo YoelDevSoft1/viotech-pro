@@ -79,14 +79,19 @@ export default function AdminHealthPage() {
         throw new Error(payload?.error || payload?.message || "No se pudo obtener salud del sistema");
       }
       const data = payload.data || payload;
-      const overallOk = (payload.status || data.status || "").toString().toLowerCase() === "ok";
+      const overallStatus = (payload.status || data.status || "").toString().toLowerCase();
+      const overallOk = ["ok", "up", "ready", "healthy"].includes(overallStatus);
       const entries: HealthEntry[] = Array.isArray(data)
         ? data
         : Object.entries(data).map(([name, value]: any) => {
             if (value && typeof value === "object") {
+              const st = (value.status || "").toString().toLowerCase();
               return {
                 name,
-                status: value.status || value.healthy ? "ok" : "down",
+                status:
+                  ["ok", "up", "ready", "healthy"].includes(st) || value.healthy
+                    ? "ok"
+                    : "down",
                 error: value.error || null,
               };
             }
