@@ -14,6 +14,10 @@ type Props = {
 type MePayload = {
   rol?: string;
   role?: string;
+  user?: {
+    rol?: string;
+    role?: string;
+  };
 };
 
 export default function RoleGate({ allowedRoles, children, fallbackHref }: Props) {
@@ -49,7 +53,8 @@ export default function RoleGate({ allowedRoles, children, fallbackHref }: Props
         const payload = await res.json().catch(() => null);
         if (!res.ok || !payload) throw new Error("No autorizado");
         const data: MePayload = payload.data || payload;
-        const role = String(data.rol || data.role || "").toLowerCase();
+        const rawRole = data.user?.rol || data.user?.role || data.rol || data.role || "";
+        const role = String(rawRole).toLowerCase();
         const isAdmin = role === "admin";
         if (!role || (!isAdmin && !allowedRoles.includes(role))) {
           setMessage("No tienes permisos para ver esta sección.");
