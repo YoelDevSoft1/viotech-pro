@@ -5,6 +5,7 @@ import { Shield, Users, Ticket, Cpu, Activity, HeartPulse, RefreshCcw } from "lu
 import Link from "next/link";
 import { buildApiUrl } from "@/lib/api";
 import { getAccessToken, refreshAccessToken, isTokenExpired, logout } from "@/lib/auth";
+import { Button } from "@/components/ui/Button";
 
 export default function AdminDashboardPage() {
   const [healthStatus, setHealthStatus] = useState<string>("N/D");

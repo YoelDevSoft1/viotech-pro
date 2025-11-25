@@ -26,7 +26,7 @@ import ChangePasswordModal from "@/components/ChangePasswordModal";
 import MFASettings from "@/components/MFASettings";
 import TimelinePredictor from "@/components/TimelinePredictor";
 import AITicketAssistant from "@/components/AITicketAssistant";
-import OrgSelector, { type Org } from "@/components/OrgSelector";
+// OrgSelector eliminado para evitar dependencias
 import { Select } from "@/components/ui/Select";
 import { useToast } from "@/components/ui/ToastProvider";
 
@@ -75,6 +75,7 @@ type Ticket = {
 
 const TOKEN_KEYS = ["viotech_token", "authTokenVioTech"];
 const USERNAME_KEYS = ["viotech_user_name", "userNameVioTech"];
+const ORG_KEYS = ["viotech_org_id"];
 const ENABLE_PREDICTOR = process.env.NEXT_PUBLIC_ENABLE_PREDICTOR === "true";
 const ENABLE_AI_ASSISTANT = process.env.NEXT_PUBLIC_ENABLE_AI_ASSISTANT === "true";
 const SHOW_DASHBOARD_ASSISTANT = false; // IA avanzada movida a vista dedicada
@@ -298,6 +299,7 @@ export default function DashboardPage() {
   const [metricsCooldownUntil, setMetricsCooldownUntil] = useState<number>(0);
   const [servicesCooldownUntil, setServicesCooldownUntil] = useState<number>(0);
   const [organizationId, setOrganizationId] = useState<string>("");
+  const [orgError, setOrgError] = useState<string | null>(null);
   const isPrivileged = userRole !== "cliente";
   const [modelStatus, setModelStatus] = useState<ModelStatus | null>(null);
   const [modelStatusError, setModelStatusError] = useState<string | null>(null);
@@ -880,6 +882,7 @@ export default function DashboardPage() {
       authInFlight.current = true;
       let storedToken = getAccessToken();
       const storedName = getFromStorage(USERNAME_KEYS);
+      const savedOrg = getFromStorage(ORG_KEYS);
 
       if (!storedToken) {
         router.replace("/login?from=/dashboard&reason=no_token");
@@ -910,12 +913,18 @@ export default function DashboardPage() {
       });
         const payload = await res.json().catch(() => null);
         if (res.ok && payload) {
-          const data = payload.data || payload;
+          const data = payload.data?.user || payload.user || payload.data || payload;
           const role = data.rol || data.role || "cliente";
           setUserRole(String(role).toLowerCase());
           const orgFromProfile = data.organizationId || data.organization_id;
           if (orgFromProfile && typeof orgFromProfile === "string") {
             setOrganizationId(orgFromProfile);
+            setOrgError(null);
+          } else if (savedOrg) {
+            setOrganizationId(savedOrg);
+            setOrgError(null);
+          } else {
+            setOrgError("No hay organización asignada al perfil.");
           }
         }
       } catch {
@@ -1389,7 +1398,7 @@ export default function DashboardPage() {
                 </section>
 
         <section className="rounded-3xl border border-border/70 bg-muted/20 p-8 space-y-6">
-          <OrgSelector onChange={(org: Org | null) => setOrganizationId(org?.id || "")} />
+          {/* Selector de organización deshabilitado temporalmente; usamos la org del perfil */}
         </section>
 
         <section className="rounded-3xl border border-border/70 bg-muted/20 p-8 space-y-6">
@@ -1540,7 +1549,7 @@ export default function DashboardPage() {
                 <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
                   Organización
                 </label>
-                <OrgSelector onChange={(org: Org | null) => setOrganizationId(org?.id || "")} />
+                {/* Selector de organización deshabilitado temporalmente */}
               </div>
               <div className="space-y-1">
                 <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
