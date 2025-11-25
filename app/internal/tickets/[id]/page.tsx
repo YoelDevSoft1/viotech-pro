@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 import { buildApiUrl } from "@/lib/api";
 import { getAccessToken, isTokenExpired, refreshAccessToken, logout } from "@/lib/auth";
@@ -21,6 +21,15 @@ type Ticket = {
 };
 
 export default function InternalTicketDetail({ params }: { params: { id: string } }) {
+  // useParams evita el warning de Next sobre params async en clientes
+  const routeParams = useParams();
+  const ticketId = Array.isArray(routeParams?.id)
+    ? routeParams?.id[0]
+    : typeof routeParams?.id === "string"
+      ? routeParams.id
+      : typeof (params as any)?.id === "string"
+        ? (params as any).id
+        : "";
   const router = useRouter();
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [loading, setLoading] = useState(false);
@@ -29,11 +38,12 @@ export default function InternalTicketDetail({ params }: { params: { id: string 
   const [commentLoading, setCommentLoading] = useState(false);
 
   const fetchTicket = useCallback(async () => {
+    if (!ticketId) return;
     setLoading(true);
     setError(null);
     let token = getAccessToken();
     if (!token) {
-      router.replace(`/login?from=/internal/tickets/${params.id}`);
+      router.replace(`/login?from=/internal/tickets/${ticketId}`);
       return;
     }
     if (isTokenExpired(token)) {
@@ -41,13 +51,13 @@ export default function InternalTicketDetail({ params }: { params: { id: string 
       if (refreshed) token = refreshed;
       else {
         await logout();
-        router.replace(`/login?from=/internal/tickets/${params.id}&reason=expired`);
+        router.replace(`/login?from=/internal/tickets/${ticketId}&reason=expired`);
         return;
       }
     }
 
     try {
-      const res = await fetch(buildApiUrl(`/tickets/${params.id}`), {
+      const res = await fetch(buildApiUrl(`/tickets/${ticketId}`), {
         headers: { Authorization: `Bearer ${token}` },
         cache: "no-store",
       });
@@ -74,7 +84,7 @@ export default function InternalTicketDetail({ params }: { params: { id: string 
     } finally {
       setLoading(false);
     }
-  }, [params.id, router]);
+  }, [ticketId, router]);
 
   const handleComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,7 +92,7 @@ export default function InternalTicketDetail({ params }: { params: { id: string 
     setCommentLoading(true);
     let token = getAccessToken();
     if (!token) {
-      router.replace(`/login?from=/internal/tickets/${params.id}`);
+      router.replace(`/login?from=/internal/tickets/${ticketId}`);
       return;
     }
     if (isTokenExpired(token)) {
@@ -90,12 +100,12 @@ export default function InternalTicketDetail({ params }: { params: { id: string 
       if (refreshed) token = refreshed;
       else {
         await logout();
-        router.replace(`/login?from=/internal/tickets/${params.id}&reason=expired`);
+        router.replace(`/login?from=/internal/tickets/${ticketId}&reason=expired`);
         return;
       }
     }
     try {
-      const res = await fetch(buildApiUrl(`/tickets/${params.id}/comment`), {
+      const res = await fetch(buildApiUrl(`/tickets/${ticketId}/comment`), {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

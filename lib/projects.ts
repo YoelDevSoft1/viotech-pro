@@ -31,7 +31,14 @@ export async function fetchProjects(organizationId?: string): Promise<Project[]>
   if (!res.ok || !payload) {
     throw new Error(payload?.error || payload?.message || "No se pudieron cargar proyectos");
   }
-  const data = payload.data || payload.projects || [];
+  const raw = payload.data || payload.projects || payload || [];
+  const data = Array.isArray(raw?.projects)
+    ? raw.projects
+    : Array.isArray(raw)
+      ? raw
+      : Array.isArray(raw.data)
+        ? raw.data
+        : [];
   return data.map((p: any) => ({
     id: String(p.id),
     nombre: p.nombre || p.name || "Sin nombre",
