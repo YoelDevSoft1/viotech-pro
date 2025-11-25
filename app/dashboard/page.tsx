@@ -946,6 +946,7 @@ export default function DashboardPage() {
     const storedToken = getAccessToken();
     if (!storedToken) return;
     if (activeTab !== "overview") return;
+    if (!organizationId) return;
     fetchServices(storedToken);
     fetchMetrics(storedToken);
   }, [organizationId, activeTab, fetchServices, fetchMetrics]);
@@ -954,6 +955,7 @@ export default function DashboardPage() {
     const storedToken = getAccessToken();
     if (!storedToken) return;
     if (activeTab !== "tickets") return;
+    if (!organizationId) return;
     fetchTickets(storedToken);
   }, [organizationId, ticketFilters, activeTab, fetchTickets]);
 
