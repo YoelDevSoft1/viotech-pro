@@ -1,36 +1,59 @@
 "use client";
 
-import { Shield, Users, Ticket, Cpu, Activity } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Shield, Users, Ticket, Cpu, Activity, HeartPulse } from "lucide-react";
 import Link from "next/link";
-
-const cards = [
-  {
-    title: "Usuarios",
-    value: "—",
-    description: "Total usuarios activos",
-    icon: Users,
-  },
-  {
-    title: "Tickets",
-    value: "—",
-    description: "Abiertos / SLA crítico",
-    icon: Ticket,
-  },
-  {
-    title: "Seguridad",
-    value: "—",
-    description: "MFA habilitado / roles admin",
-    icon: Shield,
-  },
-  {
-    title: "IA",
-    value: "—",
-    description: "Modelo activo / consultas recientes",
-    icon: Cpu,
-  },
-];
+import { buildApiUrl } from "@/lib/api";
 
 export default function AdminDashboardPage() {
+  const [healthStatus, setHealthStatus] = useState<"ok" | "down" | "">("");
+  const [modelStatus, setModelStatus] = useState<{ enabled: boolean; healthy: boolean; version: string } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [healthError, setHealthError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        // Health global
+        const healthRes = await fetch(buildApiUrl("/health"), { cache: "no-store" });
+        const healthPayload = await healthRes.json().catch(() => null);
+        if (healthRes.ok && healthPayload) {
+          const entries = Array.isArray(healthPayload.data)
+            ? healthPayload.data
+            : Object.values(healthPayload.data || healthPayload || {});
+          const anyDown = entries.some((entry: any) => entry?.status !== "ok" && entry?.healthy === false);
+          setHealthStatus(anyDown ? "down" : "ok");
+          setHealthError(null);
+        } else {
+          setHealthStatus("down");
+          setHealthError(healthPayload?.error || healthPayload?.message || "No se pudo leer /health");
+        }
+
+        // Estado modelo IA
+        const modelRes = await fetch(buildApiUrl("/predictions/model-status"), { cache: "no-store" });
+        const modelPayload = await modelRes.json().catch(() => null);
+        if (modelRes.ok && modelPayload) {
+          const data = modelPayload.data || modelPayload;
+          setModelStatus({
+            enabled: Boolean(data.enabled ?? data.status === "ready"),
+            healthy: Boolean(data.lastStatus?.healthy ?? data.modelLoaded ?? data.enabled),
+            version: data.modelVersion || data.version || "N/D",
+          });
+        } else {
+          setModelStatus(null);
+        }
+      } catch {
+        setHealthStatus("down");
+        setModelStatus(null);
+        setHealthError("No se pudo cargar estado inicial");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
   return (
     <main className="space-y-6">
       <div>
@@ -66,25 +89,91 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="rounded-2xl border border-border/70 bg-background/80 p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Salud backend</p>
+            <HeartPulse className="w-4 h-4 text-foreground" />
+          </div>
+          <p className="text-2xl font-semibold text-foreground">
+            {loading ? "—" : healthStatus === "ok" ? "Operativo" : "Con incidencias"}
+          </p>
+          <p className="text-xs text-muted-foreground">Fuente: /api/health</p>
+        </div>
+        <div className="rounded-2xl border border-border/70 bg-background/80 p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Modelo IA</p>
+            <Cpu className="w-4 h-4 text-foreground" />
+          </div>
+          <p className="text-2xl font-semibold text-foreground">
+            {loading
+              ? "—"
+              : modelStatus
+                ? `${modelStatus.enabled ? "Activo" : "Apagado"} · ${modelStatus.version}`
+                : "Sin datos"}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Salud: {modelStatus ? (modelStatus.healthy ? "OK" : "Degradado") : "N/D"}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-border/70 bg-background/80 p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Accesos</p>
+            <Shield className="w-4 h-4 text-foreground" />
+          </div>
+          <p className="text-2xl font-semibold text-foreground">Admin</p>
+          <p className="text-xs text-muted-foreground">Usa los accesos rápidos para navegar.</p>
+        </div>
+      </section>
+
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {cards.map((card) => {
-          const Icon = card.icon;
-          return (
-            <div
-              key={card.title}
-              className="rounded-2xl border border-border/70 bg-background/80 p-4 space-y-3"
-            >
-              <div className="flex items-center justify-between">
-                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                  {card.title}
-                </p>
-                <Icon className="w-4 h-4 text-foreground" />
-              </div>
-              <p className="text-3xl font-semibold text-foreground">{card.value}</p>
-              <p className="text-xs text-muted-foreground">{card.description}</p>
-            </div>
-          );
-        })}
+        <div className="rounded-2xl border border-border/70 bg-background/80 p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Salud backend</p>
+            <HeartPulse className="w-4 h-4 text-foreground" />
+          </div>
+          <p className="text-3xl font-semibold text-foreground">
+            {loading ? "—" : healthStatus === "ok" ? "Operativo" : "Con incidencias"}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Fuente: /api/health {healthError ? `· ${healthError}` : ""}
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-border/70 bg-background/80 p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Modelo IA</p>
+            <Cpu className="w-4 h-4 text-foreground" />
+          </div>
+          <p className="text-3xl font-semibold text-foreground">
+            {loading
+              ? "—"
+              : modelStatus
+                ? `${modelStatus.enabled ? "Activo" : "Apagado"} · ${modelStatus.version}`
+                : "Sin datos"}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Salud: {modelStatus ? (modelStatus.healthy ? "OK" : "Degradado") : "N/D"}
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-border/70 bg-background/80 p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Usuarios</p>
+            <Users className="w-4 h-4 text-foreground" />
+          </div>
+          <p className="text-3xl font-semibold text-foreground">—</p>
+          <p className="text-xs text-muted-foreground">Total usuarios activos (conecta /api/users para contar).</p>
+        </div>
+
+        <div className="rounded-2xl border border-border/70 bg-background/80 p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Tickets</p>
+            <Ticket className="w-4 h-4 text-foreground" />
+          </div>
+          <p className="text-3xl font-semibold text-foreground">—</p>
+          <p className="text-xs text-muted-foreground">Abiertos / SLA crítico (conecta /api/tickets para contar).</p>
+        </div>
       </section>
 
       <section className="rounded-2xl border border-border/70 bg-background/80 p-5">
