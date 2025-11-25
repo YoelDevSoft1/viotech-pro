@@ -5,12 +5,6 @@ import { buildApiUrl } from "@/lib/api";
 import { getAccessToken, isTokenExpired, refreshAccessToken } from "@/lib/auth";
 
 const STORAGE_KEY = "viotech_org_id";
-const MOCK_ORGS = [
-  { id: "org-demo-1", nombre: "Acme Corp" },
-  { id: "org-demo-2", nombre: "Globex" },
-  { id: "org-demo-3", nombre: "Initech" },
-];
-
 export type Org = { id: string; nombre: string };
 
 type Props = {
@@ -21,11 +15,11 @@ type Props = {
 export default function OrgSelector({ onChange, label }: Props) {
   const [orgId, setOrgId] = useState("");
   const [customOrg, setCustomOrg] = useState("");
-  const [orgs, setOrgs] = useState<Org[]>(MOCK_ORGS);
+  const [orgs, setOrgs] = useState<Org[]>([]);
 
   const loadOrgs = useCallback(async () => {
     let token = getAccessToken();
-    if (!token) return; // fallback to mock
+    if (!token) return;
     if (isTokenExpired(token)) {
       const refreshed = await refreshAccessToken();
       if (refreshed) token = refreshed;
@@ -38,15 +32,15 @@ export default function OrgSelector({ onChange, label }: Props) {
       });
       const payload = await res.json().catch(() => null);
       if (res.ok && payload) {
-        const data = payload.data || payload.organizations || payload;
-        const mapped: Org[] = (data || []).map((o: any) => ({
+        const data = payload.data?.organizations || payload.data || payload.organizations || payload;
+        const mapped: Org[] = (Array.isArray(data) ? data : []).map((o: any) => ({
           id: String(o.id),
           nombre: o.nombre || o.name || String(o.id),
         }));
         if (mapped.length) setOrgs(mapped);
       }
     } catch {
-      // keep mock if fails
+      // si falla, no poblamos mock
     }
   }, []);
 
@@ -94,12 +88,12 @@ export default function OrgSelector({ onChange, label }: Props) {
             setCustomOrg(e.target.value);
             setOrgId(e.target.value);
           }}
-          placeholder="ID de organización"
+          placeholder="ID de organización (UUID)"
           className="rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
         />
       </div>
       <p className="text-[11px] text-muted-foreground">
-        Se guarda localmente. Si no hay API disponible, se usan organizaciones mock.
+        Se guarda localmente. Si la API no responde, deja vacío o ingresa manualmente el UUID.
       </p>
     </div>
   );
