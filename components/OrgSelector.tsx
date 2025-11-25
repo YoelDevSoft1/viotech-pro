@@ -33,8 +33,13 @@ export default function OrgSelector({ onChange, label }: Props) {
       const res = await fetch(buildApiUrl("/organizations"), {
         headers: { Authorization: `Bearer ${token}` },
         cache: "no-store",
+        credentials: "include",
       });
       const payload = await res.json().catch(() => null);
+      if (res.status === 401) {
+        setInitialized(true);
+        return;
+      }
       if (res.ok && payload) {
         const data = payload.data?.organizations || payload.data || payload.organizations || payload;
         const mapped: Org[] = (Array.isArray(data) ? data : []).map((o: any) => ({
