@@ -311,7 +311,7 @@ export default function AdminHealthPage() {
                         : "border-red-500/60 text-red-700"
                     }`}
                   >
-                    {h.status}
+                    {h.status === "ok" ? "operativo" : h.status === "down" ? "caído" : h.status}
                   </span>
                 </div>
                 {h.error && <p className="text-xs text-amber-700">Error: {h.error}</p>}
