@@ -40,6 +40,7 @@ export default function AdminHealthPage() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [metricsError, setMetricsError] = useState<string | null>(null);
   const [metricsLoading, setMetricsLoading] = useState(false);
+  const [metricsCooldownUntil, setMetricsCooldownUntil] = useState<number>(0);
   const [authRole, setAuthRole] = useState<string>("");
   const [authError, setAuthError] = useState<string | null>(null);
 
@@ -149,6 +150,16 @@ export default function AdminHealthPage() {
   };
 
   const loadMetrics = async () => {
+    if (!organizationId) {
+      setMetrics(null);
+      setMetricsError(null);
+      setMetricsLoading(false);
+      return;
+    }
+    const now = Date.now();
+    if (metricsCooldownUntil && now < metricsCooldownUntil) {
+      return;
+    }
     setMetricsLoading(true);
     setMetricsError(null);
     setMetrics(null);
@@ -180,6 +191,12 @@ export default function AdminHealthPage() {
       const msg = err instanceof Error ? err.message : "Error al cargar métricas";
       setMetricsError(msg);
       setMetrics(null);
+      const isRateLimit =
+        typeof msg === "string" &&
+        (msg.toLowerCase().includes("solicitudes") || msg.toLowerCase().includes("too many"));
+      if (isRateLimit) {
+        setMetricsCooldownUntil(Date.now() + 60_000);
+      }
     } finally {
       setMetricsLoading(false);
     }
