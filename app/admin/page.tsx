@@ -1,6 +1,7 @@
 "use client";
 
 import { Shield, Users, Ticket, Cpu, Activity } from "lucide-react";
+import Link from "next/link";
 
 const cards = [
   {
@@ -40,6 +41,29 @@ export default function AdminDashboardPage() {
         <p className="text-sm text-muted-foreground">
           Supervisión centralizada de usuarios, tickets y servicios.
         </p>
+        <div className="mt-3 flex flex-wrap gap-3">
+          <Link
+            href="/admin/health"
+            className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/50 transition-colors"
+          >
+            <Activity className="w-3 h-3" />
+            Estado / Health
+          </Link>
+          <Link
+            href="/admin/users"
+            className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/50 transition-colors"
+          >
+            <Users className="w-3 h-3" />
+            Gestión de usuarios
+          </Link>
+          <Link
+            href="/admin/tickets"
+            className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/50 transition-colors"
+          >
+            <Ticket className="w-3 h-3" />
+            Tickets globales
+          </Link>
+        </div>
       </div>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
