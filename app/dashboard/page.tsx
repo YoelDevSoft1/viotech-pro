@@ -296,6 +296,7 @@ export default function DashboardPage() {
   const [dashboardMetrics, setDashboardMetrics] = useState<DashboardMetrics | null>(null);
   const [metricsLoading, setMetricsLoading] = useState(false);
   const [metricsCooldownUntil, setMetricsCooldownUntil] = useState<number>(0);
+  const [servicesCooldownUntil, setServicesCooldownUntil] = useState<number>(0);
   const [organizationId, setOrganizationId] = useState<string>("");
   const isPrivileged = userRole !== "cliente";
   const [modelStatus, setModelStatus] = useState<ModelStatus | null>(null);
@@ -390,9 +391,11 @@ export default function DashboardPage() {
           }
         }
 
-        const servicesUrl = organizationId
-          ? `${buildApiUrl("/services/me")}?organizationId=${organizationId}`
-          : buildApiUrl("/services/me");
+        const now = Date.now();
+        if (servicesCooldownUntil && now < servicesCooldownUntil) {
+          return;
+        }
+        const servicesUrl = `${buildApiUrl("/services/me")}?organizationId=${organizationId}`;
 
         const response = await fetch(servicesUrl, {
           headers: { 
@@ -441,7 +444,11 @@ export default function DashboardPage() {
         }
 
       if (!response.ok || !Array.isArray(payload?.data)) {
-        throw new Error(payload?.error || payload?.message || "No se pudo cargar el panel.");
+        const errMsg = payload?.error || payload?.message || "No se pudo cargar el panel.";
+        if (response.status === 429) {
+          setServicesCooldownUntil(Date.now() + 60_000);
+        }
+        throw new Error(errMsg);
       }
 
       const normalizedServices: Service[] = payload.data.map((service: Service) => ({
@@ -869,6 +876,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
   const initializeAuth = async () => {
+      if (authInFlight.current) return;
+      authInFlight.current = true;
       let storedToken = getAccessToken();
       const storedName = getFromStorage(USERNAME_KEYS);
 
@@ -911,6 +920,8 @@ export default function DashboardPage() {
         }
       } catch {
         // Ignorar error de rol, se queda cliente
+      } finally {
+        authInFlight.current = false;
       }
     };
 
@@ -947,9 +958,12 @@ export default function DashboardPage() {
     if (!storedToken) return;
     if (activeTab !== "overview") return;
     if (!organizationId) return;
+    const now = Date.now();
+    if (servicesCooldownUntil && now < servicesCooldownUntil) return;
+    if (metricsCooldownUntil && now < metricsCooldownUntil) return;
     fetchServices(storedToken);
     fetchMetrics(storedToken);
-  }, [organizationId, activeTab, fetchServices, fetchMetrics]);
+  }, [organizationId, activeTab, servicesCooldownUntil, metricsCooldownUntil, fetchServices, fetchMetrics]);
 
   useEffect(() => {
     const storedToken = getAccessToken();
