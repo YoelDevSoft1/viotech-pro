@@ -307,26 +307,29 @@ export default function AdminHealthPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {health.map((h) => (
-              <Card key={h.name} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                    <HeartPulse className="w-4 h-4" />
-                    {h.name}
+            {health.map((h) => {
+              const statusText = h.value || h.status;
+              return (
+                <Card key={h.name} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                      <HeartPulse className="w-4 h-4" />
+                      {h.name}
+                    </div>
+                    <span
+                      className={`text-xs rounded-full border px-2 py-1 ${
+                        h.status === "ok"
+                          ? "border-green-500/60 text-green-700"
+                          : "border-red-500/60 text-red-700"
+                      }`}
+                    >
+                      {statusText}
+                    </span>
                   </div>
-                  <span
-                    className={`text-xs rounded-full border px-2 py-1 ${
-                      h.status === "ok"
-                        ? "border-green-500/60 text-green-700"
-                        : "border-red-500/60 text-red-700"
-                    }`}
-                  >
-                    {h.status === "ok" ? "operativo" : h.status === "down" ? "caído" : h.status}
-                  </span>
-                </div>
-                {h.error && <p className="text-xs text-amber-700">Error: {h.error}</p>}
-              </Card>
-            ))}
+                  {h.error && <p className="text-xs text-amber-700">Error: {h.error}</p>}
+                </Card>
+              );
+            })}
           </div>
         )}
 
