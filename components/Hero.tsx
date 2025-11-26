@@ -14,7 +14,7 @@ const heroStats = [
 export default function Hero() {
   return (
     <section
-      className="relative min-h-screen flex items-center justify-center px-6 pt-32 pb-16 overflow-hidden"
+      className="relative min-h-screen flex items-center justify-center px-6 pt-6 pb-4 md:pt-10 md:pb-6 overflow-hidden"
       id="hero"
     >
       {/* Animated code background */}
@@ -23,7 +23,7 @@ export default function Hero() {
       {/* Subtle gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background" />
 
-      <div className="relative max-w-6xl mx-auto text-center space-y-8">
+      <div className="relative max-w-[90vw] mx-auto text-center space-y-8">
         {/* Location Badge */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

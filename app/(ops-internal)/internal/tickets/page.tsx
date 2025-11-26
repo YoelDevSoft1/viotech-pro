@@ -142,7 +142,7 @@ export default function InternalTicketsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-background px-6 py-16">
+    <main className="min-h-screen bg-background px-6 py-10 md:py-12">
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex items-center gap-3">
           <Link

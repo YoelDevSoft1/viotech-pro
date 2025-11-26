@@ -6,7 +6,7 @@ import OrgSelector from "@/components/OrgSelector";
 
 export default function ClientHome() {
   return (
-    <main className="min-h-screen bg-background px-6 py-16">
+    <main className="min-h-screen bg-background px-6 py-10 md:py-12">
       <div className="max-w-5xl mx-auto space-y-8">
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">

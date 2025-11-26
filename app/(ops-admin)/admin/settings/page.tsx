@@ -159,7 +159,7 @@ export default function AdminSettingsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-background px-6 py-16">
+    <main className="min-h-screen bg-background px-6 py-10 md:py-12">
       <div className="w-full space-y-8">
         <div className="flex items-center justify-between">
           <div className="space-y-1">

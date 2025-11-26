@@ -46,7 +46,7 @@ const caseStudies = [
 export default function CaseStudies() {
   return (
     <section className="py-32 px-6" id="cases">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-[90vw] mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

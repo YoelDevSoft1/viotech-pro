@@ -100,7 +100,7 @@ export default function InternalHome() {
   };
 
   return (
-    <main className="min-h-screen bg-background px-6 py-16">
+    <main className="min-h-screen bg-background px-6 py-10 md:py-12">
       <div className="max-w-6xl mx-auto space-y-10">
         <div className="space-y-3">
           <Breadcrumb items={[{ href: "/internal", label: "Interno" }]} />

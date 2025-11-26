@@ -73,7 +73,7 @@ export default function TechStack() {
 
   return (
     <section className="py-32 px-6 bg-muted/30" id="tech">
-      <div className="max-w-7xl mx-auto space-y-20">
+      <div className="max-w-[90vw] mx-auto space-y-20">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

@@ -159,7 +159,7 @@ export default function AdminHealthPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-background px-6 py-16">
+    <main className="min-h-screen bg-background px-6 py-10 md:py-12">
       <div className="w-full space-y-6">
         <div className="space-y-3">
           <Breadcrumb items={[{ href: "/admin", label: "Admin" }, { href: "/admin/health", label: "Health" }]} />

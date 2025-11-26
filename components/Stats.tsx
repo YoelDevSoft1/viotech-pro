@@ -41,7 +41,7 @@ const delivery = [
 export default function Stats() {
   return (
     <section className="py-28 px-6 border-y border-border/70" id="metrics">
-      <div className="max-w-6xl mx-auto space-y-16">
+      <div className="max-w-[90vw] mx-auto space-y-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

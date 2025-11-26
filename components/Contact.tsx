@@ -66,7 +66,7 @@ export default function Contact() {
 
   return (
     <section className="py-32 px-6 bg-muted/30" id="contact">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-[90vw] mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

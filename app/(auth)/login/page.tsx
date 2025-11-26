@@ -139,7 +139,7 @@ export default function LoginPage() {
       setter(event.target.value);
 
   return (
-    <main className="min-h-screen bg-background px-6 py-16 flex items-center">
+    <main className="min-h-screen bg-background px-6 py-10 md:py-12 flex items-center">
       <div className="w-full max-w-5xl mx-auto grid gap-8 lg:grid-cols-[1fr,1fr]">
         <section className="rounded-3xl border border-border/70 bg-muted/20 p-8 space-y-4">
           <p className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-1 text-xs uppercase tracking-[0.3em] text-muted-foreground">

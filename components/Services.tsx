@@ -63,7 +63,7 @@ const serviceHighlights = [
 export default function Services() {
   return (
     <section id="services" className="py-32 px-6 bg-muted/30">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-[90vw] mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -157,7 +157,7 @@ export default function Services() {
           </a>
         </motion.div>
       </div>
-      <div className="max-w-6xl mx-auto mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="max-w-[90vw] mx-auto mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
         {serviceHighlights.map((highlight, index) => (
           <motion.div
             key={highlight.title}
