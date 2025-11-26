@@ -53,6 +53,7 @@ type TicketForm = {
   organizationId: string;
   projectId: string;
   linkedTickets: string[];
+  usuarioId: string;
   asignadoA: string;
 };
 
@@ -127,7 +128,7 @@ export function TicketsPanel({ token, onRequireAuth }: Props) {
   const [filters, setFilters] = useState({ estado: "", prioridad: "", impacto: "", urgencia: "" });
   const [search, setSearch] = useState("");
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
-  
+
   // Data Fetching
   const { tickets, loading, error, pagination, refresh } = useTickets({
     page,
@@ -155,6 +156,7 @@ export function TicketsPanel({ token, onRequireAuth }: Props) {
     organizationId: "",
     projectId: "",
     linkedTickets: [],
+    usuarioId: "",
     asignadoA: "",
   });
   const [ticketSubmitting, setTicketSubmitting] = useState(false);
@@ -248,36 +250,56 @@ export function TicketsPanel({ token, onRequireAuth }: Props) {
       let page = 1;
       const limit = 100;
 
+      console.log('[TicketsPanel] Iniciando carga de usuarios...');
+
       while (page < 6) {
-        const res = await fetch(buildApiUrl(`/api/users?page=${page}&limit=${limit}`), {
+        const url = buildApiUrl(`/users?page=${page}&limit=${limit}`);
+        console.log(`[TicketsPanel] Fetching users from: ${url}`);
+
+        const res = await fetch(url, {
           headers: { Authorization: `Bearer ${token}` },
           cache: "no-store",
         });
+
         const data = await res.json().catch(() => null);
+        console.log(`[TicketsPanel] Response status: ${res.status}, data:`, data);
+
         if (!res.ok) {
+          console.error(`[TicketsPanel] Error loading users: ${res.status}`, data);
           if (res.status === 403 || res.status === 401) {
             setLocalError("Necesitas rol admin para listar usuarios.");
           }
           break;
         }
+
         const list = data?.data?.users || [];
+        console.log(`[TicketsPanel] Users in page ${page}:`, list.length);
+
         if (Array.isArray(list)) {
           collected.push(...list);
           if (list.length < limit) break;
         } else {
+          console.warn('[TicketsPanel] data.users no es un array:', list);
           break;
         }
         page += 1;
       }
+
+      console.log(`[TicketsPanel] Total usuarios cargados: ${collected.length}`);
 
       if (collected.length) {
         const map = new Map<string, any>();
         collected.forEach((u) => {
           if (u?.id) map.set(u.id, u);
         });
-        setUsers(Array.from(map.values()));
+        const uniqueUsers = Array.from(map.values());
+        console.log(`[TicketsPanel] Usuarios únicos después de deduplicar: ${uniqueUsers.length}`);
+        setUsers(uniqueUsers);
+      } else {
+        console.warn('[TicketsPanel] No se cargaron usuarios');
       }
     } catch (err) {
+      console.error('[TicketsPanel] Error en loadUsers:', err);
       setLocalError("No se pudieron cargar los usuarios.");
     }
   };
@@ -328,6 +350,15 @@ export function TicketsPanel({ token, onRequireAuth }: Props) {
     setTimeout(() => commentsEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
   }, [selected?.id, selected?.attachments]); // Solo re-ejecutar si cambia el ID o la lista
 
+  // Cargar usuarios y organizaciones al montar el componente
+  useEffect(() => {
+    if (token) {
+      console.log('[TicketsPanel] Token disponible, cargando datos iniciales...');
+      loadOrganizations();
+      loadUsers();
+    }
+  }, [token]);
+
   useEffect(() => {
     if (createTicketOpen) {
       loadOrganizations();
@@ -374,7 +405,7 @@ export function TicketsPanel({ token, onRequireAuth }: Props) {
       if (!res.ok) throw new Error("Error loading attachments");
       const data = payload?.data?.attachments || payload?.attachments || [];
       setAttachmentsList(Array.isArray(data) ? data : []);
-    } catch (e) { console.error(e); } 
+    } catch (e) { console.error(e); }
     finally { setAttachmentsLoading(false); }
   };
 
@@ -388,7 +419,7 @@ export function TicketsPanel({ token, onRequireAuth }: Props) {
     event.preventDefault();
     if (!token) { onRequireAuth?.(); return; }
     if (!ticketForm.titulo.trim()) { setLocalError("Título requerido"); return; }
-    
+
     setTicketSubmitting(true);
     setLocalError(null);
     try {
@@ -397,24 +428,24 @@ export function TicketsPanel({ token, onRequireAuth }: Props) {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         cache: "no-store",
         body: JSON.stringify({
-             titulo: ticketForm.titulo.trim(),
-             descripcion: ticketForm.descripcion?.trim(),
-             prioridad: ticketForm.prioridad,
-             impacto: ticketForm.impacto,
-             urgencia: ticketForm.urgencia,
-             categoria: ticketForm.categoria,
-             slaObjetivo: ticketForm.slaObjetivo ? new Date(ticketForm.slaObjetivo).toISOString() : undefined,
-             tipo: ticketForm.tipo,
-             fuenteSolicitante: ticketForm.fuenteSolicitante,
-             organizationId: ticketForm.organizationId || undefined,
-             projectId: ticketForm.projectId || undefined,
-             asignadoA: currentRole === "cliente" ? undefined : ticketForm.asignadoA || undefined,
-             linkedTickets: ticketForm.linkedTickets.length ? ticketForm.linkedTickets : undefined,
+          titulo: ticketForm.titulo.trim(),
+          descripcion: ticketForm.descripcion?.trim(),
+          prioridad: ticketForm.prioridad,
+          impacto: ticketForm.impacto,
+          urgencia: ticketForm.urgencia,
+          categoria: ticketForm.categoria,
+          slaObjetivo: ticketForm.slaObjetivo ? new Date(ticketForm.slaObjetivo).toISOString() : undefined,
+          tipo: ticketForm.tipo,
+          fuenteSolicitante: ticketForm.fuenteSolicitante,
+          organizationId: ticketForm.organizationId || undefined,
+          projectId: ticketForm.projectId || undefined,
+          asignadoA: currentRole === "cliente" ? undefined : ticketForm.asignadoA || undefined,
+          linkedTickets: ticketForm.linkedTickets.length ? ticketForm.linkedTickets : undefined,
         }),
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload?.message || "Error al crear");
-      
+
       const createdId = payload?.data?.ticket?.id || payload?.data?.id || payload?.id;
 
       if (createdId && attachments.length) {
@@ -423,7 +454,7 @@ export function TicketsPanel({ token, onRequireAuth }: Props) {
           await uploadTicketAttachment(createdId, file, token);
         }
       }
-      
+
       // Reset
       setTicketForm({
         titulo: "",
@@ -438,6 +469,7 @@ export function TicketsPanel({ token, onRequireAuth }: Props) {
         organizationId: "",
         projectId: "",
         linkedTickets: [],
+        usuarioId: "",
         asignadoA: "",
       });
       setAttachments([]);
@@ -456,15 +488,15 @@ export function TicketsPanel({ token, onRequireAuth }: Props) {
     if (!selected || !token || !ticketComment.trim()) return;
     setCommentSubmitting(true);
     try {
-        const res = await fetch(buildApiUrl(`/tickets/${selected.id}/comment`), {
-            method: "POST",
-            headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-            body: JSON.stringify({ contenido: ticketComment.trim() }),
-        });
-        if (!res.ok) throw new Error("Error al comentar");
-        setTicketComment("");
-        refresh(); // Idealmente refrescar solo los comentarios, pero refresh completo es seguro
-    } catch(e: any) { setLocalError(e.message); }
+      const res = await fetch(buildApiUrl(`/tickets/${selected.id}/comment`), {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ contenido: ticketComment.trim() }),
+      });
+      if (!res.ok) throw new Error("Error al comentar");
+      setTicketComment("");
+      refresh(); // Idealmente refrescar solo los comentarios, pero refresh completo es seguro
+    } catch (e: any) { setLocalError(e.message); }
     finally { setCommentSubmitting(false); }
   };
 
@@ -549,470 +581,469 @@ export function TicketsPanel({ token, onRequireAuth }: Props) {
 
       {/* Main Split View */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0 overflow-hidden">
-        
+
         {/* List Panel */}
         <div className={`lg:col-span-4 lg:flex flex-col gap-3 min-h-0 overflow-hidden ${selected ? 'hidden lg:flex' : 'flex'}`}>
-            <div className="flex-1 overflow-y-auto pr-2 space-y-2 glass-scroll">
-                {filteredTickets.map((ticket) => (
-                    <button
-                        key={ticket.id}
-                        onClick={() => setSelectedTicket(ticket)}
-                        className={`w-full text-left p-4 rounded-xl border transition-all duration-200 group
-                            ${selected?.id === ticket.id 
-                                ? "bg-muted border-foreground/20 shadow-sm" 
-                                : "bg-card border-border hover:border-foreground/30 hover:shadow-sm"}`}
-                    >
-                        <div className="flex justify-between items-start mb-2">
-                            <span className="text-[10px] font-mono text-muted-foreground uppercase">#{ticket.id.slice(0,6)}</span>
-                            <span className="text-[10px] text-muted-foreground">{new Date(ticket.createdAt).toLocaleDateString()}</span>
-                        </div>
-                        <h3 className={`font-medium text-sm mb-2 line-clamp-2 ${selected?.id === ticket.id ? 'text-foreground' : 'text-foreground/90'}`}>
-                            {ticket.titulo}
-                        </h3>
-                        <div className="flex items-center gap-2">
-                            <StatusBadge status={ticket.estado} />
-                            {ticket.prioridad === 'alta' || ticket.prioridad === 'critica' ? (
-                                <Badge color="red">{ticket.prioridad}</Badge>
-                            ) : null}
-                        </div>
-                        {(() => {
-                            const sla = getSlaInfo(ticket);
-                            return sla ? (
-                              <div className="mt-3 space-y-1">
-                                <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                                  <span>SLA</span>
-                                  <span className="font-medium text-foreground/80">{sla.pct}%</span>
-                                </div>
-                                <div className="h-1.5 w-full rounded-full bg-border/60 overflow-hidden">
-                                  <div
-                                    className={`h-full transition-all duration-300 ${
-                                      sla.status === "critical"
-                                        ? "bg-gradient-to-r from-amber-400 via-amber-500 to-red-500"
-                                        : sla.status === "warning"
-                                          ? "bg-gradient-to-r from-emerald-400 via-amber-400 to-amber-500"
-                                          : "bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-500"
-                                    }`}
-                                    style={{ width: `${sla.pct}%` }}
-                                  />
-                                </div>
-                              </div>
-                            ) : null;
-                        })()}
-                    </button>
-                ))}
-                {!loading && filteredTickets.length === 0 && <EmptyState title="No hay tickets" message="No se encontraron resultados con estos filtros." />}
-            </div>
-            
-            {/* Simple Pagination */}
-            <div className="pt-2 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
-                <span>Pág {pagination?.page} de {pagination?.totalPages}</span>
-                <div className="flex gap-1">
-                    <button disabled={page===1} onClick={() => setPage(p => p-1)} className="px-2 py-1 border rounded hover:bg-muted disabled:opacity-50">Ant</button>
-                    <button disabled={page>= (pagination?.totalPages || 1)} onClick={() => setPage(p => p+1)} className="px-2 py-1 border rounded hover:bg-muted disabled:opacity-50">Sig</button>
+          <div className="flex-1 overflow-y-auto pr-2 space-y-2 glass-scroll">
+            {filteredTickets.map((ticket) => (
+              <button
+                key={ticket.id}
+                onClick={() => setSelectedTicket(ticket)}
+                className={`w-full text-left p-4 rounded-xl border transition-all duration-200 group
+                            ${selected?.id === ticket.id
+                    ? "bg-muted border-foreground/20 shadow-sm"
+                    : "bg-card border-border hover:border-foreground/30 hover:shadow-sm"}`}
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <span className="text-[10px] font-mono text-muted-foreground uppercase">#{ticket.id.slice(0, 6)}</span>
+                  <span className="text-[10px] text-muted-foreground">{new Date(ticket.createdAt).toLocaleDateString()}</span>
                 </div>
+                <h3 className={`font-medium text-sm mb-2 line-clamp-2 ${selected?.id === ticket.id ? 'text-foreground' : 'text-foreground/90'}`}>
+                  {ticket.titulo}
+                </h3>
+                <div className="flex items-center gap-2">
+                  <StatusBadge status={ticket.estado} />
+                  {ticket.prioridad === 'alta' || ticket.prioridad === 'critica' ? (
+                    <Badge color="red">{ticket.prioridad}</Badge>
+                  ) : null}
+                </div>
+                {(() => {
+                  const sla = getSlaInfo(ticket);
+                  return sla ? (
+                    <div className="mt-3 space-y-1">
+                      <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                        <span>SLA</span>
+                        <span className="font-medium text-foreground/80">{sla.pct}%</span>
+                      </div>
+                      <div className="h-1.5 w-full rounded-full bg-border/60 overflow-hidden">
+                        <div
+                          className={`h-full transition-all duration-300 ${sla.status === "critical"
+                            ? "bg-gradient-to-r from-amber-400 via-amber-500 to-red-500"
+                            : sla.status === "warning"
+                              ? "bg-gradient-to-r from-emerald-400 via-amber-400 to-amber-500"
+                              : "bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-500"
+                            }`}
+                          style={{ width: `${sla.pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  ) : null;
+                })()}
+              </button>
+            ))}
+            {!loading && filteredTickets.length === 0 && <EmptyState title="No hay tickets" message="No se encontraron resultados con estos filtros." />}
+          </div>
+
+          {/* Simple Pagination */}
+          <div className="pt-2 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
+            <span>Pág {pagination?.page} de {pagination?.totalPages}</span>
+            <div className="flex gap-1">
+              <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="px-2 py-1 border rounded hover:bg-muted disabled:opacity-50">Ant</button>
+              <button disabled={page >= (pagination?.totalPages || 1)} onClick={() => setPage(p => p + 1)} className="px-2 py-1 border rounded hover:bg-muted disabled:opacity-50">Sig</button>
             </div>
+          </div>
         </div>
 
         {/* Detail Panel */}
         <div className={`lg:col-span-8 flex flex-col bg-card border border-border rounded-xl shadow-sm overflow-hidden ${!selected ? 'hidden lg:flex lg:items-center lg:justify-center bg-muted/20 border-dashed' : 'flex'}`}>
-            {!selected ? (
-                <div className="text-center p-8">
-                    <MessageSquare className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-                    <h3 className="text-lg font-medium text-foreground/70">Selecciona un ticket</h3>
-                    <p className="text-sm text-muted-foreground">Elige un ticket de la lista para ver detalles, adjuntos y comentarios.</p>
+          {!selected ? (
+            <div className="text-center p-8">
+              <MessageSquare className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+              <h3 className="text-lg font-medium text-foreground/70">Selecciona un ticket</h3>
+              <p className="text-sm text-muted-foreground">Elige un ticket de la lista para ver detalles, adjuntos y comentarios.</p>
+            </div>
+          ) : (
+            <>
+              {/* Detail Header */}
+              <div className="p-6 border-b border-border bg-background/50 backdrop-blur-sm sticky top-0 z-10 flex justify-between items-start">
+                <div className="space-y-1.5">
+                  <button onClick={() => setSelectedTicket(null)} className="lg:hidden text-xs flex items-center gap-1 text-muted-foreground mb-2">
+                    ← Volver
+                  </button>
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-xl font-semibold text-foreground">{selected.titulo}</h2>
+                    <StatusBadge status={selected.estado} />
+                  </div>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                    <span>ID: <span className="font-mono text-foreground">{selected.id}</span></span>
+                    <span>Creado: {new Date(selected.createdAt).toLocaleDateString()}</span>
+                    <span>Asignado: {selected.asignadoA || "Sin asignar"}</span>
+                  </div>
                 </div>
-            ) : (
-                <>
-                    {/* Detail Header */}
-                    <div className="p-6 border-b border-border bg-background/50 backdrop-blur-sm sticky top-0 z-10 flex justify-between items-start">
-                        <div className="space-y-1.5">
-                            <button onClick={() => setSelectedTicket(null)} className="lg:hidden text-xs flex items-center gap-1 text-muted-foreground mb-2">
-                                ← Volver
-                            </button>
-                            <div className="flex items-center gap-3">
-                                <h2 className="text-xl font-semibold text-foreground">{selected.titulo}</h2>
-                                <StatusBadge status={selected.estado} />
+                <div className="flex gap-2">
+                  {/* Acciones adicionales podrían ir aquí */}
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                {/* Description */}
+                <section>
+                  <h4 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                    <FileText className="w-3.5 h-3.5" /> Descripción
+                  </h4>
+                  <div className="p-4 bg-muted/30 rounded-lg text-sm leading-relaxed whitespace-pre-wrap text-foreground/90 border border-border/50">
+                    {selected.descripcion || "Sin descripción proporcionada."}
+                  </div>
+                </section>
+
+                {/* Metadata Grid */}
+                <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="p-3 border rounded-lg bg-background">
+                    <span className="text-[10px] uppercase text-muted-foreground block mb-1">Prioridad</span>
+                    <span className="text-sm font-medium capitalize">{selected.prioridad}</span>
+                  </div>
+                  <div className="p-3 border rounded-lg bg-background">
+                    <span className="text-[10px] uppercase text-muted-foreground block mb-1">Impacto</span>
+                    <span className="text-sm font-medium capitalize">{selected.impacto || "-"}</span>
+                  </div>
+                  <div className="p-3 border rounded-lg bg-background">
+                    <span className="text-[10px] uppercase text-muted-foreground block mb-1">Categoría</span>
+                    <span className="text-sm font-medium capitalize">{selected.categoria || "General"}</span>
+                  </div>
+                  <div className="p-3 border rounded-lg bg-background">
+                    <span className="text-[10px] uppercase text-muted-foreground block mb-1">SLA Objetivo</span>
+                    <span className="text-sm font-medium">{selected.slaObjetivo ? new Date(selected.slaObjetivo).toLocaleDateString() : "-"}</span>
+                  </div>
+                </section>
+
+                {/* Attachments Section - Consolidated */}
+                <section>
+                  <h4 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                    <Paperclip className="w-3.5 h-3.5" /> Adjuntos ({attachmentsList.length})
+                  </h4>
+                  {attachmentsLoading ? <div className="h-10 w-full animate-pulse bg-muted rounded"></div> : (
+                    attachmentsList.length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {attachmentsList.map((file) => (
+                          <a
+                            key={file.id || file.url}
+                            href={file.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center gap-3 p-3 rounded-lg border border-border/60 hover:bg-muted/50 transition-colors group"
+                          >
+                            <div className="w-10 h-10 rounded bg-muted flex items-center justify-center shrink-0 text-muted-foreground">
+                              {(file.tipoMime || "").startsWith("image") ? <img src={file.url} className="w-full h-full object-cover rounded" /> : <FileText className="w-5 h-5" />}
                             </div>
-                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                                <span>ID: <span className="font-mono text-foreground">{selected.id}</span></span>
-                                <span>Creado: {new Date(selected.createdAt).toLocaleDateString()}</span>
-                                <span>Asignado: {selected.asignadoA || "Sin asignar"}</span>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-medium truncate text-foreground group-hover:underline decoration-foreground/50 underline-offset-4">{file.nombre || "Archivo adjunto"}</p>
+                              <p className="text-[10px] text-muted-foreground">{file.tamaño ? `${Math.round(file.tamaño / 1024)} KB` : "Desconocido"}</p>
                             </div>
+                            <Download className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </a>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground italic pl-1">No hay archivos adjuntos.</p>
+                    )
+                  )}
+                </section>
+
+                {/* Comments / Activity Feed */}
+                <section className="border-t border-border pt-6">
+                  <h4 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-4 flex items-center gap-2">
+                    <MessageSquare className="w-3.5 h-3.5" /> Actividad
+                  </h4>
+                  <div className="space-y-4 mb-6">
+                    {selected.comentarios?.length ? selected.comentarios.map((comment) => (
+                      <div key={comment.id} className="flex gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">
+                          {comment.autor?.nombre?.[0] || "U"}
                         </div>
-                        <div className="flex gap-2">
-                             {/* Acciones adicionales podrían ir aquí */}
+                        <div className="bg-muted/40 rounded-2xl rounded-tl-none px-4 py-3 text-sm flex-1">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="font-semibold text-xs text-foreground">{comment.autor?.nombre || "Usuario"}</span>
+                            <span className="text-[10px] text-muted-foreground">{new Date(comment.createdAt).toLocaleString()}</span>
+                          </div>
+                          <p className="text-foreground/90">{comment.contenido}</p>
                         </div>
+                      </div>
+                    )) : <p className="text-sm text-muted-foreground text-center py-4">Inicia la conversación...</p>}
+                    <div ref={commentsEndRef} />
+                  </div>
+
+                  {/* Comment Input */}
+                  <form onSubmit={handleComment} className="relative">
+                    <textarea
+                      className="w-full min-h-[100px] p-3 pr-24 rounded-xl border border-input bg-background focus:ring-2 focus:ring-ring focus:outline-none text-sm resize-none"
+                      placeholder="Escribe un comentario o actualización..."
+                      value={ticketComment}
+                      onChange={(e) => setTicketComment(e.target.value)}
+                    />
+                    <div className="absolute bottom-3 right-3 flex items-center gap-2">
+                      <button
+                        type="submit"
+                        disabled={commentSubmitting || !ticketComment.trim()}
+                        className="bg-foreground text-background text-xs font-medium px-4 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50 transition-all"
+                      >
+                        {commentSubmitting ? "Enviando..." : "Enviar"}
+                      </button>
                     </div>
-
-                    <div className="flex-1 overflow-y-auto p-6 space-y-8">
-                        {/* Description */}
-                        <section>
-                            <h4 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-3 flex items-center gap-2">
-                                <FileText className="w-3.5 h-3.5" /> Descripción
-                            </h4>
-                            <div className="p-4 bg-muted/30 rounded-lg text-sm leading-relaxed whitespace-pre-wrap text-foreground/90 border border-border/50">
-                                {selected.descripcion || "Sin descripción proporcionada."}
-                            </div>
-                        </section>
-
-                        {/* Metadata Grid */}
-                        <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="p-3 border rounded-lg bg-background">
-                                <span className="text-[10px] uppercase text-muted-foreground block mb-1">Prioridad</span>
-                                <span className="text-sm font-medium capitalize">{selected.prioridad}</span>
-                            </div>
-                            <div className="p-3 border rounded-lg bg-background">
-                                <span className="text-[10px] uppercase text-muted-foreground block mb-1">Impacto</span>
-                                <span className="text-sm font-medium capitalize">{selected.impacto || "-"}</span>
-                            </div>
-                            <div className="p-3 border rounded-lg bg-background">
-                                <span className="text-[10px] uppercase text-muted-foreground block mb-1">Categoría</span>
-                                <span className="text-sm font-medium capitalize">{selected.categoria || "General"}</span>
-                            </div>
-                            <div className="p-3 border rounded-lg bg-background">
-                                <span className="text-[10px] uppercase text-muted-foreground block mb-1">SLA Objetivo</span>
-                                <span className="text-sm font-medium">{selected.slaObjetivo ? new Date(selected.slaObjetivo).toLocaleDateString() : "-"}</span>
-                            </div>
-                        </section>
-
-                        {/* Attachments Section - Consolidated */}
-                        <section>
-                            <h4 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-3 flex items-center gap-2">
-                                <Paperclip className="w-3.5 h-3.5" /> Adjuntos ({attachmentsList.length})
-                            </h4>
-                            {attachmentsLoading ? <div className="h-10 w-full animate-pulse bg-muted rounded"></div> : (
-                                attachmentsList.length > 0 ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        {attachmentsList.map((file) => (
-                                            <a 
-                                                key={file.id || file.url} 
-                                                href={file.url} 
-                                                target="_blank" 
-                                                rel="noreferrer"
-                                                className="flex items-center gap-3 p-3 rounded-lg border border-border/60 hover:bg-muted/50 transition-colors group"
-                                            >
-                                                <div className="w-10 h-10 rounded bg-muted flex items-center justify-center shrink-0 text-muted-foreground">
-                                                    {(file.tipoMime || "").startsWith("image") ? <img src={file.url} className="w-full h-full object-cover rounded" /> : <FileText className="w-5 h-5" />}
-                                                </div>
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="text-sm font-medium truncate text-foreground group-hover:underline decoration-foreground/50 underline-offset-4">{file.nombre || "Archivo adjunto"}</p>
-                                                    <p className="text-[10px] text-muted-foreground">{file.tamaño ? `${Math.round(file.tamaño/1024)} KB` : "Desconocido"}</p>
-                                                </div>
-                                                <Download className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            </a>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <p className="text-sm text-muted-foreground italic pl-1">No hay archivos adjuntos.</p>
-                                )
-                            )}
-                        </section>
-
-                        {/* Comments / Activity Feed */}
-                        <section className="border-t border-border pt-6">
-                            <h4 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-4 flex items-center gap-2">
-                                <MessageSquare className="w-3.5 h-3.5" /> Actividad
-                            </h4>
-                            <div className="space-y-4 mb-6">
-                                {selected.comentarios?.length ? selected.comentarios.map((comment) => (
-                                    <div key={comment.id} className="flex gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">
-                                            {comment.autor?.nombre?.[0] || "U"}
-                                        </div>
-                                        <div className="bg-muted/40 rounded-2xl rounded-tl-none px-4 py-3 text-sm flex-1">
-                                            <div className="flex justify-between items-center mb-1">
-                                                <span className="font-semibold text-xs text-foreground">{comment.autor?.nombre || "Usuario"}</span>
-                                                <span className="text-[10px] text-muted-foreground">{new Date(comment.createdAt).toLocaleString()}</span>
-                                            </div>
-                                            <p className="text-foreground/90">{comment.contenido}</p>
-                                        </div>
-                                    </div>
-                                )) : <p className="text-sm text-muted-foreground text-center py-4">Inicia la conversación...</p>}
-                                <div ref={commentsEndRef} />
-                            </div>
-
-                            {/* Comment Input */}
-                            <form onSubmit={handleComment} className="relative">
-                                <textarea
-                                    className="w-full min-h-[100px] p-3 pr-24 rounded-xl border border-input bg-background focus:ring-2 focus:ring-ring focus:outline-none text-sm resize-none"
-                                    placeholder="Escribe un comentario o actualización..."
-                                    value={ticketComment}
-                                    onChange={(e) => setTicketComment(e.target.value)}
-                                />
-                                <div className="absolute bottom-3 right-3 flex items-center gap-2">
-                                    <button 
-                                        type="submit" 
-                                        disabled={commentSubmitting || !ticketComment.trim()}
-                                        className="bg-foreground text-background text-xs font-medium px-4 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50 transition-all"
-                                    >
-                                        {commentSubmitting ? "Enviando..." : "Enviar"}
-                                    </button>
-                                </div>
-                            </form>
-                        </section>
-                    </div>
-                </>
-            )}
+                  </form>
+                </section>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
       {/* MODAL: Create Ticket */}
       {createTicketOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <div className="bg-card w-full max-w-2xl rounded-xl border border-border shadow-2xl max-h-[90vh] overflow-y-auto flex flex-col animate-in zoom-in-95 duration-200">
-                <div className="flex items-center justify-between p-6 border-b border-border">
-                    <h2 className="text-lg font-semibold">Nuevo Ticket</h2>
-                    <button onClick={() => setCreateTicketOpen(false)} className="text-muted-foreground hover:text-foreground">
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
-                
-                <form onSubmit={handleCreate} className="p-6 space-y-5">
-                    {localError && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg flex items-center gap-2"><AlertCircle className="w-4 h-4"/> {localError}</div>}
-                    
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-medium uppercase text-muted-foreground">Título del Incidente</label>
-                        <input 
-                            required
-                            className="w-full px-3 py-2 border rounded-lg bg-background focus:ring-2 focus:ring-ring focus:outline-none"
-                            placeholder="Ej: Error al procesar pago en pasarela"
-                            value={ticketForm.titulo} onChange={e => setTicketForm(p => ({...p, titulo: e.target.value}))}
-                        />
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-medium uppercase text-muted-foreground">Categoría</label>
-                            <input 
-                                className="w-full px-3 py-2 border rounded-lg bg-background focus:ring-2 focus:ring-ring focus:outline-none text-sm"
-                                placeholder="Ej: Facturación"
-                                value={ticketForm.categoria} onChange={e => setTicketForm(p => ({...p, categoria: e.target.value}))}
-                            />
-                        </div>
-                         <div className="space-y-1.5">
-                            <label className="text-xs font-medium uppercase text-muted-foreground">SLA Objetivo</label>
-                            <input 
-                                type="date"
-                                className="w-full px-3 py-2 border rounded-lg bg-background focus:ring-2 focus:ring-ring focus:outline-none text-sm"
-                                value={ticketForm.slaObjetivo} onChange={e => setTicketForm(p => ({...p, slaObjetivo: e.target.value}))}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-4">
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-medium uppercase text-muted-foreground">Prioridad</label>
-                            <select 
-                                className="w-full px-3 py-2 border rounded-lg bg-background text-sm"
-                                value={ticketForm.prioridad} onChange={e => setTicketForm(p => ({...p, prioridad: e.target.value}))}
-                            >
-                                <option value="baja">Baja</option>
-                                <option value="mediana">Mediana</option>
-                                <option value="alta">Alta</option>
-                                <option value="critica">Crítica</option>
-                            </select>
-                        </div>
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-medium uppercase text-muted-foreground">Impacto</label>
-                            <select 
-                                className="w-full px-3 py-2 border rounded-lg bg-background text-sm"
-                                value={ticketForm.impacto} onChange={e => setTicketForm(p => ({...p, impacto: e.target.value}))}
-                            >
-                                <option value="bajo">Bajo</option>
-                                <option value="mediano">Mediano</option>
-                                <option value="alto">Alto</option>
-                                <option value="critico">Crítico</option>
-                            </select>
-                        </div>
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-medium uppercase text-muted-foreground">Urgencia</label>
-                            <select 
-                                className="w-full px-3 py-2 border rounded-lg bg-background text-sm"
-                                value={ticketForm.urgencia} onChange={e => setTicketForm(p => ({...p, urgencia: e.target.value}))}
-                            >
-                                <option value="baja">Baja</option>
-                                <option value="mediana">Mediana</option>
-                                <option value="alta">Alta</option>
-                                <option value="critica">Crítica</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-medium uppercase text-muted-foreground">Tipo</label>
-                            <select
-                              className="w-full px-3 py-2 border rounded-lg bg-background text-sm"
-                              value={ticketForm.tipo}
-                              onChange={(e) => setTicketForm((p) => ({ ...p, tipo: e.target.value }))}
-                            >
-                              <option value="requerimiento">Requerimiento</option>
-                              <option value="incidente">Incidente</option>
-                              <option value="consulta">Consulta</option>
-                              <option value="otro">Otro</option>
-                            </select>
-                        </div>
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-medium uppercase text-muted-foreground">Fuente solicitante</label>
-                            <input
-                              className="w-full px-3 py-2 border rounded-lg bg-background focus:ring-2 focus:ring-ring focus:outline-none text-sm"
-                              placeholder="Ej: Mesa de Servicio"
-                              value={ticketForm.fuenteSolicitante}
-                              onChange={(e) => setTicketForm((p) => ({ ...p, fuenteSolicitante: e.target.value }))}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-medium uppercase text-muted-foreground">Organización</label>
-                            <select
-                              className="w-full px-3 py-2 border rounded-lg bg-background text-sm"
-                              value={ticketForm.organizationId}
-                              onChange={(e) => {
-                                const orgId = e.target.value;
-                                setTicketForm((p) => ({ ...p, organizationId: orgId, projectId: "" }));
-                                loadProjects(orgId);
-                              }}
-                            >
-                              <option value="">Selecciona organización</option>
-                              {organizations.map((org) => (
-                                <option key={org.id} value={org.id}>
-                                  {org.nombre || org.id}
-                                </option>
-                              ))}
-                            </select>
-                        </div>
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-medium uppercase text-muted-foreground">Proyecto</label>
-                            <select
-                              className="w-full px-3 py-2 border rounded-lg bg-background text-sm"
-                              value={ticketForm.projectId}
-                              onChange={(e) => setTicketForm((p) => ({ ...p, projectId: e.target.value }))}
-                              disabled={!ticketForm.organizationId}
-                            >
-                              <option value="">Selecciona proyecto</option>
-                              {projects.map((project) => (
-                                <option key={project.id} value={project.id}>
-                                  {project.nombre || project.id}
-                                </option>
-                              ))}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-3 p-3 border rounded-lg bg-muted/10 backdrop-blur-sm">
-                        <div className="flex items-center justify-between">
-                          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Enlazar ticket</p>
-                          <button
-                            type="button"
-                            onClick={() => setLinkedSelectorOpen(true)}
-                            className="text-xs px-3 py-1 rounded-full border border-border hover:bg-muted/50"
-                          >
-                            Seleccionar
-                          </button>
-                        </div>
-                        <div className="border rounded-lg bg-background/80 text-sm px-3 py-2 shadow-inner min-h-[44px] flex items-center">
-                          {ticketForm.linkedTickets[0]
-                            ? (() => {
-                                const t = tickets.find((tk) => tk.id === ticketForm.linkedTickets[0]);
-                                return t ? `${t.titulo || "Ticket"} — ${t.id}` : ticketForm.linkedTickets[0];
-                              })()
-                            : "Sin ticket enlazado"}
-                        </div>
-                        <p className="text-[11px] text-muted-foreground">Elige un ticket existente para vincular.</p>
-                      </div>
-
-                      <div className="space-y-3 p-3 border rounded-lg bg-muted/10 backdrop-blur-sm">
-                        <div className="flex items-center justify-between">
-                          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Creado por</p>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setUserSelectorOpen("creator");
-                              setUserSearch("");
-                            }}
-                            className="text-xs px-3 py-1 rounded-full border border-border hover:bg-muted/50"
-                          >
-                            Seleccionar
-                          </button>
-                        </div>
-                        <select
-                          className="w-full px-3 py-2 border rounded-lg bg-background/80 focus:ring-2 focus:ring-ring focus:outline-none text-sm shadow-inner"
-                          value={ticketForm.usuarioId}
-                          onChange={(e) => setTicketForm((p) => ({ ...p, usuarioId: e.target.value }))}
-                        >
-                          <option value="">Selecciona usuario</option>
-                          {peopleOptions.map((u) => (
-                            <option key={u.id} value={u.id}>
-                              {u.name} ({u.id})
-                            </option>
-                          ))}
-                        </select>
-                        <p className="text-[11px] text-muted-foreground">Por defecto, tu usuario actual.</p>
-                      </div>
-
-                      <div className="space-y-3 p-3 border rounded-lg bg-muted/10 backdrop-blur-sm">
-                        <div className="flex items-center justify-between">
-                          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Asignado a</p>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setUserSelectorOpen("assignee");
-                              setUserSearch("");
-                            }}
-                            className="text-xs px-3 py-1 rounded-full border border-border hover:bg-muted/50"
-                          >
-                            Seleccionar
-                          </button>
-                        </div>
-                        <select
-                          className="w-full px-3 py-2 border rounded-lg bg-background/80 focus:ring-2 focus:ring-ring focus:outline-none text-sm shadow-inner"
-                          value={ticketForm.asignadoA}
-                          onChange={(e) => setTicketForm((p) => ({ ...p, asignadoA: e.target.value }))}
-                        >
-                          <option value="">Selecciona responsable</option>
-                          {peopleOptions.map((u) => (
-                            <option key={u.id} value={u.id}>
-                              {u.name} ({u.id})
-                            </option>
-                          ))}
-                        </select>
-                        <p className="text-[11px] text-muted-foreground">Define el responsable (opcional).</p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-medium uppercase text-muted-foreground">Descripción detallada</label>
-                        <textarea 
-                            rows={4}
-                            className="w-full px-3 py-2 border rounded-lg bg-background focus:ring-2 focus:ring-ring focus:outline-none text-sm resize-none"
-                            placeholder="Describe los pasos para reproducir el error..."
-                            value={ticketForm.descripcion} onChange={e => setTicketForm(p => ({...p, descripcion: e.target.value}))}
-                        />
-                    </div>
-
-                    <div className="p-4 border border-dashed rounded-lg bg-muted/30">
-                        <label className="cursor-pointer flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                            <Paperclip className="w-4 h-4" />
-                            <span>{attachments.length > 0 ? `${attachments.length} archivos seleccionados` : "Adjuntar archivos (evidencias, logs...)"}</span>
-                            <input type="file" multiple className="hidden" onChange={(e) => setAttachments(e.target.files ? Array.from(e.target.files) : [])} />
-                        </label>
-                    </div>
-                    
-                    <div className="pt-4 flex items-center justify-end gap-3 border-t border-border">
-                        <button type="button" onClick={() => setCreateTicketOpen(false)} className="px-4 py-2 text-sm font-medium hover:bg-muted rounded-lg transition-colors">Cancelar</button>
-                        <button 
-                            type="submit" 
-                            disabled={ticketSubmitting || attachmentsUploading}
-                            className="px-6 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 shadow-sm"
-                        >
-                            {ticketSubmitting ? "Creando..." : "Crear Ticket"}
-                        </button>
-                    </div>
-                </form>
+          <div className="bg-card w-full max-w-2xl rounded-xl border border-border shadow-2xl max-h-[90vh] overflow-y-auto flex flex-col animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between p-6 border-b border-border">
+              <h2 className="text-lg font-semibold">Nuevo Ticket</h2>
+              <button onClick={() => setCreateTicketOpen(false)} className="text-muted-foreground hover:text-foreground">
+                <X className="w-5 h-5" />
+              </button>
             </div>
+
+            <form onSubmit={handleCreate} className="p-6 space-y-5">
+              {localError && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg flex items-center gap-2"><AlertCircle className="w-4 h-4" /> {localError}</div>}
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium uppercase text-muted-foreground">Título del Incidente</label>
+                <input
+                  required
+                  className="w-full px-3 py-2 border rounded-lg bg-background focus:ring-2 focus:ring-ring focus:outline-none"
+                  placeholder="Ej: Error al procesar pago en pasarela"
+                  value={ticketForm.titulo} onChange={e => setTicketForm(p => ({ ...p, titulo: e.target.value }))}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium uppercase text-muted-foreground">Categoría</label>
+                  <input
+                    className="w-full px-3 py-2 border rounded-lg bg-background focus:ring-2 focus:ring-ring focus:outline-none text-sm"
+                    placeholder="Ej: Facturación"
+                    value={ticketForm.categoria} onChange={e => setTicketForm(p => ({ ...p, categoria: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium uppercase text-muted-foreground">SLA Objetivo</label>
+                  <input
+                    type="date"
+                    className="w-full px-3 py-2 border rounded-lg bg-background focus:ring-2 focus:ring-ring focus:outline-none text-sm"
+                    value={ticketForm.slaObjetivo} onChange={e => setTicketForm(p => ({ ...p, slaObjetivo: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium uppercase text-muted-foreground">Prioridad</label>
+                  <select
+                    className="w-full px-3 py-2 border rounded-lg bg-background text-sm"
+                    value={ticketForm.prioridad} onChange={e => setTicketForm(p => ({ ...p, prioridad: e.target.value }))}
+                  >
+                    <option value="baja">Baja</option>
+                    <option value="mediana">Mediana</option>
+                    <option value="alta">Alta</option>
+                    <option value="critica">Crítica</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium uppercase text-muted-foreground">Impacto</label>
+                  <select
+                    className="w-full px-3 py-2 border rounded-lg bg-background text-sm"
+                    value={ticketForm.impacto} onChange={e => setTicketForm(p => ({ ...p, impacto: e.target.value }))}
+                  >
+                    <option value="bajo">Bajo</option>
+                    <option value="mediano">Mediano</option>
+                    <option value="alto">Alto</option>
+                    <option value="critico">Crítico</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium uppercase text-muted-foreground">Urgencia</label>
+                  <select
+                    className="w-full px-3 py-2 border rounded-lg bg-background text-sm"
+                    value={ticketForm.urgencia} onChange={e => setTicketForm(p => ({ ...p, urgencia: e.target.value }))}
+                  >
+                    <option value="baja">Baja</option>
+                    <option value="mediana">Mediana</option>
+                    <option value="alta">Alta</option>
+                    <option value="critica">Crítica</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium uppercase text-muted-foreground">Tipo</label>
+                  <select
+                    className="w-full px-3 py-2 border rounded-lg bg-background text-sm"
+                    value={ticketForm.tipo}
+                    onChange={(e) => setTicketForm((p) => ({ ...p, tipo: e.target.value }))}
+                  >
+                    <option value="requerimiento">Requerimiento</option>
+                    <option value="incidente">Incidente</option>
+                    <option value="consulta">Consulta</option>
+                    <option value="otro">Otro</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium uppercase text-muted-foreground">Fuente solicitante</label>
+                  <input
+                    className="w-full px-3 py-2 border rounded-lg bg-background focus:ring-2 focus:ring-ring focus:outline-none text-sm"
+                    placeholder="Ej: Mesa de Servicio"
+                    value={ticketForm.fuenteSolicitante}
+                    onChange={(e) => setTicketForm((p) => ({ ...p, fuenteSolicitante: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium uppercase text-muted-foreground">Organización</label>
+                  <select
+                    className="w-full px-3 py-2 border rounded-lg bg-background text-sm"
+                    value={ticketForm.organizationId}
+                    onChange={(e) => {
+                      const orgId = e.target.value;
+                      setTicketForm((p) => ({ ...p, organizationId: orgId, projectId: "" }));
+                      loadProjects(orgId);
+                    }}
+                  >
+                    <option value="">Selecciona organización</option>
+                    {organizations.map((org) => (
+                      <option key={org.id} value={org.id}>
+                        {org.nombre || org.id}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium uppercase text-muted-foreground">Proyecto</label>
+                  <select
+                    className="w-full px-3 py-2 border rounded-lg bg-background text-sm"
+                    value={ticketForm.projectId}
+                    onChange={(e) => setTicketForm((p) => ({ ...p, projectId: e.target.value }))}
+                    disabled={!ticketForm.organizationId}
+                  >
+                    <option value="">Selecciona proyecto</option>
+                    {projects.map((project) => (
+                      <option key={project.id} value={project.id}>
+                        {project.nombre || project.id}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-3 p-3 border rounded-lg bg-muted/10 backdrop-blur-sm">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Enlazar ticket</p>
+                    <button
+                      type="button"
+                      onClick={() => setLinkedSelectorOpen(true)}
+                      className="text-xs px-3 py-1 rounded-full border border-border hover:bg-muted/50"
+                    >
+                      Seleccionar
+                    </button>
+                  </div>
+                  <div className="border rounded-lg bg-background/80 text-sm px-3 py-2 shadow-inner min-h-[44px] flex items-center">
+                    {ticketForm.linkedTickets[0]
+                      ? (() => {
+                        const t = tickets.find((tk) => tk.id === ticketForm.linkedTickets[0]);
+                        return t ? `${t.titulo || "Ticket"} — ${t.id}` : ticketForm.linkedTickets[0];
+                      })()
+                      : "Sin ticket enlazado"}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">Elige un ticket existente para vincular.</p>
+                </div>
+
+                <div className="space-y-3 p-3 border rounded-lg bg-muted/10 backdrop-blur-sm">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Creado por</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserSelectorOpen("creator");
+                        setUserSearch("");
+                      }}
+                      className="text-xs px-3 py-1 rounded-full border border-border hover:bg-muted/50"
+                    >
+                      Seleccionar
+                    </button>
+                  </div>
+                  <select
+                    className="w-full px-3 py-2 border rounded-lg bg-background/80 focus:ring-2 focus:ring-ring focus:outline-none text-sm shadow-inner"
+                    value={ticketForm.usuarioId}
+                    onChange={(e) => setTicketForm((p) => ({ ...p, usuarioId: e.target.value }))}
+                  >
+                    <option value="">Selecciona usuario</option>
+                    {peopleOptions.map((u) => (
+                      <option key={u.id} value={u.id}>
+                        {u.name}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-[11px] text-muted-foreground">Por defecto, tu usuario actual.</p>
+                </div>
+
+                <div className="space-y-3 p-3 border rounded-lg bg-muted/10 backdrop-blur-sm">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Asignado a</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserSelectorOpen("assignee");
+                        setUserSearch("");
+                      }}
+                      className="text-xs px-3 py-1 rounded-full border border-border hover:bg-muted/50"
+                    >
+                      Seleccionar
+                    </button>
+                  </div>
+                  <select
+                    className="w-full px-3 py-2 border rounded-lg bg-background/80 focus:ring-2 focus:ring-ring focus:outline-none text-sm shadow-inner"
+                    value={ticketForm.asignadoA}
+                    onChange={(e) => setTicketForm((p) => ({ ...p, asignadoA: e.target.value }))}
+                  >
+                    <option value="">Selecciona responsable</option>
+                    {peopleOptions.map((u) => (
+                      <option key={u.id} value={u.id}>
+                        {u.name}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-[11px] text-muted-foreground">Define el responsable (opcional).</p>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium uppercase text-muted-foreground">Descripción detallada</label>
+                <textarea
+                  rows={4}
+                  className="w-full px-3 py-2 border rounded-lg bg-background focus:ring-2 focus:ring-ring focus:outline-none text-sm resize-none"
+                  placeholder="Describe los pasos para reproducir el error..."
+                  value={ticketForm.descripcion} onChange={e => setTicketForm(p => ({ ...p, descripcion: e.target.value }))}
+                />
+              </div>
+
+              <div className="p-4 border border-dashed rounded-lg bg-muted/30">
+                <label className="cursor-pointer flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <Paperclip className="w-4 h-4" />
+                  <span>{attachments.length > 0 ? `${attachments.length} archivos seleccionados` : "Adjuntar archivos (evidencias, logs...)"}</span>
+                  <input type="file" multiple className="hidden" onChange={(e) => setAttachments(e.target.files ? Array.from(e.target.files) : [])} />
+                </label>
+              </div>
+
+              <div className="pt-4 flex items-center justify-end gap-3 border-t border-border">
+                <button type="button" onClick={() => setCreateTicketOpen(false)} className="px-4 py-2 text-sm font-medium hover:bg-muted rounded-lg transition-colors">Cancelar</button>
+                <button
+                  type="submit"
+                  disabled={ticketSubmitting || attachmentsUploading}
+                  className="px-6 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 shadow-sm"
+                >
+                  {ticketSubmitting ? "Creando..." : "Crear Ticket"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
