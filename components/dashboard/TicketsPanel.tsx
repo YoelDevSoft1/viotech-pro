@@ -173,9 +173,13 @@ export function TicketsPanel({ token, onRequireAuth }: Props) {
   const [linkedSearch, setLinkedSearch] = useState("");
   const [userSelectorOpen, setUserSelectorOpen] = useState<"creator" | "assignee" | null>(null);
   const [userSearch, setUserSearch] = useState("");
+  const [users, setUsers] = useState<{ id: string; nombre?: string; email?: string }[]>([]);
   const peopleOptions = useMemo(() => {
     const map = new Map<string, { id: string; name: string }>();
-    if (currentUserId) map.set(currentUserId, { id: currentUserId, name: "Usuario actual" });
+    users.forEach((u) => {
+      const name = u.nombre || u.email || u.id;
+      map.set(u.id, { id: u.id, name });
+    });
     tickets.forEach((t) => {
       const uid = (t as any).usuarioId || (t as any).usuario?.id;
       const uname = (t as any).usuario?.nombre || (t as any).usuario?.email;
@@ -183,8 +187,9 @@ export function TicketsPanel({ token, onRequireAuth }: Props) {
       const aid = t.asignadoA;
       if (aid) map.set(aid, { id: aid, name: `Asignado ${aid}` });
     });
+    if (currentUserId && !map.has(currentUserId)) map.set(currentUserId, { id: currentUserId, name: "Usuario actual" });
     return Array.from(map.values());
-  }, [tickets, currentUserId]);
+  }, [tickets, currentUserId, users]);
 
   const loadOrganizations = async () => {
     if (!token) return;
@@ -231,6 +236,26 @@ export function TicketsPanel({ token, onRequireAuth }: Props) {
           setCurrentUserId(id);
           setTicketForm((p) => ({ ...p, usuarioId: p.usuarioId || id }));
         }
+      }
+    } catch {
+      /* silent */
+    }
+  };
+
+  const loadUsers = async () => {
+    if (!token) return;
+    try {
+      // Requiere rol admin: /api/users
+      const res = await fetch(buildApiUrl("/api/users"), {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      });
+      const data = await res.json().catch(() => null);
+      if (res.ok) {
+        const list = data?.data?.users || data?.users || [];
+        setUsers(Array.isArray(list) ? list : []);
+      } else if (res.status === 403 || res.status === 401) {
+        setLocalError("Necesitas rol admin para listar usuarios.");
       }
     } catch {
       /* silent */
@@ -297,6 +322,12 @@ export function TicketsPanel({ token, onRequireAuth }: Props) {
       setProjects([]);
     }
   }, [ticketForm.organizationId]);
+
+  useEffect(() => {
+    if (userSelectorOpen) {
+      loadUsers();
+    }
+  }, [userSelectorOpen]);
 
   useEffect(() => {
     if (createTicketOpen) {
