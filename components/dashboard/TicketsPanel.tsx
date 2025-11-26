@@ -53,7 +53,6 @@ type TicketForm = {
   organizationId: string;
   projectId: string;
   linkedTickets: string[];
-  usuarioId: string;
   asignadoA: string;
 };
 
@@ -156,7 +155,6 @@ export function TicketsPanel({ token, onRequireAuth }: Props) {
     organizationId: "",
     projectId: "",
     linkedTickets: [],
-    usuarioId: "",
     asignadoA: "",
   });
   const [ticketSubmitting, setTicketSubmitting] = useState(false);
@@ -169,6 +167,7 @@ export function TicketsPanel({ token, onRequireAuth }: Props) {
   const [organizations, setOrganizations] = useState<{ id: string; nombre?: string }[]>([]);
   const [projects, setProjects] = useState<{ id: string; nombre?: string }[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string>("");
+  const [currentRole, setCurrentRole] = useState<string>("");
   const [linkedSelectorOpen, setLinkedSelectorOpen] = useState(false);
   const [linkedSearch, setLinkedSearch] = useState("");
   const [userSelectorOpen, setUserSelectorOpen] = useState<"creator" | "assignee" | null>(null);
@@ -231,11 +230,11 @@ export function TicketsPanel({ token, onRequireAuth }: Props) {
       });
       const data = await res.json().catch(() => null);
       if (res.ok) {
-        const id = data?.data?.user?.id || data?.user?.id;
-        if (id) {
-          setCurrentUserId(id);
-          setTicketForm((p) => ({ ...p, usuarioId: p.usuarioId || id }));
-        }
+        const user = data?.data?.user || data?.user;
+        const id = user?.id;
+        const rol = user?.rol || "";
+        if (id) setCurrentUserId(id);
+        if (rol) setCurrentRole(rol);
       }
     } catch {
       /* silent */
@@ -245,20 +244,41 @@ export function TicketsPanel({ token, onRequireAuth }: Props) {
   const loadUsers = async () => {
     if (!token) return;
     try {
-      // Requiere rol admin: /api/users
-      const res = await fetch(buildApiUrl("/api/users"), {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: "no-store",
-      });
-      const data = await res.json().catch(() => null);
-      if (res.ok) {
-        const list = data?.data?.users || data?.users || [];
-        setUsers(Array.isArray(list) ? list : []);
-      } else if (res.status === 403 || res.status === 401) {
-        setLocalError("Necesitas rol admin para listar usuarios.");
+      const collected: any[] = [];
+      let page = 1;
+      const limit = 100;
+
+      while (page < 6) {
+        const res = await fetch(buildApiUrl(`/api/users?page=${page}&limit=${limit}`), {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+        });
+        const data = await res.json().catch(() => null);
+        if (!res.ok) {
+          if (res.status === 403 || res.status === 401) {
+            setLocalError("Necesitas rol admin para listar usuarios.");
+          }
+          break;
+        }
+        const list = data?.data?.users || [];
+        if (Array.isArray(list)) {
+          collected.push(...list);
+          if (list.length < limit) break;
+        } else {
+          break;
+        }
+        page += 1;
       }
-    } catch {
-      /* silent */
+
+      if (collected.length) {
+        const map = new Map<string, any>();
+        collected.forEach((u) => {
+          if (u?.id) map.set(u.id, u);
+        });
+        setUsers(Array.from(map.values()));
+      }
+    } catch (err) {
+      setLocalError("No se pudieron cargar los usuarios.");
     }
   };
 
@@ -375,6 +395,7 @@ export function TicketsPanel({ token, onRequireAuth }: Props) {
       const response = await fetch(buildApiUrl("/tickets"), {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        cache: "no-store",
         body: JSON.stringify({
              titulo: ticketForm.titulo.trim(),
              descripcion: ticketForm.descripcion?.trim(),
@@ -382,13 +403,12 @@ export function TicketsPanel({ token, onRequireAuth }: Props) {
              impacto: ticketForm.impacto,
              urgencia: ticketForm.urgencia,
              categoria: ticketForm.categoria,
-             slaObjetivo: ticketForm.slaObjetivo || undefined,
+             slaObjetivo: ticketForm.slaObjetivo ? new Date(ticketForm.slaObjetivo).toISOString() : undefined,
              tipo: ticketForm.tipo,
              fuenteSolicitante: ticketForm.fuenteSolicitante,
              organizationId: ticketForm.organizationId || undefined,
              projectId: ticketForm.projectId || undefined,
-             usuarioId: ticketForm.usuarioId || undefined,
-             asignadoA: ticketForm.asignadoA || undefined,
+             asignadoA: currentRole === "cliente" ? undefined : ticketForm.asignadoA || undefined,
              linkedTickets: ticketForm.linkedTickets.length ? ticketForm.linkedTickets : undefined,
         }),
       });
@@ -418,7 +438,6 @@ export function TicketsPanel({ token, onRequireAuth }: Props) {
         organizationId: "",
         projectId: "",
         linkedTickets: [],
-        usuarioId: currentUserId,
         asignadoA: "",
       });
       setAttachments([]);
