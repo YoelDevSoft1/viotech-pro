@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo } from "react";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, FileText, Settings, HeartPulse } from "lucide-react";
+import { LayoutDashboard, Users, FileText, Settings, HeartPulse, ChevronRight } from "lucide-react";
 
 const navItems = [
   { href: "/admin", label: "Resumen", icon: LayoutDashboard },
@@ -14,6 +15,17 @@ const navItems = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const breadcrumbs = useMemo(() => {
+    const segments = pathname.split("/").filter(Boolean);
+    const items: Array<{ href: string; label: string }> = [];
+    segments.reduce((acc, segment) => {
+      const href = `${acc}/${segment}`;
+      const navMatch = navItems.find((n) => n.href === href);
+      items.push({ href, label: navMatch?.label || segment });
+      return href;
+    }, "");
+    return items;
+  }, [pathname]);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex">
@@ -46,12 +58,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       <main className="flex-1">
         <header className="sticky top-0 z-10 border-b border-border/60 bg-background/80 backdrop-blur supports-[backdrop-filter]:backdrop-blur">
-          <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                Admin
-              </p>
-              <p className="text-sm text-foreground">Panel de control</p>
+          <div className="flex items-center justify-between px-6 py-3">
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Admin</p>
+              <div className="flex items-center gap-2 text-sm text-foreground">
+                {breadcrumbs.map((item, idx) => (
+                  <span key={item.href} className="flex items-center gap-2">
+                    {idx > 0 && <ChevronRight className="w-3 h-3 text-muted-foreground" />}
+                    <span className={idx === breadcrumbs.length - 1 ? "font-medium" : "text-muted-foreground"}>
+                      {item.label}
+                    </span>
+                  </span>
+                ))}
+              </div>
             </div>
             <div className="text-xs text-muted-foreground">
               {new Date().toLocaleDateString("es-CO", {
@@ -63,7 +82,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </header>
 
-        <div className="mx-auto max-w-6xl px-4 py-6">{children}</div>
+        <div className="w-full px-6 py-6">{children}</div>
       </main>
     </div>
   );

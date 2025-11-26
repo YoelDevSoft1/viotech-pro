@@ -15,7 +15,7 @@ export function Button({
   ...props
 }: ButtonProps) {
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-full font-medium transition-all disabled:opacity-60";
+    "inline-flex items-center justify-center gap-2 rounded-full font-medium transition-all disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/50";
   const variants: Record<typeof variant, string> = {
     primary: "bg-foreground text-background hover:scale-[1.02]",
     outline: "border border-border text-foreground hover:bg-muted/40",

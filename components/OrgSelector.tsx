@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
-import { buildApiUrl } from "@/lib/api";
-import { getAccessToken, isTokenExpired, refreshAccessToken } from "@/lib/auth";
-
-const STORAGE_KEY = "viotech_org_id";
-export type Org = { id: string; nombre: string };
+import { useEffect, useState } from "react";
+import { useOrg } from "@/lib/useOrg";
+export type { Org } from "@/components/OrgProvider";
+import type { Org } from "@/components/OrgProvider";
 
 type Props = {
   onChange?: (org: Org | null) => void;
@@ -13,68 +11,18 @@ type Props = {
 };
 
 export default function OrgSelector({ onChange, label }: Props) {
-  const [orgId, setOrgId] = useState("");
+  const { orgId, orgs, setOrgId, selectedOrg, refreshOrgs, loading, error } = useOrg();
   const [customOrg, setCustomOrg] = useState("");
-  const [orgs, setOrgs] = useState<Org[]>([]);
-  const [initialized, setInitialized] = useState(false);
-  const loadingRef = useRef(false);
-
-  const loadOrgs = useCallback(async () => {
-    if (loadingRef.current) return;
-    let token = getAccessToken();
-    if (!token) return;
-    if (isTokenExpired(token)) {
-      const refreshed = await refreshAccessToken();
-      if (refreshed) token = refreshed;
-      else return;
-    }
-    loadingRef.current = true;
-    try {
-      const res = await fetch(buildApiUrl("/organizations"), {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: "no-store",
-        credentials: "include",
-      });
-      const payload = await res.json().catch(() => null);
-      if (res.status === 401) {
-        setInitialized(true);
-        return;
-      }
-      if (res.ok && payload) {
-        const data = payload.data?.organizations || payload.data || payload.organizations || payload;
-        const mapped: Org[] = (Array.isArray(data) ? data : []).map((o: any) => ({
-          id: String(o.id),
-          nombre: o.nombre || o.name || String(o.id),
-        }));
-        if (mapped.length) {
-          setOrgs(mapped);
-          if (!orgId && !initialized) {
-            setOrgId(mapped[0].id);
-            setInitialized(true);
-          }
-        }
-      }
-    } catch {
-      // si falla, no poblamos mock
-    } finally {
-      loadingRef.current = false;
-    }
-  }, [initialized]);
 
   useEffect(() => {
-    const saved = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
-    if (saved) setOrgId(saved);
-    loadOrgs();
-  }, [loadOrgs]);
+    if (!orgs.length && !loading) {
+      refreshOrgs();
+    }
+  }, [orgs.length, loading, refreshOrgs]);
 
   useEffect(() => {
-    const selected =
-      orgs.find((o) => o.id === orgId) || (orgId ? { id: orgId, nombre: orgId } : null);
-    if (typeof window !== "undefined") {
-      if (orgId) localStorage.setItem(STORAGE_KEY, orgId);
-    }
-    onChange?.(selected || null);
-  }, [orgId, orgs, onChange]);
+    onChange?.(selectedOrg);
+  }, [selectedOrg, onChange]);
 
   return (
     <div className="space-y-1">
@@ -112,6 +60,8 @@ export default function OrgSelector({ onChange, label }: Props) {
       <p className="text-[11px] text-muted-foreground">
         Se guarda localmente. Si la API no responde, deja vacío o ingresa manualmente el UUID.
       </p>
+      {loading && <p className="text-[11px] text-muted-foreground">Cargando organizaciones…</p>}
+      {error && <p className="text-[11px] text-amber-700">No se cargaron orgs: {error}</p>}
     </div>
   );
 }

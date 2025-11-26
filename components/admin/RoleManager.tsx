@@ -1,19 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  AlertCircle,
-  Ban,
-  CheckCircle2,
-  Loader2,
-  RefreshCcw,
-  Shield,
-  ShieldCheck,
-  ShieldOff,
-  ShieldQuestion,
-} from "lucide-react";
+import { CheckCircle2, Shield, ShieldCheck, ShieldOff, ShieldQuestion } from "lucide-react";
 import { buildApiUrl } from "@/lib/api";
 import { getAccessToken, isTokenExpired, refreshAccessToken } from "@/lib/auth";
+import OrgSelector, { type Org } from "@/components/OrgSelector";
+import { useOrg } from "@/lib/useOrg";
+import { LoadingState, ErrorState, EmptyState } from "@/components/ui/State";
 
 type Role = "admin" | "agente" | "cliente";
 
@@ -76,6 +69,7 @@ const ADMIN_MOCK = process.env.NEXT_PUBLIC_ADMIN_MOCK === "true";
  * - Rendimiento: fetch con AbortController, memo de filtros y estado optimista.
  */
 export default function RoleManager() {
+  const { orgId, setOrgId } = useOrg();
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [filter, setFilter] = useState("");
   const [loading, setLoading] = useState(true);
@@ -115,7 +109,7 @@ export default function RoleManager() {
       try {
         const token = await getValidToken();
         // Backend: usa /api/users para listar, admin puede ver todos
-        const response = await fetch(`${apiBase}/users`, {
+        const response = await fetch(orgId ? `${apiBase}/users?organizationId=${orgId}` : `${apiBase}/users`, {
           headers: { Authorization: `Bearer ${token}` },
           cache: "no-store",
           signal: controller.signal,
@@ -194,7 +188,7 @@ export default function RoleManager() {
     fetchUsers();
     fetchOrgs();
     return () => controller.abort();
-  }, [apiBase, getValidToken]);
+  }, [apiBase, getValidToken, orgId]);
 
   const filtered = useMemo(() => {
     const term = filter.trim().toLowerCase();
@@ -391,22 +385,30 @@ export default function RoleManager() {
   return (
     <section className="space-y-5" aria-live="polite">
       <header className="space-y-2">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-1">
             <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Roles</p>
             <h1 className="text-xl font-semibold text-foreground">Sistema de roles</h1>
             <p className="text-sm text-muted-foreground">
-              Controla accesos sensibles y estados de cuentas.
+              Controla accesos sensibles y estados de cuentas. Filtra por organización para aplicar cambios puntuales.
             </p>
           </div>
-          <div className="relative w-full sm:w-72">
-            <input
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
-              placeholder="Buscar por nombre, email o rol"
-              aria-label="Buscar usuarios por nombre, email o rol"
-            />
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+            <div className="sm:w-64">
+              <OrgSelector
+                onChange={(org: Org | null) => setOrgId(org?.id || "")}
+                label="Organización"
+              />
+            </div>
+            <div className="relative w-full sm:w-72">
+              <input
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
+                placeholder="Buscar por nombre, email o rol"
+                aria-label="Buscar usuarios por nombre, email o rol"
+              />
+            </div>
           </div>
         </div>
 
@@ -416,19 +418,13 @@ export default function RoleManager() {
             {feedback}
           </div>
         )}
-        {error && (
-          <div className="flex items-center gap-2 rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-600">
-            <AlertCircle className="w-4 h-4" />
-            {error}
-          </div>
-        )}
-        {!error && users.length === 0 && !loading && (
-          <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
-            No hay usuarios disponibles para mostrar.
-          </div>
-        )}
       </header>
 
+      {loading && <LoadingState title="Cargando usuarios y roles..." />}
+      {error && !loading && <ErrorState message={error} />}
+
+      {!loading && !error && (
+      <>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {ROLE_OPTIONS.map((role) => {
           const count = users.filter((u) => u.rol === role.value).length;
@@ -445,15 +441,8 @@ export default function RoleManager() {
         })}
       </div>
 
-      {loading ? (
-        <div className="flex items-center gap-2 rounded-2xl border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
-          <Loader2 className="w-4 h-4 animate-spin" />
-          Cargando usuarios y roles...
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
-          No se encontraron usuarios con ese criterio.
-        </div>
+      {filtered.length === 0 ? (
+        <EmptyState title="Sin resultados" message="No se encontraron usuarios con ese criterio u organización." />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3" aria-busy={Boolean(pending)}>
           {filtered.map((user) => (
@@ -549,6 +538,8 @@ export default function RoleManager() {
             </article>
           ))}
         </div>
+      )}
+      </>
       )}
     </section>
   );

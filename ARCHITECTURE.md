@@ -59,6 +59,13 @@
 - **Asistente IA de tickets:** chat con backend IA; si usuario afirma “crea el ticket” o pulsa botón, se envía historial + draft al endpoint de creación con Bearer.
 - **Admin:** lista usuarios desde `/users` (o mock); cambio de rol via `PUT /users/:id/role`; acceso protegido por rol.
 
+## Design System (tokens rápidos)
+- Espaciado (`rem`): `--space-1: 0.25`, `--space-2: 0.5`, `--space-3: 0.75`, `--space-4: 1`, `--space-5: 1.5`, `--space-6: 2`.
+- Tipografía: `--font-sans: "Inter", system-ui, sans-serif`; `--font-mono: "JetBrains Mono", ui-monospace, monospace`.
+- Radios: `--radius-sm: 0.375rem`; `--radius-md: 0.75rem`; `--radius-lg: 1.5rem`.
+- Sombras: `--shadow-sm: 0 1px 2px rgba(0,0,0,0.06)`; `--shadow-md: 0 8px 30px rgba(0,0,0,0.12)`.
+- Componentes base añadidos: `Badge`, `Skeleton`, `Table` (head/body/row/cell), `Pagination`, `Breadcrumb`, `State` (loading/error/empty).
+
 ## Seguridad y errores
 - CORS: backend permite `https://viotech.com.co`.
 - Manejo de 401/403: redirigir a login; 429: mensajes amigables en IA/predicciones.
