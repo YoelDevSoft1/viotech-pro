@@ -2,5 +2,9 @@
   command = "npm run build"
   publish = ".next"
 
+[build.environment]
+  # Deshabilitar Turbopack para evitar problemas de resolución de módulos
+  NEXT_PRIVATE_SKIP_TURBO = "1"
+
 [[plugins]]
   package = "@netlify/plugin-nextjs"
