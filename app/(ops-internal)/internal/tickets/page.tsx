@@ -8,7 +8,7 @@ import { ArrowLeft, Filter } from "lucide-react";
 
 import OrgSelector, { type Org } from "@/components/OrgSelector";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useOrg } from "@/lib/useOrg";
+import { useOrg } from "@/lib/hooks/useOrg";
 import { useTickets } from "@/lib/hooks/useTickets";
 import { apiClient } from "@/lib/apiClient";
 import { LoadingState, ErrorState, EmptyState } from "@/components/ui/state";

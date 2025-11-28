@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/apiClient";
-import { useOrg } from "@/lib/useOrg";
+import { useOrg } from "@/lib/hooks/useOrg";
 
 export type Service = {
   id: string;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useOrg } from "@/lib/useOrg";
+import { useOrg } from "@/lib/hooks/useOrg";
 export type { Org } from "@/components/OrgProvider";
 import type { Org } from "@/components/OrgProvider";
 

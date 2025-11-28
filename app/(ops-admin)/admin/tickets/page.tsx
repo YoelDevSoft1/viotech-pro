@@ -52,7 +52,7 @@ import { buildApiUrl } from "@/lib/api";
 import { getAccessToken, isTokenExpired, refreshAccessToken, logout } from "@/lib/auth";
 import { EmptyState } from "@/components/ui/state";
 import { useTickets } from "@/lib/hooks/useTickets";
-import { useOrg } from "@/lib/useOrg";
+import { useOrg } from "@/lib/hooks/useOrg";
 import { cn } from "@/lib/utils";
 import { StatusBadge, PriorityBadge } from "@/components/tickets/TicketBadges";
 import { toast } from "sonner";

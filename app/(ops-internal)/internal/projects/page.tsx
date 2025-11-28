@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, FolderKanban } from "lucide-react";
 import OrgSelector, { type Org } from "@/components/OrgSelector";
 import { fetchProjects, type Project } from "@/lib/projects";
-import { useOrg } from "@/lib/useOrg";
+import { useOrg } from "@/lib/hooks/useOrg";
 import { LoadingState, ErrorState, EmptyState } from "@/components/ui/state";
 
 export default function InternalProjectsPage() {

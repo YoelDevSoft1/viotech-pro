@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useOrg } from "@/lib/useOrg";
+import { useOrg } from "@/lib/hooks/useOrg";
 import { useModelStatus } from "@/lib/hooks/useModelStatus";
 import { useMetrics } from "@/lib/hooks/useMetrics";
 import Link from "next/link";

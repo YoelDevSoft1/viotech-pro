@@ -10,7 +10,7 @@ import { useServices } from "@/lib/hooks/useServices";
 import { useTickets } from "@/lib/hooks/useTickets";
 import { useMetrics } from "@/lib/hooks/useMetrics";
 import { useModelStatus } from "@/lib/hooks/useModelStatus";
-import { useOrg } from "@/lib/useOrg";
+import { useOrg } from "@/lib/hooks/useOrg";
 import { getAccessToken, refreshAccessToken, isTokenExpired, logout } from "@/lib/auth";
 import { buildApiUrl } from "@/lib/api";
 import OrgSelector, { type Org } from "@/components/OrgSelector";

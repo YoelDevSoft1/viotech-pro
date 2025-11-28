@@ -5,7 +5,7 @@ import { Package, Calendar, Building2 } from "lucide-react";
 import OrgSelector, { type Org } from "@/components/OrgSelector";
 import { LoadingState, ErrorState, EmptyState } from "@/components/ui/state";
 import { useServices } from "@/lib/hooks/useServices";
-import { useOrg } from "@/lib/useOrg";
+import { useOrg } from "@/lib/hooks/useOrg";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
