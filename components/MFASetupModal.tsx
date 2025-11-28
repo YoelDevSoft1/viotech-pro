@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Shield, CheckCircle, AlertCircle, Copy, Download } from "lucide-react";
-import { buildApiUrl } from "@/lib/api";
-import { getAccessToken } from "@/lib/auth";
+import { X, Shield, CheckCircle, AlertCircle, Copy, Download, Loader2 } from "lucide-react";
+import { useMFASetup, useMFAVerify } from "@/lib/hooks/useMFA";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface MFASetupModalProps {
   isOpen: boolean;
@@ -18,93 +18,43 @@ export default function MFASetupModal({ isOpen, onClose, onSuccess }: MFASetupMo
   const [otpauthUrl, setOtpauthUrl] = useState<string>("");
   const [token, setToken] = useState<string>("");
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const queryClient = useQueryClient();
+  
+  const setupMFA = useMFASetup();
+  const verifyMFA = useMFAVerify();
 
   useEffect(() => {
-    if (isOpen && step === "setup") {
+    if (isOpen && step === "setup" && !setupMFA.isPending && !qrCode) {
       handleSetup();
     }
   }, [isOpen, step]);
 
   const handleSetup = async () => {
-    setLoading(true);
-    setError(null);
-
     try {
-      const token = getAccessToken();
-      if (!token) {
-        setError("No estás autenticado. Por favor, inicia sesión nuevamente.");
-        return;
-      }
-
-      const response = await fetch(buildApiUrl("/mfa/setup"), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "Error al iniciar configuración de MFA");
-      }
-
-      setQrCode(data.data.qrCode);
-      setSecret(data.data.secret);
-      setOtpauthUrl(data.data.otpauthUrl);
+      const data = await setupMFA.mutateAsync();
+      setQrCode(data.qrCode);
+      setSecret(data.secret);
+      setOtpauthUrl(data.otpauthUrl);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
-    } finally {
-      setLoading(false);
+      // El error ya se maneja en el hook
     }
   };
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
 
     if (!token || token.length !== 6) {
-      setError("El código debe tener 6 dígitos");
-      setLoading(false);
       return;
     }
 
     try {
-      const accessToken = getAccessToken();
-      if (!accessToken) {
-        setError("No estás autenticado. Por favor, inicia sesión nuevamente.");
-        return;
-      }
-
-      const response = await fetch(buildApiUrl("/mfa/verify"), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          secret,
-          token,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "Código inválido");
-      }
-
-      setBackupCodes(data.data.backupCodes || []);
+      const data = await verifyMFA.mutateAsync({ secret, token });
+      setBackupCodes(data.backupCodes || []);
       setStep("success");
+      queryClient.invalidateQueries({ queryKey: ["mfa-status"] });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al verificar código");
-    } finally {
-      setLoading(false);
+      // El error ya se maneja en el hook
     }
   };
 
@@ -162,18 +112,20 @@ export default function MFASetupModal({ isOpen, onClose, onSuccess }: MFASetupMo
               </p>
             </div>
 
-            {loading && !qrCode && (
+            {setupMFA.isPending && !qrCode && (
               <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground"></div>
+                <Loader2 className="h-8 w-8 animate-spin text-foreground" />
               </div>
             )}
 
-            {error && (
+            {setupMFA.error && (
               <div className="rounded-xl border border-red-500/50 bg-red-500/10 p-4 flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-red-500">Error</p>
-                  <p className="text-sm text-red-500/80">{error}</p>
+                  <p className="text-sm text-red-500/80">
+                    {(setupMFA.error as any)?.message || "Error al iniciar configuración de MFA"}
+                  </p>
                 </div>
               </div>
             )}
@@ -205,24 +157,33 @@ export default function MFASetupModal({ isOpen, onClose, onSuccess }: MFASetupMo
                       onChange={(e) => setToken(e.target.value.replace(/\D/g, ""))}
                       className="w-full px-4 py-2 rounded-xl border border-border bg-background text-foreground text-center text-2xl font-mono tracking-widest"
                       placeholder="000000"
-                      disabled={loading}
+                      disabled={verifyMFA.isPending}
                       autoFocus
                     />
                   </div>
 
-                  {error && (
+                  {verifyMFA.error && (
                     <div className="rounded-xl border border-red-500/50 bg-red-500/10 p-3 flex items-center gap-2">
                       <AlertCircle className="w-4 h-4 text-red-500" />
-                      <p className="text-sm text-red-500">{error}</p>
+                      <p className="text-sm text-red-500">
+                        {(verifyMFA.error as any)?.message || "Error al verificar código"}
+                      </p>
                     </div>
                   )}
 
                   <button
                     type="submit"
-                    disabled={loading || token.length !== 6}
+                    disabled={verifyMFA.isPending || token.length !== 6}
                     className="w-full py-3 rounded-xl bg-foreground text-background font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {loading ? "Verificando..." : "Verificar y Habilitar"}
+                    {verifyMFA.isPending ? (
+                      <>
+                        <Loader2 className="inline-block mr-2 h-4 w-4 animate-spin" />
+                        Verificando...
+                      </>
+                    ) : (
+                      "Verificar y Habilitar"
+                    )}
                   </button>
                 </form>
               </div>

@@ -224,33 +224,47 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {sidebarItems.length > 0 ? (
-                sidebarItems.map((item) => {
-                  const isActive = pathname?.startsWith(item.href) || pathname === item.href;
-                  return (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton 
-                        asChild 
-                        isActive={isActive} 
-                        tooltip={item.title}
-                        className={cn(
-                          "relative",
-                          isActive && "bg-sidebar-accent text-sidebar-accent-foreground"
-                        )}
-                      >
-                        <Link href={item.href} className="flex items-center gap-2.5 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:items-center">
-                          {isActive && (
-                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-full group-data-[collapsible=icon]:h-9" />
+                (() => {
+                  // Ordenar items por longitud de href (más largos primero) para priorizar rutas más específicas
+                  const sortedItems = [...sidebarItems].sort((a, b) => b.href.length - a.href.length);
+                  
+                  // Encontrar el item activo más específico
+                  const activeItem = sortedItems.find((item) => {
+                    if (!pathname) return false;
+                    // Coincidencia exacta
+                    if (pathname === item.href) return true;
+                    // Coincidencia de prefijo válido (seguido de / o al final)
+                    return pathname.startsWith(item.href + "/") || pathname.startsWith(item.href + "?");
+                  });
+                  
+                  return sortedItems.map((item) => {
+                    const isActive = activeItem?.href === item.href;
+                    return (
+                      <SidebarMenuItem key={item.href}>
+                        <SidebarMenuButton 
+                          asChild 
+                          isActive={isActive} 
+                          tooltip={item.title}
+                          className={cn(
+                            "relative",
+                            isActive && "bg-sidebar-accent text-sidebar-accent-foreground"
                           )}
-                          <item.icon className="size-4 shrink-0 group-data-[collapsible=icon]:size-5" />
-                          <span className="group-data-[collapsible=icon]:hidden flex-1 text-left">{item.title}</span>
-                          {item.badge && (
-                            <SidebarMenuBadge className="group-data-[collapsible=icon]:hidden ml-auto">{item.badge}</SidebarMenuBadge>
-                          )}
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })
+                        >
+                          <Link href={item.href} className="flex items-center gap-2.5 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:items-center">
+                            {isActive && (
+                              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-full group-data-[collapsible=icon]:h-9" />
+                            )}
+                            <item.icon className="size-4 shrink-0 group-data-[collapsible=icon]:size-5" />
+                            <span className="group-data-[collapsible=icon]:hidden flex-1 text-left">{item.title}</span>
+                            {item.badge && (
+                              <SidebarMenuBadge className="group-data-[collapsible=icon]:hidden ml-auto">{item.badge}</SidebarMenuBadge>
+                            )}
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  });
+                })()
               ) : (
                 <div className="px-2 py-4 text-xs text-muted-foreground">No hay items disponibles</div>
               )}

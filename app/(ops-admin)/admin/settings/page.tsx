@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { User, Building2, RefreshCcw, AlertTriangle, CheckCircle2, Lock, Users, ArrowLeft, Mail, KeyRound } from "lucide-react";
+import { User, Building2, RefreshCcw, AlertTriangle, CheckCircle2, Lock, Users, Mail, KeyRound } from "lucide-react";
 import { buildApiUrl } from "@/lib/api";
 import { getAccessToken, refreshAccessToken, isTokenExpired, logout } from "@/lib/auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -167,14 +167,6 @@ export default function AdminSettingsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-2">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/admin" className="gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Volver
-            </Link>
-          </Button>
-        </div>
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Configuración</h1>

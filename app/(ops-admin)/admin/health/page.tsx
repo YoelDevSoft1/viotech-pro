@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, HeartPulse, RefreshCcw, Activity, ArrowLeft, CheckCircle2, XCircle } from "lucide-react";
+import { AlertTriangle, HeartPulse, RefreshCcw, Activity, CheckCircle2, XCircle } from "lucide-react";
 import { buildApiUrl } from "@/lib/api";
 import { getAccessToken, refreshAccessToken, isTokenExpired, logout } from "@/lib/auth";
 import OrgSelector, { type Org } from "@/components/OrgSelector";
@@ -151,14 +151,6 @@ export default function AdminHealthPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-2">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/admin" className="gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Volver
-            </Link>
-          </Button>
-        </div>
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Estado de Servicios</h1>

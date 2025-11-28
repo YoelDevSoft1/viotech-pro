@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Package, Calendar, Building2 } from "lucide-react";
+import { Package, Calendar, Building2 } from "lucide-react";
 import OrgSelector, { type Org } from "@/components/OrgSelector";
 import { LoadingState, ErrorState, EmptyState } from "@/components/ui/state";
 import { useServices } from "@/lib/hooks/useServices";
@@ -35,14 +35,6 @@ export default function AdminServicesPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-2">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/admin" className="gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Volver
-            </Link>
-          </Button>
-        </div>
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Servicios y Licencias</h1>
           <p className="text-muted-foreground">

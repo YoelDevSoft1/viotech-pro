@@ -4,7 +4,6 @@ import { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  ArrowLeft,
   Filter,
   Search,
   MessageSquare,
@@ -388,14 +387,6 @@ export default function AdminTicketsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/admin" className="gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Volver
-          </Link>
-          </Button>
-        </div>
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">

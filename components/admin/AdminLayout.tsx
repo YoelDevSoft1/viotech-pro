@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
+import { HeaderContent } from "@/components/dashboard/header-content";
 import {
   SidebarInset,
   SidebarProvider,
@@ -12,6 +13,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset className="flex flex-col overflow-hidden">
+        <HeaderContent />
         <div className="flex flex-1 flex-col gap-6 p-6 overflow-y-auto">
           {children}
         </div>
