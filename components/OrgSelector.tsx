@@ -60,8 +60,17 @@ export default function OrgSelector({ onChange, label }: Props) {
       <p className="text-[11px] text-muted-foreground">
         Se guarda localmente. Si la API no responde, deja vacío o ingresa manualmente el UUID.
       </p>
-      {loading && <p className="text-[11px] text-muted-foreground">Cargando organizaciones…</p>}
-      {error && <p className="text-[11px] text-amber-700">No se cargaron orgs: {error}</p>}
+      {loading && (
+        <p className="text-[11px] text-muted-foreground">
+          Cargando organizaciones… {error?.includes("tardando") && "(El servidor puede estar iniciando)"}
+        </p>
+      )}
+      {error && !loading && (
+        <p className="text-[11px] text-amber-600 dark:text-amber-500">
+          {error.includes("tardando") ? "⚠️ " : ""}
+          {error}
+        </p>
+      )}
     </div>
   );
 }

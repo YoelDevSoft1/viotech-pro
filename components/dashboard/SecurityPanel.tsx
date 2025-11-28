@@ -2,7 +2,7 @@
 
 import { ShieldAlert, ShieldCheck, RefreshCcw } from "lucide-react";
 import { ModelStatus } from "@/lib/hooks/useModelStatus";
-import { LoadingState, ErrorState, EmptyState } from "@/components/ui/State";
+import { LoadingState, ErrorState, EmptyState } from "@/components/ui/state";
 
 type Props = {
   modelStatus: ModelStatus | null;

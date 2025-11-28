@@ -14,8 +14,7 @@ export default function AsistentePage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-background px-6 py-10 md:py-12">
-      <div className="max-w-5xl mx-auto space-y-6">
+    <div className="space-y-6">
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard"
@@ -35,10 +34,9 @@ export default function AsistentePage() {
           </p>
         </div>
 
-        <div className="rounded-3xl border border-border/70 bg-background/80 p-6">
-          <AITicketAssistant authToken={token} />
-        </div>
+      <div className="rounded-3xl border border-border/70 bg-background/80 p-6">
+        <AITicketAssistant authToken={token} />
       </div>
-    </main>
+    </div>
   );
 }

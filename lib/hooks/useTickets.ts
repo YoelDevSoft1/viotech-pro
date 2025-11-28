@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { apiFetch, type ApiError } from "@/lib/apiClient";
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/apiClient";
 import { useOrg } from "@/lib/useOrg";
 
 export type Ticket = {
@@ -24,7 +24,7 @@ export type Ticket = {
   attachments?: any[];
 };
 
-type TicketFilters = {
+export type TicketFilters = {
   estado?: string;
   prioridad?: string;
   projectId?: string;
@@ -39,100 +39,100 @@ type TicketFilters = {
   limit?: number;
 };
 
+type TicketResponse = {
+  tickets: Ticket[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+};
+
 export function useTickets(filters: TicketFilters = {}) {
   const { orgId } = useOrg();
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState<{ page: number; limit: number; total: number; totalPages: number }>({
+
+  // Construimos los parámetros de consulta
+  // React Query detectará cambios en este objeto para refrescar la data
+  const queryParams = {
+    organizationId: filters.organizationId || orgId || undefined,
+    estado: filters.estado || undefined,
+    prioridad: filters.prioridad || undefined,
+    projectId: filters.projectId || undefined,
+    impacto: filters.impacto || undefined,
+    urgencia: filters.urgencia || undefined,
+    categoria: filters.categoria || undefined,
+    asignadoA: filters.asignadoA || undefined,
+    sort: filters.sort || undefined,
+    order: filters.order || undefined,
     page: filters.page || 1,
     limit: filters.limit || 20,
-    total: 0,
-    totalPages: 0,
+  };
+
+  const query = useQuery({
+    // La clave incluye los filtros: si cambias de página, se refrezca solo.
+    queryKey: ["tickets", queryParams],
+    
+    // No ejecutar si no hay organización (opcional, depende de tu lógica global)
+    // enabled: !!orgId, 
+
+    queryFn: async (): Promise<TicketResponse> => {
+      const { data } = await apiClient.get("/tickets", { params: queryParams });
+      
+      const rawTickets = data?.data?.tickets || data?.data || [];
+      const rawPagination = data?.data?.pagination || data?.pagination;
+
+      // Mapeo defensivo (Lógica original conservada)
+      const mappedTickets = Array.isArray(rawTickets)
+        ? rawTickets.map((t: any) => ({
+            id: String(t.id),
+            titulo: t.titulo || "Sin título",
+            descripcion: t.descripcion || null,
+            estado: t.estado || "abierto",
+            prioridad: t.prioridad || "media",
+            impacto: t.impacto || null,
+            urgencia: t.urgencia || null,
+            categoria: t.categoria || null,
+            slaObjetivo: t.slaObjetivo || t.sla_objetivo || null,
+            slaVenceEn: t.slaVenceEn || t.sla_vence_en || null,
+            slaAtendidoEn: t.slaAtendidoEn || t.sla_atendido_en || null,
+            etiquetas: Array.isArray(t.etiquetas) ? t.etiquetas : [],
+            createdAt: t.createdAt || t.created_at || new Date().toISOString(),
+            comentarios: t.comentarios || [],
+            usuario: t.usuario || null,
+            organizationId: t.organizationId || t.organization_id || "",
+            projectId: t.projectId || t.project_id || "",
+            asignadoA: t.asignadoA || t.asignado_a || null,
+            attachments: t.attachments || t.adjuntos || [],
+          }))
+        : [];
+
+      return {
+        tickets: mappedTickets,
+        pagination: {
+          page: rawPagination?.page || queryParams.page,
+          limit: rawPagination?.limit || queryParams.limit,
+          total: rawPagination?.total || 0,
+          totalPages: rawPagination?.totalPages || 0,
+        },
+      };
+    },
+    
+    // Configuración de caché
+    staleTime: 1000 * 60, // 1 minuto
+    retry: 1,
   });
 
-  const fetchTickets = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const payload = await apiFetch<any>({
-        path: "/tickets",
-        query: {
-          organizationId: filters.organizationId || orgId || undefined,
-          estado: filters.estado || undefined,
-          prioridad: filters.prioridad || undefined,
-          projectId: filters.projectId || undefined,
-          impacto: filters.impacto || undefined,
-          urgencia: filters.urgencia || undefined,
-          categoria: filters.categoria || undefined,
-          asignadoA: filters.asignadoA || undefined,
-          sort: filters.sort || undefined,
-          order: filters.order || undefined,
-          page: filters.page || 1,
-          limit: filters.limit || 20,
-        },
-      });
-      const data = payload?.data?.tickets || payload?.data || [];
-      const pag = payload?.data?.pagination || payload?.pagination;
-      setTickets(
-        Array.isArray(data)
-          ? data.map((t: any) => ({
-              id: String(t.id),
-              titulo: t.titulo || "Sin título",
-              descripcion: t.descripcion || null,
-              estado: t.estado || "abierto",
-              prioridad: t.prioridad || "media",
-              impacto: t.impacto || null,
-              urgencia: t.urgencia || null,
-              categoria: t.categoria || null,
-              slaObjetivo: t.slaObjetivo || t.sla_objetivo || null,
-              slaVenceEn: t.slaVenceEn || t.sla_vence_en || null,
-              slaAtendidoEn: t.slaAtendidoEn || t.sla_atendido_en || null,
-              etiquetas: Array.isArray(t.etiquetas) ? t.etiquetas : [],
-              createdAt: t.createdAt || t.created_at || new Date().toISOString(),
-              comentarios: t.comentarios || [],
-              usuario: t.usuario || null,
-              organizationId: t.organizationId || t.organization_id || "",
-              projectId: t.projectId || t.project_id || "",
-              asignadoA: t.asignadoA || t.asignado_a || null,
-              attachments: t.attachments || t.adjuntos || [],
-            }))
-          : [],
-      );
-      if (pag) {
-        setPagination({
-          page: pag.page || filters.page || 1,
-          limit: pag.limit || filters.limit || 20,
-          total: pag.total || 0,
-          totalPages: pag.totalPages || 0,
-        });
-      }
-    } catch (err) {
-      const msg = (err as ApiError).message || "Error al cargar tickets";
-      setError(msg);
-      setTickets([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [
-    orgId,
-    filters.organizationId,
-    filters.estado,
-    filters.prioridad,
-    filters.projectId,
-    filters.impacto,
-    filters.urgencia,
-    filters.categoria,
-    filters.asignadoA,
-    filters.sort,
-    filters.order,
-    filters.page,
-    filters.limit,
-  ]);
-
-  useEffect(() => {
-    fetchTickets();
-  }, [fetchTickets]);
-
-  return { tickets, loading, error, pagination, refresh: fetchTickets };
+  return {
+    tickets: query.data?.tickets || [],
+    pagination: query.data?.pagination || { 
+      page: filters.page || 1, 
+      limit: filters.limit || 20, 
+      total: 0, 
+      totalPages: 0 
+    },
+    loading: query.isLoading,
+    error: query.error ? (query.error as Error).message : null,
+    refresh: query.refetch,
+  };
 }

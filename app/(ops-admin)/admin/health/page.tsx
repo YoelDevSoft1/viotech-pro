@@ -5,13 +5,13 @@ import { AlertTriangle, HeartPulse, RefreshCcw, Activity } from "lucide-react";
 import { buildApiUrl } from "@/lib/api";
 import { getAccessToken, refreshAccessToken, isTokenExpired, logout } from "@/lib/auth";
 import OrgSelector, { type Org } from "@/components/OrgSelector";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { LoadingState, ErrorState, EmptyState } from "@/components/ui/State";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { LoadingState, ErrorState, EmptyState } from "@/components/ui/state";
 import { useOrg } from "@/lib/useOrg";
 import { useModelStatus } from "@/lib/hooks/useModelStatus";
 import { useMetrics } from "@/lib/hooks/useMetrics";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 type HealthEntry = {
   name: string;

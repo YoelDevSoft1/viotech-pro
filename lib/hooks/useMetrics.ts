@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { apiFetch, type ApiError } from "@/lib/apiClient";
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/apiClient";
 import { useOrg } from "@/lib/useOrg";
 
 export type DashboardMetrics = {
@@ -13,35 +13,33 @@ export type DashboardMetrics = {
 
 export function useMetrics() {
   const { orgId } = useOrg();
-  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchMetrics = useCallback(async () => {
-    if (!orgId) {
-      setMetrics(null);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const payload = await apiFetch<any>({
-        path: "/metrics/dashboard",
-        query: { organizationId: orgId },
+  const query = useQuery({
+    // La clave incluye orgId, así que cada organización tiene su propio caché
+    queryKey: ["metrics", "dashboard", orgId],
+    
+    // Solo ejecutamos la consulta si hay una organización seleccionada
+    enabled: !!orgId,
+    
+    queryFn: async () => {
+      const { data } = await apiClient.get("/metrics/dashboard", {
+        params: { organizationId: orgId },
       });
-      setMetrics(payload?.data || payload || null);
-    } catch (err) {
-      const msg = (err as ApiError).message || "Error al cargar métricas";
-      setError(msg);
-      setMetrics(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [orgId]);
+      // Normalizamos la respuesta por si viene envuelta en { data: ... }
+      return (data?.data || data) as DashboardMetrics;
+    },
+    
+    // Opcional: Mantener datos frescos por 5 minutos
+    staleTime: 1000 * 60 * 5, 
+  });
 
-  useEffect(() => {
-    fetchMetrics();
-  }, [fetchMetrics]);
-
-  return { metrics, loading, error, refresh: fetchMetrics };
+  // Mapeamos a la interfaz que tu aplicación ya espera para no romper nada
+  return {
+    metrics: query.data || null,
+    loading: query.isLoading,
+    error: query.error ? (query.error as Error).message : null,
+    refresh: query.refetch,
+    // Exportamos también el objeto query original por si necesitas más control
+    ...query
+  };
 }

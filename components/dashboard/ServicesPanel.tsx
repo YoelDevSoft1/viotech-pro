@@ -3,7 +3,9 @@
 import { useMemo, useState, useEffect } from "react";
 import { ArrowRight } from "lucide-react";
 import { useServices } from "@/lib/hooks/useServices";
-import { LoadingState, ErrorState, EmptyState } from "@/components/ui/State";
+import { LoadingState, ErrorState, EmptyState } from "@/components/ui/state";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 type Service = {
   id: string;
@@ -54,13 +56,14 @@ const ServiceCard = ({ service }: { service: Service }) => {
       : computeProgressFromDates(service);
 
   const statusBadge = {
-    activo: "bg-green-100 text-green-800 border border-green-200",
-    expirado: "bg-red-100 text-red-800 border border-red-200",
-    pendiente: "bg-amber-100 text-amber-800 border border-amber-200",
-  }[service.estado] || "bg-slate-100 text-slate-700 border border-slate-200";
+    activo: "bg-green-500/10 text-green-700 border-green-500/20 dark:text-green-400 dark:bg-green-500/20",
+    expirado: "bg-red-500/10 text-red-700 border-red-500/20 dark:text-red-400 dark:bg-red-500/20",
+    pendiente: "bg-amber-500/10 text-amber-700 border-amber-500/20 dark:text-amber-400 dark:bg-amber-500/20",
+  }[service.estado] || "bg-muted text-muted-foreground border-border";
 
   return (
-    <div className="rounded-3xl border border-border/70 bg-background/70 p-6 space-y-4 hover:border-border transition-colors">
+    <Card className="hover:shadow-md transition-all">
+      <CardContent className="p-6 space-y-4">
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-sm text-muted-foreground uppercase tracking-[0.3em]">
@@ -68,44 +71,45 @@ const ServiceCard = ({ service }: { service: Service }) => {
           </p>
           <h4 className="text-xl font-medium text-foreground">{service.nombre}</h4>
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusBadge}`}>
+        <span className={`px-2.5 py-1 rounded-md text-xs font-medium border ${statusBadge} capitalize`}>
           {service.estado}
         </span>
       </div>
       <div className="grid grid-cols-2 gap-4 text-sm">
-        <div>
-          <p className="text-muted-foreground">Inicio</p>
-          <p className="text-foreground">{formatDate(service.fecha_compra)}</p>
+        <div className="space-y-1">
+          <p className="text-xs text-muted-foreground">Inicio</p>
+          <p className="text-sm font-medium text-foreground">{formatDate(service.fecha_compra)}</p>
         </div>
-        <div>
-          <p className="text-muted-foreground">Renovación</p>
-          <p className="text-foreground">{formatDate(service.fecha_expiracion)}</p>
+        <div className="space-y-1">
+          <p className="text-xs text-muted-foreground">Renovación</p>
+          <p className="text-sm font-medium text-foreground">{formatDate(service.fecha_expiracion)}</p>
         </div>
       </div>
       {typeof progress === "number" && (
-        <div>
-          <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-muted-foreground mb-2">
-            <span>Estatus</span>
-            <span className="text-foreground">{progress}%</span>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground font-medium">Progreso</span>
+            <span className="text-foreground font-semibold">{progress}%</span>
           </div>
-          <div className="h-2 rounded-full bg-border">
+          <div className="h-2 rounded-full bg-muted overflow-hidden">
             <div
-              className="h-full rounded-full bg-foreground transition-all"
+              className="h-full rounded-full bg-primary transition-all"
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
       )}
-      <div className="flex items-center justify-between text-sm">
-        <span className="text-muted-foreground">
+      <div className="flex items-center justify-between pt-2 border-t">
+        <span className="text-sm font-medium text-foreground">
           {service.precio ? `$${service.precio?.toLocaleString("es-CO")}` : "Proyecto a medida"}
         </span>
-        <button className="inline-flex items-center gap-2 text-xs font-medium text-foreground hover:gap-3 transition-all">
+        <button className="inline-flex items-center gap-2 text-xs font-medium text-primary hover:gap-3 transition-all">
           Revisar entregables
           <ArrowRight className="w-3 h-3" />
         </button>
       </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
@@ -164,9 +168,12 @@ export function ServicesPanel() {
   if (servicesError) return <ErrorState message={servicesError || "No se pudo cargar servicios."} />;
 
   return (
-    <section className="grid grid-cols-1 lg:grid-cols-[1.2fr,0.8fr] gap-8">
-      <div className="space-y-6">
-        <h2 className="text-2xl font-medium text-foreground">Servicios activos</h2>
+    <Card>
+      <CardHeader>
+        <CardTitle>Servicios activos</CardTitle>
+        <CardDescription>Gestiona tus proyectos y licencias activas</CardDescription>
+      </CardHeader>
+      <CardContent>
         {services.length === 0 ? (
           <EmptyState
             title="Aún no has activado tu primer proyecto."
@@ -180,72 +187,31 @@ export function ServicesPanel() {
               ))}
             </div>
             {services.length > 4 && (
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1.5 hover:bg-muted/40 transition-colors"
+              <div className="flex items-center justify-between text-sm">
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
                   disabled={page === 0}
                 >
                   Anterior
-                </button>
-                <p>
+                </Button>
+                <span className="text-muted-foreground">
                   {page + 1} / {Math.ceil(services.length / 4)}
-                </p>
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1.5 hover:bg-muted/40 transition-colors"
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => setPage((prev) => Math.min(prev + 1, Math.ceil(services.length / 4) - 1))}
                   disabled={page >= Math.ceil(services.length / 4) - 1}
                 >
                   Siguiente
-                </button>
+                </Button>
               </div>
             )}
           </div>
         )}
-      </div>
-
-      <div className="space-y-6">
-        <h2 className="text-2xl font-medium text-foreground">Roadmap inmediato</h2>
-        {timeline.length ? (
-          <div className="space-y-4">
-            {timeline.map((event) => (
-              <TimelineCard key={event.id} event={event} />
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            title="Sin hitos calendarizados"
-            message="Define el siguiente release con tu PM."
-          />
-        )}
-        <div className="rounded-3xl border border-border/70 bg-background/80 p-6 space-y-3">
-          <p className="text-sm font-medium text-foreground">Mesa de soporte VIP</p>
-          <p className="text-sm text-muted-foreground">
-            Respuesta prioritaria <strong>en menos de 2 minutos</strong> vía WhatsApp o canal privado de
-            Slack. Tu squad está disponible 24/7.
-          </p>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <a
-              href="https://wa.link/1r4ul7"
-              className="rounded-2xl border border-border/70 bg-background/70 p-4 hover:bg-muted/30 transition-colors"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Canal WhatsApp
-            </a>
-            <a
-              href="https://calendly.com/viotech/demo"
-              className="rounded-2xl border border-border/70 bg-background/70 p-4 hover:bg-muted/30 transition-colors"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Agendar sesión
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   );
 }

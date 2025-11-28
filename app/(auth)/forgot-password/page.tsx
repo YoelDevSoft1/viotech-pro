@@ -1,121 +1,92 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { ArrowLeft, Mail } from "lucide-react";
-import { buildApiUrl } from "@/lib/api";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Loader2, Mail, ArrowLeft } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useForgotPassword } from "@/lib/hooks/useAuth";
+
+const forgotSchema = z.object({
+  email: z.string().email("Ingresa un correo válido"),
+});
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const { mutate: recover, isPending, isSuccess } = useForgotPassword();
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError(null);
-    setLoading(true);
+  const form = useForm<z.infer<typeof forgotSchema>>({
+    resolver: zodResolver(forgotSchema),
+    defaultValues: { email: "" },
+  });
 
-    try {
-      const response = await fetch(buildApiUrl("/auth/forgot-password"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
-      });
-
-      const data = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(data?.error || data?.message || "No se pudo procesar la solicitud.");
-      }
-
-      setSuccess(true);
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Error desconocido al procesar la solicitud.";
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
+  const onSubmit = (values: z.infer<typeof forgotSchema>) => {
+    recover(values.email);
   };
 
-  return (
-    <main className="min-h-screen bg-background px-6 py-24 flex items-center justify-center">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center space-y-4">
-          <h1 className="text-3xl font-medium text-foreground">
-            Recuperar contraseña
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.
-          </p>
-        </div>
-
-        {success ? (
-          <div className="rounded-3xl border border-green-500/30 bg-green-500/10 p-8 space-y-4 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-500/20">
-              <Mail className="w-8 h-8 text-green-500" />
-            </div>
-            <h2 className="text-xl font-medium text-foreground">
-              Email enviado
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Si el email está registrado, recibirás un enlace para restablecer tu contraseña.
-              Revisa tu bandeja de entrada y spam.
-            </p>
-            <p className="text-xs text-muted-foreground">
-              El enlace expirará en 60 minutos.
-            </p>
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 text-sm font-medium text-foreground hover:underline"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Volver al inicio de sesión
-            </Link>
+  if (isSuccess) {
+    return (
+      <Card className="border-border/60 shadow-xl">
+        <CardHeader>
+          <CardTitle className="text-xl text-center">¡Correo enviado!</CardTitle>
+          <CardDescription className="text-center">
+            Si existe una cuenta asociada a <strong>{form.getValues("email")}</strong>, recibirás un enlace para restablecer tu contraseña.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex justify-center">
+          <div className="bg-primary/10 p-4 rounded-full">
+            <Mail className="h-8 w-8 text-primary" />
           </div>
-        ) : (
-          <form className="rounded-3xl border border-border/70 bg-background/80 p-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-2">
-              <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                Correo electrónico
-              </label>
-              <input
-                type="email"
-                required
-                className="w-full rounded-2xl border border-border bg-transparent px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40"
-                placeholder="nombre@empresa.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-              />
-            </div>
+        </CardContent>
+        <CardFooter className="flex justify-center">
+          <Link href="/login">
+            <Button variant="outline">Volver al inicio de sesión</Button>
+          </Link>
+        </CardFooter>
+      </Card>
+    );
+  }
 
-            {error && (
-              <p className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs text-red-500">
-                {error}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              className="w-full rounded-full bg-foreground px-4 py-3 text-sm font-medium text-background hover:scale-[1.02] transition-transform disabled:opacity-60"
-              disabled={loading}
-            >
-              {loading ? "Enviando..." : "Enviar enlace de recuperación"}
-            </button>
-
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Volver al inicio de sesión
-            </Link>
+  return (
+    <Card className="border-border/60 shadow-xl">
+      <CardHeader>
+        <CardTitle className="text-xl">Recuperar Contraseña</CardTitle>
+        <CardDescription>
+          Ingresa tu correo y te enviaremos las instrucciones.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Correo Electrónico</FormLabel>
+                  <FormControl>
+                    <Input placeholder="tu@email.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isPending ? "Enviando..." : "Enviar enlace"}
+            </Button>
           </form>
-        )}
-      </div>
-    </main>
+        </Form>
+      </CardContent>
+      <CardFooter className="justify-center">
+        <Link href="/login" className="flex items-center text-sm text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="mr-2 h-4 w-4" /> Volver
+        </Link>
+      </CardFooter>
+    </Card>
   );
 }
-

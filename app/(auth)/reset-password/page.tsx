@@ -1,207 +1,100 @@
 "use client";
 
-import { useState, useEffect, type FormEvent, Suspense } from "react";
-import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle2 } from "lucide-react";
-import { buildApiUrl } from "@/lib/api";
+import { useSearchParams } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Loader2, Lock } from "lucide-react";
 
-function ResetPasswordForm() {
-  const router = useRouter();
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useResetPassword } from "@/lib/hooks/useAuth";
+
+const resetSchema = z.object({
+  password: z.string().min(8, "Mínimo 8 caracteres"),
+  confirmPassword: z.string()
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Las contraseñas no coinciden",
+  path: ["confirmPassword"],
+});
+
+export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
-  const [token, setToken] = useState<string | null>(null);
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const token = searchParams.get("token");
+  
+  const { mutate: reset, isPending } = useResetPassword();
 
-  useEffect(() => {
-    const tokenParam = searchParams.get("token");
-    if (!tokenParam) {
-      setError("Token de recuperación no válido o faltante.");
-    } else {
-      setToken(tokenParam);
-    }
-  }, [searchParams]);
+  const form = useForm<z.infer<typeof resetSchema>>({
+    resolver: zodResolver(resetSchema),
+    defaultValues: { password: "", confirmPassword: "" },
+  });
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError(null);
-
-    if (newPassword.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres.");
-      return;
-    }
-
-    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(newPassword)) {
-      setError("La contraseña debe contener al menos una letra mayúscula, una minúscula y un número.");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setError("Las contraseñas no coinciden.");
-      return;
-    }
-
-    if (!token) {
-      setError("Token de recuperación no válido.");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const response = await fetch(buildApiUrl("/auth/reset-password"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token,
-          newPassword,
-        }),
-      });
-
-      const data = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(data?.error || data?.message || "No se pudo restablecer la contraseña.");
-      }
-
-      setSuccess(true);
-      
-      // Redirigir al login después de 3 segundos
-      setTimeout(() => {
-        router.push("/login");
-      }, 3000);
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Error desconocido al restablecer la contraseña.";
-      setError(message);
-    } finally {
-      setLoading(false);
+  const onSubmit = (values: z.infer<typeof resetSchema>) => {
+    if (token) {
+      reset({ token, password: values.password });
     }
   };
 
-  if (!token && !error) {
+  if (!token) {
     return (
-      <main className="min-h-screen bg-background px-6 py-24 flex items-center justify-center">
-        <div className="w-full max-w-md text-center">
-          <p className="text-muted-foreground">Cargando...</p>
-        </div>
-      </main>
+      <Alert variant="destructive">
+        <AlertTitle>Token inválido</AlertTitle>
+        <AlertDescription>El enlace de recuperación es inválido o falta el token.</AlertDescription>
+      </Alert>
     );
   }
 
   return (
-    <main className="min-h-screen bg-background px-6 py-24 flex items-center justify-center">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center space-y-4">
-          <h1 className="text-3xl font-medium text-foreground">
-            Restablecer contraseña
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Ingresa tu nueva contraseña.
-          </p>
-        </div>
-
-        {success ? (
-          <div className="rounded-3xl border border-green-500/30 bg-green-500/10 p-8 space-y-4 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-500/20">
-              <CheckCircle2 className="w-8 h-8 text-green-500" />
-            </div>
-            <h2 className="text-xl font-medium text-foreground">
-              Contraseña restablecida
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Tu contraseña ha sido restablecida exitosamente. Serás redirigido al inicio de sesión.
-            </p>
-          </div>
-        ) : (
-          <form className="rounded-3xl border border-border/70 bg-background/80 p-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-2">
-              <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                Nueva contraseña
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  required
-                  className="w-full rounded-2xl border border-border bg-transparent px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40 pr-24"
-                  placeholder="Mínimo 6 caracteres"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  autoComplete="new-password"
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-1.5 right-1.5 rounded-full border border-border px-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                >
-                  {showPassword ? "Ocultar" : "Mostrar"}
-                </button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Debe contener al menos una mayúscula, una minúscula y un número.
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                Confirmar contraseña
-              </label>
-              <input
-                type={showPassword ? "text" : "password"}
-                required
-                className="w-full rounded-2xl border border-border bg-transparent px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40"
-                placeholder="Repite tu contraseña"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                autoComplete="new-password"
-              />
-            </div>
-
-            {error && (
-              <p className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs text-red-500">
-                {error}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              className="w-full rounded-full bg-foreground px-4 py-3 text-sm font-medium text-background hover:scale-[1.02] transition-transform disabled:opacity-60"
-              disabled={loading || !token}
-            >
-              {loading ? "Restableciendo..." : "Restablecer contraseña"}
-            </button>
-
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Volver al inicio de sesión
-            </Link>
+    <Card className="border-border/60 shadow-xl">
+      <CardHeader>
+        <CardTitle className="text-xl">Nueva Contraseña</CardTitle>
+        <CardDescription>Crea una contraseña segura para tu cuenta.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nueva Contraseña</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input type="password" placeholder="••••••••" className="pl-9" {...field} />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirmar Contraseña</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input type="password" placeholder="••••••••" className="pl-9" {...field} />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isPending ? "Actualizando..." : "Restablecer"}
+            </Button>
           </form>
-        )}
-      </div>
-    </main>
+        </Form>
+      </CardContent>
+    </Card>
   );
 }
-
-export default function ResetPasswordPage() {
-  return (
-    <Suspense
-      fallback={
-        <main className="min-h-screen bg-background px-6 py-24 flex items-center justify-center">
-          <div className="w-full max-w-md text-center">
-            <p className="text-muted-foreground">Cargando...</p>
-          </div>
-        </main>
-      }
-    >
-      <ResetPasswordForm />
-    </Suspense>
-  );
-}
-

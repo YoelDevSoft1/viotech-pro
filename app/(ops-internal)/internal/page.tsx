@@ -7,7 +7,7 @@ import OrgSelector from "@/components/OrgSelector";
 import { buildApiUrl } from "@/lib/api";
 import { getAccessToken, isTokenExpired, refreshAccessToken, logout } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 type AlertItem = {
   id: string;

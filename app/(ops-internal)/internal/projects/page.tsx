@@ -7,7 +7,7 @@ import { ArrowLeft, FolderKanban } from "lucide-react";
 import OrgSelector, { type Org } from "@/components/OrgSelector";
 import { fetchProjects, type Project } from "@/lib/projects";
 import { useOrg } from "@/lib/useOrg";
-import { LoadingState, ErrorState, EmptyState } from "@/components/ui/State";
+import { LoadingState, ErrorState, EmptyState } from "@/components/ui/state";
 
 export default function InternalProjectsPage() {
   const router = useRouter();

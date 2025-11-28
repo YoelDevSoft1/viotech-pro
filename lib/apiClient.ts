@@ -1,107 +1,142 @@
-import { buildApiUrl } from "./api";
+import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { getAccessToken, refreshAccessToken, isTokenExpired, logout } from "./auth";
 
-type ApiFetchOptions = {
-  path: string;
-  method?: string;
-  body?: any;
-  query?: Record<string, string | number | boolean | undefined | null>;
-  headers?: HeadersInit;
-  cache?: RequestCache;
-  auth?: boolean;
-};
+// --- CONFIGURACIÓN DE LA URL (CORREGIDA) ---
 
-export type ApiError = Error & {
-  status?: number;
-  payload?: unknown;
-};
+// 1. Leemos la variable exacta que tienes en tu .env.local
+const envUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
-const isAbsoluteUrl = (value: string) => /^https?:\/\//i.test(value);
+// 2. Lógica para construir la URL base:
+// Si existe la variable, usamos esa. Si no, fallback a localhost.
+// IMPORTANTE: Le agregamos "/api" al final porque en Render la URL base suele ser solo el dominio.
+const baseURL = envUrl 
+  ? `${envUrl}/api`  // Resultado: https://viotech-main.onrender.com/api
+  : "http://localhost:3000/api";
 
-const buildUrl = (path: string, query?: ApiFetchOptions["query"]) => {
-  const base = isAbsoluteUrl(path) ? path : buildApiUrl(path);
-  if (!query) return base;
-  const url = new URL(base);
-  Object.entries(query).forEach(([key, value]) => {
-    if (value === undefined || value === null) return;
-    url.searchParams.set(key, String(value));
-  });
-  return url.toString();
-};
+// --- DEBUG LOG (Para que verifiques en consola) ---
+if (typeof window !== "undefined") {
+  console.log("🔌 Conectando a Backend:", baseURL);
+}
+
+export const apiClient = axios.create({
+  baseURL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  timeout: 30000, // 30 segundos - Render puede ser lento al despertar (Cold Start)
+});
 
 const getValidToken = async (): Promise<string | null> => {
   let token = getAccessToken();
   if (!token) return null;
+  
   if (isTokenExpired(token)) {
-    token = await refreshAccessToken();
+    try {
+      token = await refreshAccessToken();
+    } catch (error) {
+      return null;
+    }
   }
   return token;
 };
 
-export async function apiFetch<T = any>(options: ApiFetchOptions): Promise<T> {
-  const {
-    path,
-    method = "GET",
-    body,
-    query,
-    headers = {},
-    cache = "no-store",
-    auth = true,
-  } = options;
+// Interceptor de REQUEST
+apiClient.interceptors.request.use(
+  async (config: InternalAxiosRequestConfig) => {
+    if ((config as any).auth === false) return config;
 
-  const url = buildUrl(path, query);
-  const doRequest = async (token?: string) => {
-    const computedHeaders = new Headers(headers);
-    if (auth && token) computedHeaders.set("Authorization", `Bearer ${token}`);
-    const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
-    if (body && !isFormData && !computedHeaders.has("Content-Type")) {
-      computedHeaders.set("Content-Type", "application/json");
+    const token = await getValidToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    
+    // DEBUG: Ver URL final en consola
+    // const fullUrl = `${config.baseURL || ""}${config.url}`;
+    // console.log(`🚀 Request: ${fullUrl}`);
+    
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Interceptor de RESPONSE
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error: AxiosError) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+    // Endpoints que sabemos que no están implementados aún - silenciar 404
+    const nonImplementedEndpoints = ['/activity/recent'];
+    const isNonImplemented = originalRequest?.url && 
+      nonImplementedEndpoints.some(endpoint => originalRequest.url?.includes(endpoint));
+    
+    // Si es un 404 de un endpoint no implementado, devolvemos un error especial que será manejado silenciosamente
+    if (error.response?.status === 404 && isNonImplemented) {
+      // Crear un error especial que será capturado y manejado silenciosamente
+      const silentError = new Error('ENDPOINT_NOT_IMPLEMENTED') as any;
+      silentError.response = error.response;
+      silentError.isAxiosError = true;
+      return Promise.reject(silentError);
     }
 
-    const response = await fetch(url, {
-      method,
-      headers: computedHeaders,
-      body: body
-        ? isFormData
-          ? body
-          : typeof body === "string"
-            ? body
-            : JSON.stringify(body)
-        : undefined,
-      cache,
-      credentials: "include",
-    });
-
-    const payload = await response.json().catch(() => null);
-    if (!response.ok) {
-      const err: ApiError = new Error(
-        (payload as any)?.error ||
-          (payload as any)?.message ||
-          `Request failed (${response.status})`,
-      );
-      err.status = response.status;
-      err.payload = payload;
-      throw err;
+    // Manejo específico de errores de timeout
+    if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+      const timeoutMessage = "El servidor está tardando demasiado en responder. Esto puede deberse a un 'cold start' del servidor. Por favor, intenta nuevamente en unos segundos.";
+      return Promise.reject(new Error(timeoutMessage));
     }
-    return payload as T;
-  };
 
-  let tokenToUse: string | null = null;
-  if (auth) {
-    tokenToUse = await getValidToken();
-  }
+    // Manejo de errores de conexión (sin respuesta del servidor)
+    if (!error.response && error.request) {
+      const connectionMessage = "No se pudo conectar con el servidor. Verifica tu conexión a internet o intenta más tarde.";
+      return Promise.reject(new Error(connectionMessage));
+    }
 
-  try {
-    return await doRequest(tokenToUse || undefined);
-  } catch (error) {
-    const status = (error as ApiError).status;
-    if (auth && status === 401) {
-      const refreshed = await refreshAccessToken();
-      if (refreshed) {
-        return await doRequest(refreshed);
+    // Si recibimos 401 (Token inválido/expirado) del backend
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      // Verificar si hay un token antes de intentar refrescar
+      const currentToken = getAccessToken();
+      if (!currentToken) {
+        // No hay token, no intentar refrescar - simplemente rechazar silenciosamente
+        return Promise.reject(new Error("No autenticado. Por favor, inicia sesión."));
       }
-      await logout();
+
+      try {
+        const newToken = await refreshAccessToken();
+        if (newToken) {
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return apiClient(originalRequest);
+        }
+      } catch (refreshError) {
+        // Si el refresh falla, limpiar tokens pero no redirigir automáticamente
+        // Dejar que cada componente maneje el error según su contexto
+        await logout();
+        if (typeof window !== "undefined") {
+           // window.location.href = "/login"; // Descomentar para forzar redirect
+        }
+        return Promise.reject(new Error("Sesión expirada."));
+      }
     }
-    throw error;
+
+    // Mensaje de error personalizado según el código de estado
+    let errorMessage = "Error de conexión con el servidor.";
+    
+    if (error.response?.status === 500) {
+      errorMessage = "Error interno del servidor. Por favor, intenta más tarde.";
+    } else if (error.response?.status === 503) {
+      errorMessage = "El servidor no está disponible temporalmente. Por favor, intenta más tarde.";
+    } else if (error.response?.status === 504) {
+      errorMessage = "El servidor tardó demasiado en responder. Por favor, intenta nuevamente.";
+    } else if (error.response?.data) {
+      errorMessage = 
+        (error.response.data as any)?.message || 
+        (error.response.data as any)?.error || 
+        errorMessage;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+      
+    return Promise.reject(new Error(errorMessage));
   }
-}
+);

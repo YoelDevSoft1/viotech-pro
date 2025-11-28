@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Shield, Users, Ticket, Cpu, Activity, HeartPulse, RefreshCcw } from "lucide-react";
+import { Shield, Users, Ticket, Cpu, Activity, HeartPulse, RefreshCcw, Settings, Package } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useServices } from "@/lib/hooks/useServices";
 import { useTickets } from "@/lib/hooks/useTickets";
 import { useMetrics } from "@/lib/hooks/useMetrics";
@@ -12,7 +14,9 @@ import { useOrg } from "@/lib/useOrg";
 import { getAccessToken, refreshAccessToken, isTokenExpired, logout } from "@/lib/auth";
 import { buildApiUrl } from "@/lib/api";
 import OrgSelector, { type Org } from "@/components/OrgSelector";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export default function AdminDashboardPage() {
   const { orgId, setOrgId } = useOrg();
@@ -102,147 +106,206 @@ export default function AdminDashboardPage() {
     refreshTickets();
   }, [orgId]);
 
+  const handleRefresh = () => {
+    loadHealthAndUsers();
+    refreshModelStatus();
+    refreshMetrics();
+    refreshServices();
+    refreshTickets();
+  };
+
   return (
-    <main className="space-y-6">
-      <div className="space-y-3">
-        <Breadcrumb items={[{ href: "/admin", label: "Admin" }]} />
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="space-y-2">
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-            Resumen
-          </p>
-          <h1 className="text-2xl font-medium text-foreground">Panel administrativo</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-3xl font-bold tracking-tight">Panel Administrativo</h1>
+          <p className="text-muted-foreground">
             Supervisión centralizada de usuarios, tickets y servicios.
           </p>
         </div>
-        <div className="mt-3 flex flex-wrap gap-3">
-          <Link
-            href="/admin/health"
-            className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/50 transition-colors"
-          >
-            <Activity className="w-3 h-3" />
-            Estado / Health
-          </Link>
-          <Link
-            href="/admin/users"
-            className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/50 transition-colors"
-          >
-            <Users className="w-3 h-3" />
-            Gestión de usuarios
-          </Link>
-          <Link
-            href="/admin/tickets"
-            className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/50 transition-colors"
-          >
-            <Ticket className="w-3 h-3" />
-            Tickets globales
-          </Link>
+        <div className="flex flex-wrap items-center gap-3">
           <OrgSelector onChange={(org: Org | null) => setOrgId(org?.id || "")} label="Organización" />
           <Button
             variant="outline"
             size="sm"
-            onClick={() => {
-              loadHealthAndUsers();
-              refreshModelStatus();
-              refreshMetrics();
-              refreshServices();
-              refreshTickets();
-            }}
+            onClick={handleRefresh}
             disabled={combinedLoading}
-            className="inline-flex items-center gap-2"
+            className="gap-2"
           >
-            <RefreshCcw className="w-3 h-3" />
-            Refrescar resumen
+            <RefreshCcw className={`h-4 w-4 ${combinedLoading ? "animate-spin" : ""}`} />
+            Actualizar
           </Button>
         </div>
       </div>
 
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-2xl border border-border/70 bg-background/80 p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Salud backend</p>
-            <HeartPulse className="w-4 h-4 text-foreground" />
-          </div>
-          <p className="text-3xl font-semibold text-foreground">
-            {combinedLoading ? "…" : healthLabel}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Fuente: /api/health {healthError ? `· ${healthError}` : ""}
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-border/70 bg-background/80 p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Modelo IA</p>
-            <Cpu className="w-4 h-4 text-foreground" />
-          </div>
-          <p className="text-3xl font-semibold text-foreground">
-            {combinedLoading
-              ? "…"
-              : modelStatus
-                ? `${modelStatus.enabled ? "Activo" : "Apagado"} · ${modelStatus.modelVersion || "N/D"}`
-                : "N/D"}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Salud: {modelStatus ? (modelStatus.healthy ? "OK" : "Degradado") : "N/D"}
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-border/70 bg-background/80 p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Usuarios</p>
-            <Users className="w-4 h-4 text-foreground" />
-          </div>
-          <p className="text-3xl font-semibold text-foreground">
-            {combinedLoading ? "…" : usersCount}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Total usuarios activos
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-border/70 bg-background/80 p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Tickets</p>
-            <Ticket className="w-4 h-4 text-foreground" />
-          </div>
-          <p className="text-3xl font-semibold text-foreground">
-            {combinedLoading ? "…" : totalTickets}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Abiertos / SLA crítico
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-border/70 bg-background/80 p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Servicios</p>
-            <Shield className="w-4 h-4 text-foreground" />
-          </div>
-          <p className="text-3xl font-semibold text-foreground">
-            {combinedLoading ? "…" : totalServices}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Servicios activos asociados a la organización
-          </p>
-        </div>
-      </section>
-
+      {/* Error Alert */}
       {summaryError && (
-        <div className="rounded-2xl border border-amber-500/60 bg-amber-500/10 px-3 py-2 text-sm text-amber-700">
-          {summaryError}
-        </div>
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{summaryError}</AlertDescription>
+        </Alert>
       )}
 
-      <section className="rounded-2xl border border-border/70 bg-background/80 p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <Activity className="w-4 h-4 text-foreground" />
-          <p className="text-sm font-medium text-foreground">Actividades recientes</p>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Integra aquí una lista de auditoría o alertas críticas. Por ahora es un placeholder.
-        </p>
-      </section>
-    </main>
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {/* Health Status */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Salud Backend</CardTitle>
+            <HeartPulse className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {combinedLoading ? (
+              <Skeleton className="h-8 w-20" />
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{healthLabel}</div>
+                <p className="text-xs text-muted-foreground">
+                  {healthError ? `Error: ${healthError}` : "Estado del sistema"}
+                </p>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Model Status */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Modelo IA</CardTitle>
+            <Cpu className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {combinedLoading ? (
+              <Skeleton className="h-8 w-32" />
+            ) : modelStatus ? (
+              <>
+                <div className="text-2xl font-bold">
+                  {modelStatus.enabled ? "Activo" : "Inactivo"}
+                </div>
+                <div className="flex items-center gap-2 mt-1">
+                  <Badge variant={modelStatus.healthy ? "default" : "destructive"}>
+                    {modelStatus.healthy ? "OK" : "Degradado"}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    v{modelStatus.modelVersion || "N/D"}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <div className="text-2xl font-bold">N/D</div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Users Count */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Usuarios</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {combinedLoading ? (
+              <Skeleton className="h-8 w-16" />
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{usersCount}</div>
+                <p className="text-xs text-muted-foreground">Total usuarios activos</p>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Tickets */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Tickets</CardTitle>
+            <Ticket className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {combinedLoading ? (
+              <Skeleton className="h-8 w-16" />
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{totalTickets}</div>
+                <p className="text-xs text-muted-foreground">Tickets abiertos</p>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Services */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Servicios</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {combinedLoading ? (
+              <Skeleton className="h-8 w-16" />
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{totalServices}</div>
+                <p className="text-xs text-muted-foreground">Servicios activos</p>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Accesos Rápidos</CardTitle>
+            <Activity className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-2">
+              <Button asChild variant="outline" size="sm" className="h-auto flex-col gap-1 py-2">
+                <Link href="/admin/health">
+                  <HeartPulse className="h-4 w-4" />
+                  <span className="text-xs">Health</span>
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="h-auto flex-col gap-1 py-2">
+                <Link href="/admin/users">
+                  <Users className="h-4 w-4" />
+                  <span className="text-xs">Usuarios</span>
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="h-auto flex-col gap-1 py-2">
+                <Link href="/admin/tickets">
+                  <Ticket className="h-4 w-4" />
+                  <span className="text-xs">Tickets</span>
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="h-auto flex-col gap-1 py-2">
+                <Link href="/admin/services">
+                  <Package className="h-4 w-4" />
+                  <span className="text-xs">Servicios</span>
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Activity */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5" />
+            Actividades Recientes
+          </CardTitle>
+          <CardDescription>
+            Auditoría y alertas críticas del sistema
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            Integra aquí una lista de auditoría o alertas críticas. Por ahora es un placeholder.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

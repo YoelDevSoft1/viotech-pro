@@ -1,189 +1,109 @@
 // lib/auth.ts
-// Utilidades para manejo de autenticación con refresh tokens
 
-import { buildApiUrl } from "./api";
+const TOKEN_KEY = "viotech_token";
+const REFRESH_KEY = "viotech_refresh_token";
+const USER_KEY = "viotech_user_name";
 
-const TOKEN_STORAGE_KEY = "viotech_token";
-const REFRESH_TOKEN_STORAGE_KEY = "viotech_refresh_token";
-const USERNAME_STORAGE_KEY = "viotech_user_name";
+// URL base para auth (evitamos dependencia circular con apiClient)
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL 
+  ? `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api`
+  : "http://localhost:3000/api";
 
-/**
- * Obtener access token del storage
- */
-export function getAccessToken(): string | null {
+export function getAccessToken() {
   if (typeof window === "undefined") return null;
-  
-  // Intentar localStorage primero
-  const token = window.localStorage.getItem(TOKEN_STORAGE_KEY) || 
-                window.sessionStorage.getItem(TOKEN_STORAGE_KEY);
-  
-  return token;
+  return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
 }
 
-/**
- * Obtener refresh token del storage
- */
-export function getRefreshToken(): string | null {
+export function getRefreshToken() {
   if (typeof window === "undefined") return null;
-  
-  // Intentar localStorage primero
-  const token = window.localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY) || 
-                window.sessionStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
-  
-  return token;
+  return localStorage.getItem(REFRESH_KEY) || sessionStorage.getItem(REFRESH_KEY);
 }
 
-/**
- * Guardar tokens en storage
- */
-export function saveTokens(
-  accessToken: string,
-  refreshToken: string,
-  username: string,
-  rememberMe: boolean = false
-): void {
+export function saveTokens(token: string, refreshToken: string, userName?: string, remember: boolean = true) {
   if (typeof window === "undefined") return;
   
-  const preferredStorage = rememberMe ? window.localStorage : window.sessionStorage;
-  const secondaryStorage = rememberMe ? window.sessionStorage : window.localStorage;
+  const storage = remember ? localStorage : sessionStorage;
+  
+  // Limpiar el otro storage para evitar duplicados
+  (remember ? sessionStorage : localStorage).removeItem(TOKEN_KEY);
+  (remember ? sessionStorage : localStorage).removeItem(REFRESH_KEY);
 
-  // Guardar en storage preferido
-  preferredStorage.setItem(TOKEN_STORAGE_KEY, accessToken);
-  preferredStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, refreshToken);
-  preferredStorage.setItem(USERNAME_STORAGE_KEY, username);
-
-  // Limpiar del storage secundario
-  secondaryStorage.removeItem(TOKEN_STORAGE_KEY);
-  secondaryStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
-  secondaryStorage.removeItem(USERNAME_STORAGE_KEY);
-
-  // Legacy keys (para compatibilidad)
-  window.localStorage.setItem("authTokenVioTech", accessToken);
-  window.localStorage.setItem("userNameVioTech", username);
+  storage.setItem(TOKEN_KEY, token);
+  storage.setItem(REFRESH_KEY, refreshToken);
+  
+  if (userName) {
+    storage.setItem(USER_KEY, userName);
+  }
 }
 
-/**
- * Limpiar todos los tokens
- */
-export function clearTokens(): void {
+export function clearTokens() {
   if (typeof window === "undefined") return;
-  
-  window.localStorage.removeItem(TOKEN_STORAGE_KEY);
-  window.localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
-  window.localStorage.removeItem(USERNAME_STORAGE_KEY);
-  window.sessionStorage.removeItem(TOKEN_STORAGE_KEY);
-  window.sessionStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
-  window.sessionStorage.removeItem(USERNAME_STORAGE_KEY);
-  
-  // Legacy keys
-  window.localStorage.removeItem("authTokenVioTech");
-  window.localStorage.removeItem("userNameVioTech");
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(REFRESH_KEY);
+  localStorage.removeItem(USER_KEY);
+  sessionStorage.removeItem(TOKEN_KEY);
+  sessionStorage.removeItem(REFRESH_KEY);
+  sessionStorage.removeItem(USER_KEY);
 }
 
-/**
- * Refrescar access token usando refresh token
- */
+export function isTokenExpired(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    // Damos 10 segundos de margen
+    return Date.now() >= (payload.exp * 1000) - 10000;
+  } catch {
+    return true;
+  }
+}
+
 export async function refreshAccessToken(): Promise<string | null> {
   const refreshToken = getRefreshToken();
-  
-  if (!refreshToken) {
-    return null;
-  }
+  if (!refreshToken) return null;
 
   try {
-    const response = await fetch(buildApiUrl("/auth/refresh"), {
+    const res = await fetch(`${API_URL}/auth/refresh`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refreshToken }),
     });
 
-    const data = await response.json().catch(() => null);
+    if (!res.ok) throw new Error("Refresh fallido");
 
-    if (!response.ok || !data?.data?.token) {
-      // Refresh token inválido o expirado
-      clearTokens();
-      return null;
+    const data = await res.json();
+    const newToken = data.data?.token || data.token;
+    const newRefresh = data.data?.refreshToken || data.refreshToken || refreshToken;
+
+    if (newToken) {
+      // Detectamos dónde estaba guardado (local o session) para mantener la preferencia
+      const isLocal = !!localStorage.getItem(TOKEN_KEY);
+      saveTokens(newToken, newRefresh, undefined, isLocal);
+      return newToken;
     }
-
-    const newAccessToken = data.data.token;
-    const newRefreshToken = data.data.refreshToken || refreshToken; // Mantener refresh token si no se renueva
-
-    // Actualizar tokens en storage
-    const username = window.localStorage.getItem(USERNAME_STORAGE_KEY) || 
-                     window.sessionStorage.getItem(USERNAME_STORAGE_KEY) || "";
-    
-    // Determinar si estaba en localStorage (rememberMe)
-    const rememberMe = !!window.localStorage.getItem(TOKEN_STORAGE_KEY);
-    
-    saveTokens(newAccessToken, newRefreshToken, username, rememberMe);
-
-    return newAccessToken;
   } catch (error) {
-    console.error("Error al refrescar token:", error);
     clearTokens();
-    return null;
   }
+  return null;
 }
 
-/**
- * Hacer logout y revocar token en el servidor
- */
-export async function logout(): Promise<void> {
+export async function logout() {
   const token = getAccessToken();
-  
-  // Intentar revocar token en el servidor (no bloquear si falla)
   if (token) {
     try {
-      await fetch(buildApiUrl("/auth/logout"), {
+      await fetch(`${API_URL}/auth/logout`, {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
+        headers: { 
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}` 
         },
       });
-    } catch (error) {
-      console.error("Error al hacer logout en servidor:", error);
-      // Continuar con limpieza local aunque falle el servidor
+    } catch (e) {
+      // Ignoramos error de red en logout
     }
   }
-
-  // Limpiar tokens localmente
   clearTokens();
-
-  // Disparar evento para notificar a otros componentes
+  // Evento para limpiar estado global si es necesario
   if (typeof window !== "undefined") {
-    window.dispatchEvent(
-      new CustomEvent("authChanged", {
-        detail: { isAuthenticated: false, userName: null },
-      })
-    );
+    window.dispatchEvent(new CustomEvent("authChanged", { detail: { isAuthenticated: false } }));
+    window.location.href = "/login";
   }
 }
-
-/**
- * Verificar si un token está expirado (decodificación básica)
- */
-export function isTokenExpired(token: string): boolean {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    const exp = payload.exp * 1000; // Convertir a milisegundos
-    return Date.now() >= exp;
-  } catch {
-    return true; // Si no se puede decodificar, asumir expirado
-  }
-}
-
-/**
- * Obtener tiempo restante hasta expiración del token (en segundos)
- */
-export function getTokenExpirationTime(token: string): number | null {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    const exp = payload.exp * 1000;
-    const remaining = Math.floor((exp - Date.now()) / 1000);
-    return remaining > 0 ? remaining : 0;
-  } catch {
-    return null;
-  }
-}
-

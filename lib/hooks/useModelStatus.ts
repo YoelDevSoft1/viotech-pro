@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { apiFetch, type ApiError } from "@/lib/apiClient";
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/apiClient";
 
 export type ModelStatus = {
   enabled: boolean;
@@ -9,37 +9,36 @@ export type ModelStatus = {
 };
 
 export function useModelStatus() {
-  const [modelStatus, setModelStatus] = useState<ModelStatus | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchModelStatus = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const payload = await apiFetch<any>({
-        path: "/predictions/model-status",
+  const query = useQuery({
+    queryKey: ["model-status"],
+    
+    queryFn: async () => {
+      // Pasamos auth: false para que el interceptor no inyecte el token
+      // (Replicando la lógica original)
+      const { data } = await apiClient.get("/predictions/model-status", {
         auth: false,
-      });
-      const data = payload?.data || payload;
-      setModelStatus({
-        enabled: Boolean(data.enabled ?? data.status === "ready"),
-        modelVersion: data.modelVersion || data.version || "desconocido",
-        healthy: Boolean(data.lastStatus?.healthy ?? data.modelLoaded ?? data.enabled),
-        notes: data.notes || null,
-      });
-    } catch (err) {
-      const msg = (err as ApiError).message || "Error al leer modelo";
-      setError(msg);
-      setModelStatus(null);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      } as any);
 
-  useEffect(() => {
-    fetchModelStatus();
-  }, [fetchModelStatus]);
+      // Normalización de datos (tal cual la tenías)
+      const raw = data?.data || data;
 
-  return { modelStatus, loading, error, refresh: fetchModelStatus };
+      return {
+        enabled: Boolean(raw.enabled ?? raw.status === "ready"),
+        modelVersion: raw.modelVersion || raw.version || "desconocido",
+        healthy: Boolean(raw.lastStatus?.healthy ?? raw.modelLoaded ?? raw.enabled),
+        notes: raw.notes || null,
+      } as ModelStatus;
+    },
+
+    // Cacheamos el estado del modelo por 5 minutos ya que raramente cambia
+    staleTime: 1000 * 60 * 5,
+    retry: 1,
+  });
+
+  return {
+    modelStatus: query.data || null,
+    loading: query.isLoading,
+    error: query.error ? (query.error as Error).message : null,
+    refresh: query.refetch,
+  };
 }

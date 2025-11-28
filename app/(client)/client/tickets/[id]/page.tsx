@@ -1,225 +1,207 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, AlertCircle } from "lucide-react";
-import { buildApiUrl } from "@/lib/api";
-import { getAccessToken, isTokenExpired, refreshAccessToken, logout } from "@/lib/auth";
+import { AlertCircle, ArrowLeft, BadgeCheck, Clock3, Flame, Tags } from "lucide-react";
 
-type Ticket = {
-  id: string;
-  titulo: string;
-  descripcion?: string | null;
-  estado: string;
-  prioridad: string;
-  slaObjetivo?: string | null;
-  createdAt: string;
-  comentarios?: any[];
-};
+import { getAccessToken } from "@/lib/auth";
+import { useTicket } from "@/lib/hooks/useTicket";
+import { PageShell, PageHeader } from "@/components/ui/shell";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { LoadingState, ErrorState } from "@/components/ui/state";
+import { TicketComments } from "@/components/tickets/TicketComments";
 
 export default function ClientTicketDetail({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const [ticket, setTicket] = useState<Ticket | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [comment, setComment] = useState("");
-  const [commentLoading, setCommentLoading] = useState(false);
+  const { ticket, isLoading, isError, error, refresh, addComment, isCommenting } = useTicket(params.id);
 
-  const fetchTicket = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    let token = getAccessToken();
-    if (!token) {
-      router.replace(`/login?from=/client/tickets/${params.id}`);
-      return;
-    }
-    if (isTokenExpired(token)) {
-      const refreshed = await refreshAccessToken();
-      if (refreshed) token = refreshed;
-      else {
-        await logout();
-        router.replace(`/login?from=/client/tickets/${params.id}&reason=expired`);
-        return;
-      }
-    }
-
-    try {
-      const res = await fetch(buildApiUrl(`/tickets/${params.id}`), {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: "no-store",
-      });
-      const payload = await res.json().catch(() => null);
-      if (!res.ok || !payload) {
-        throw new Error(payload?.error || payload?.message || "No se pudo cargar el ticket");
-      }
-      const t = payload.data?.ticket || payload.data || payload;
-      setTicket({
-        id: String(t.id),
-        titulo: t.titulo || "Sin título",
-        descripcion: t.descripcion || "",
-        estado: t.estado || "abierto",
-        prioridad: t.prioridad || "media",
-        slaObjetivo: t.slaObjetivo || null,
-        createdAt: t.createdAt || t.created_at || new Date().toISOString(),
-        comentarios: t.comentarios || [],
-      });
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error al cargar el ticket";
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  }, [params.id, router]);
-
-  const handleComment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!comment.trim()) return;
-    setCommentLoading(true);
-    let token = getAccessToken();
-    if (!token) {
-      router.replace(`/login?from=/client/tickets/${params.id}`);
-      return;
-    }
-    if (isTokenExpired(token)) {
-      const refreshed = await refreshAccessToken();
-      if (refreshed) token = refreshed;
-      else {
-        await logout();
-        router.replace(`/login?from=/client/tickets/${params.id}&reason=expired`);
-        return;
-      }
-    }
-    try {
-      const res = await fetch(buildApiUrl(`/tickets/${params.id}/comment`), {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ contenido: comment.trim() }),
-      });
-      const payload = await res.json().catch(() => null);
-      if (!res.ok || !payload) {
-        throw new Error(payload?.error || payload?.message || "No se pudo agregar el comentario");
-      }
-      setComment("");
-      await fetchTicket();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al comentar");
-    } finally {
-      setCommentLoading(false);
-    }
-  };
-
+  // Guard de autenticación rápido (token en storage)
   useEffect(() => {
-    fetchTicket();
-  }, [fetchTicket]);
+    const token = getAccessToken();
+    if (!token) {
+      router.replace(`/login?from=/client/tickets/${params.id}`);
+    }
+  }, [router, params.id]);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <LoadingState title="Cargando ticket..." />
+      </div>
+    );
+  }
+
+  if (isError || !ticket) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <ErrorState
+          title="No pudimos cargar el ticket"
+          message={error || "Reintenta más tarde."}
+          action={
+            <Button onClick={() => refresh()} variant="outline">
+              Reintentar
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
 
   return (
-    <main className="min-h-screen bg-background px-6 py-10 md:py-12">
-      <div className="max-w-5xl mx-auto space-y-6">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/client/tickets"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Volver a mis tickets
-          </Link>
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <Link
+          href="/client/tickets"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Volver a mis tickets
+        </Link>
+      </div>
+
+      <PageHeader
+        title={ticket.titulo}
+        description={`Ticket #${ticket.id.slice(0, 8)}`}
+        actions={
+          <Button variant="ghost" size="sm" onClick={() => refresh()}>
+            Refrescar
+          </Button>
+        }
+      />
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="space-y-4 lg:col-span-2">
+          <Card>
+            <CardHeader className="space-y-1">
+              <CardTitle className="flex items-center gap-2">
+                <BadgeCheck className="h-5 w-5 text-primary" />
+                Resumen
+              </CardTitle>
+              <CardDescription>Estado, prioridad y SLA de tu ticket.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Estado</p>
+                <Badge className="capitalize w-fit">{ticket.estado}</Badge>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Prioridad</p>
+                <Badge variant="secondary" className="capitalize w-fit">
+                  {ticket.prioridad}
+                </Badge>
+              </div>
+              {ticket.slaObjetivo && (
+                <div className="space-y-1 flex items-center gap-2">
+                  <Clock3 className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">SLA objetivo</p>
+                    <p className="text-sm">
+                      {new Date(ticket.slaObjetivo).toLocaleString("es-CO", {
+                        day: "2-digit",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {ticket.impacto && (
+                <div className="space-y-1 flex items-center gap-2">
+                  <Flame className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Impacto</p>
+                    <p className="text-sm capitalize">{ticket.impacto}</p>
+                  </div>
+                </div>
+              )}
+              {ticket.categoria && (
+                <div className="space-y-1 flex items-center gap-2">
+                  <Tags className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Categoría</p>
+                    <p className="text-sm capitalize">{ticket.categoria}</p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Descripción</CardTitle>
+              <CardDescription>Detalle del problema o solicitud.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-foreground whitespace-pre-wrap">
+                {ticket.descripcion || "Sin descripción."}
+              </p>
+            </CardContent>
+          </Card>
+
+          <TicketComments
+            ticketId={ticket.id}
+            comments={ticket.comentarios}
+            attachments={ticket.attachments}
+            onAddComment={(payload) => addComment(payload)}
+            onRefresh={() => refresh()}
+            isSubmitting={isCommenting}
+          />
         </div>
 
-        {error && (
-          <div className="flex items-center gap-2 rounded-2xl border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-sm text-amber-700">
-            <AlertCircle className="w-4 h-4" />
-            {error}
-          </div>
-        )}
-
-        {loading ? (
-          <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
-            Cargando ticket...
-          </div>
-        ) : ticket ? (
-          <div className="rounded-3xl border border-border/70 bg-background/80 p-6 space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                  Ticket #{ticket.id.slice(0, 6)}
-                </p>
-                <h1 className="text-2xl font-semibold text-foreground">{ticket.titulo}</h1>
-              </div>
-              <div className="text-xs space-y-1 text-muted-foreground">
-                <span className="inline-flex rounded-full border border-border px-2 py-1 capitalize">
-                  {ticket.estado}
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Metadatos</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm text-muted-foreground">
+              <div className="flex justify-between">
+                <span>Creado</span>
+                <span>
+                  {new Date(ticket.createdAt).toLocaleString("es-CO", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </span>
-                <div>Prioridad: {ticket.prioridad}</div>
               </div>
-            </div>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-              {ticket.descripcion || "Sin descripción."}
-            </p>
-            {ticket.slaObjetivo && (
-              <p className="text-xs text-muted-foreground">
-                SLA objetivo: {new Date(ticket.slaObjetivo).toLocaleString("es-CO")}
-              </p>
-            )}
-            {Array.isArray(ticket.comentarios) && ticket.comentarios.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                  Comentarios
-                </p>
-                <div className="space-y-2">
-                  {ticket.comentarios.map((c: any) => (
-                    <div
-                      key={c.id || c.createdAt}
-                      className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2 text-sm"
-                    >
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>{c.autor?.nombre || c.autor?.email || "Usuario"}</span>
-                        <span>
-                          {new Date(c.createdAt || c.created_at || "").toLocaleString("es-CO", {
-                            day: "2-digit",
-                            month: "short",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                      </div>
-                      <p className="text-foreground">{c.contenido}</p>
-                    </div>
-                  ))}
+              {ticket.usuario?.email && (
+                <div className="flex justify-between">
+                  <span>Reportado por</span>
+                  <span className="text-right">
+                    {ticket.usuario.nombre || "Usuario"} <br />
+                    <span className="text-xs">{ticket.usuario.email}</span>
+                  </span>
                 </div>
-              </div>
-            )}
+              )}
+              {ticket.projectId && (
+                <div className="flex justify-between">
+                  <span>Proyecto</span>
+                  <span className="text-right">{ticket.projectId}</span>
+                </div>
+              )}
+              {ticket.organizationId && (
+                <div className="flex justify-between">
+                  <span>Organización</span>
+                  <span className="text-right">{ticket.organizationId}</span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-            <form className="space-y-2 pt-2" onSubmit={handleComment}>
-              <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                Nuevo comentario
-              </label>
-              <textarea
-                className="w-full rounded-2xl border border-border bg-transparent px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/30"
-                rows={3}
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Describe la actualización..."
-                disabled={commentLoading}
-              />
-              <button
-                type="submit"
-                className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-xs font-medium text-background hover:scale-[1.02] transition-transform disabled:opacity-60"
-                disabled={commentLoading || !comment.trim()}
-              >
-                {commentLoading ? "Enviando..." : "Agregar comentario"}
-              </button>
-            </form>
+          <div className="rounded-xl border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 flex items-start gap-2">
+            <AlertCircle className="h-4 w-4 mt-0.5" />
+            <div>
+              <p className="font-medium">Recuerda</p>
+              <p>Responde con la mayor información posible y adjunta evidencias para acelerar la resolución.</p>
+            </div>
           </div>
-        ) : (
-          <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
-            No se encontró el ticket.
-          </div>
-        )}
-      </div>
-    </main>
+        </div>
+    </div>
   );
 }

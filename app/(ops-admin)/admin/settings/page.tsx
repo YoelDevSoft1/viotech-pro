@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { Shield, User, Building2, RefreshCcw, AlertTriangle, CheckCircle2, Lock, Users } from "lucide-react";
 import { buildApiUrl } from "@/lib/api";
 import { getAccessToken, refreshAccessToken, isTokenExpired, logout } from "@/lib/auth";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import OrgSelector, { type Org } from "@/components/OrgSelector";
 
 type MeResponse = {

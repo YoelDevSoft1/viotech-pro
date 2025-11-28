@@ -1,12 +1,20 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Shield, ShieldCheck, ShieldOff, ShieldQuestion } from "lucide-react";
+import { CheckCircle2, Shield, ShieldCheck, ShieldOff, ShieldQuestion, Search, Users as UsersIcon } from "lucide-react";
 import { buildApiUrl } from "@/lib/api";
 import { getAccessToken, isTokenExpired, refreshAccessToken } from "@/lib/auth";
 import OrgSelector, { type Org } from "@/components/OrgSelector";
 import { useOrg } from "@/lib/useOrg";
-import { LoadingState, ErrorState, EmptyState } from "@/components/ui/State";
+import { LoadingState, ErrorState, EmptyState } from "@/components/ui/state";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 type Role = "admin" | "agente" | "cliente";
 
@@ -353,194 +361,235 @@ export default function RoleManager() {
     }
   };
 
-  const rolePill = (role: Role) => {
-    const icon =
-      role === "admin" ? (
-        <Shield className="w-3.5 h-3.5" />
-      ) : role === "agente" ? (
-        <ShieldCheck className="w-3.5 h-3.5" />
-      ) : role === "cliente" ? (
-        <ShieldQuestion className="w-3.5 h-3.5" />
-      ) : (
-        <ShieldOff className="w-3.5 h-3.5" />
-      );
-
-    const tone =
-      role === "admin"
-        ? "bg-foreground text-background"
-        : role === "agente"
-          ? "bg-muted text-foreground"
-          : role === "cliente"
-            ? "bg-amber-500/20 text-amber-600"
-            : "bg-border text-muted-foreground";
-
+  const getRoleBadge = (role: Role) => {
+    const config = {
+      admin: { icon: Shield, variant: "default" as const, label: "Admin" },
+      agente: { icon: ShieldCheck, variant: "secondary" as const, label: "Agente" },
+      cliente: { icon: ShieldQuestion, variant: "outline" as const, label: "Cliente" },
+    };
+    const { icon: Icon, variant, label } = config[role] || { icon: ShieldOff, variant: "outline" as const, label: role };
     return (
-      <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs ${tone}`}>
-        {icon}
-        {role}
-      </span>
+      <Badge variant={variant} className="gap-1.5">
+        <Icon className="h-3 w-3" />
+        {label}
+      </Badge>
+    );
+  };
+
+  const getEstadoBadge = (estado: string) => {
+    return (
+      <Badge variant={estado === "activo" ? "default" : "secondary"}>
+        {estado || "activo"}
+      </Badge>
     );
   };
 
   return (
-    <section className="space-y-5" aria-live="polite">
-      <header className="space-y-2">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="space-y-1">
-            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Roles</p>
-            <h1 className="text-xl font-semibold text-foreground">Sistema de roles</h1>
-            <p className="text-sm text-muted-foreground">
-              Controla accesos sensibles y estados de cuentas. Filtra por organización para aplicar cambios puntuales.
-            </p>
+    <div className="space-y-6" aria-live="polite">
+      {/* Header */}
+      <div className="space-y-2">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Gestión de Usuarios</h1>
+          <p className="text-muted-foreground">
+            Controla accesos sensibles y estados de cuentas. Filtra por organización para aplicar cambios puntuales.
+          </p>
+        </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="sm:w-64">
+            <OrgSelector
+              onChange={(org: Org | null) => setOrgId(org?.id || "")}
+              label="Organización"
+            />
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-            <div className="sm:w-64">
-              <OrgSelector
-                onChange={(org: Org | null) => setOrgId(org?.id || "")}
-                label="Organización"
-              />
-            </div>
-            <div className="relative w-full sm:w-72">
-              <input
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
-                placeholder="Buscar por nombre, email o rol"
-                aria-label="Buscar usuarios por nombre, email o rol"
-              />
-            </div>
+          <div className="relative flex-1 sm:max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder="Buscar por nombre, email o rol"
+              className="pl-9"
+              aria-label="Buscar usuarios por nombre, email o rol"
+            />
           </div>
         </div>
 
         {feedback && (
-          <div className="inline-flex items-center gap-2 rounded-full bg-green-500/10 px-3 py-1 text-xs text-green-600">
-            <CheckCircle2 className="w-4 h-4" />
-            {feedback}
-          </div>
+          <Alert className="bg-green-500/10 border-green-500/20">
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-600">{feedback}</AlertDescription>
+          </Alert>
         )}
-      </header>
+      </div>
 
-      {loading && <LoadingState title="Cargando usuarios y roles..." />}
-      {error && !loading && <ErrorState message={error} />}
-
-      {!loading && !error && (
-      <>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-4">
         {ROLE_OPTIONS.map((role) => {
           const count = users.filter((u) => u.rol === role.value).length;
           return (
-            <div
-              key={role.value}
-              className="rounded-2xl border border-border/70 bg-background/70 p-3"
-            >
-              <p className="text-xs text-muted-foreground">{role.label}</p>
-              <p className="text-2xl font-semibold">{loading ? "—" : count || "0"}</p>
-              <p className="text-[11px] text-muted-foreground">{role.description}</p>
-            </div>
+            <Card key={role.value}>
+              <CardHeader className="pb-3">
+                <CardDescription className="text-xs">{role.label}</CardDescription>
+                <CardTitle className="text-3xl font-bold">
+                  {loading ? "—" : count || "0"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xs text-muted-foreground">{role.description}</p>
+              </CardContent>
+            </Card>
           );
         })}
       </div>
 
-      {filtered.length === 0 ? (
-        <EmptyState title="Sin resultados" message="No se encontraron usuarios con ese criterio u organización." />
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3" aria-busy={Boolean(pending)}>
-          {filtered.map((user) => (
-            <article
-              key={user.id}
-              className="rounded-2xl border border-border/70 bg-background/80 p-4 space-y-3"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="space-y-1">
-                  <p className="text-base font-semibold text-foreground">{user.nombre}</p>
-                  <p className="text-xs text-muted-foreground">{user.email}</p>
-                  <p className="text-[11px] text-muted-foreground">ID: {user.id}</p>
-                  {user.ultimoAcceso && (
-                    <p className="text-[11px] text-muted-foreground">
-                      Último acceso:{" "}
-                      {new Date(user.ultimoAcceso).toLocaleDateString("es-CO", {
-                        day: "2-digit",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
+      {/* Error State */}
+      {error && !loading && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* Loading State */}
+      {loading && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Users Table */}
+      {!loading && !error && (
+        <>
+          {filtered.length === 0 ? (
+            <Card>
+              <CardContent className="pt-6">
+                <EmptyState title="Sin resultados" message="No se encontraron usuarios con ese criterio u organización." />
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <UsersIcon className="h-5 w-5" />
+                  Usuarios ({filtered.length})
+                </CardTitle>
+                <CardDescription>Lista de todos los usuarios del sistema</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Usuario</TableHead>
+                        <TableHead>Rol</TableHead>
+                        <TableHead>Tier</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead>Organización</TableHead>
+                        <TableHead>Último Acceso</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filtered.map((user) => {
+                        const isPending = pending?.userId === user.id;
+                        return (
+                          <TableRow key={user.id} className={cn(isPending && "opacity-50")}>
+                            <TableCell>
+                              <div className="space-y-1">
+                                <p className="font-medium">{user.nombre}</p>
+                                <p className="text-sm text-muted-foreground">{user.email}</p>
+                                <p className="text-xs text-muted-foreground font-mono">#{user.id.slice(0, 8)}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Select
+                                value={user.rol}
+                                onValueChange={(value) => handleRoleChange(user.id, value as Role)}
+                                disabled={isPending}
+                              >
+                                <SelectTrigger className="w-[140px]">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {ROLE_OPTIONS.map((opt) => (
+                                    <SelectItem key={opt.value} value={opt.value}>
+                                      {opt.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                value={user.tier || ""}
+                                onChange={(e) => handleTierChange(user.id, e.target.value)}
+                                disabled={isPending}
+                                className="w-24"
+                                placeholder="standard"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Select
+                                value={user.estado || "activo"}
+                                onValueChange={(value) => handleStateChange(user.id, value)}
+                                disabled={isPending}
+                              >
+                                <SelectTrigger className="w-[120px]">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="activo">Activo</SelectItem>
+                                  <SelectItem value="inactivo">Inactivo</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                            <TableCell>
+                              <Select
+                                value={user.organizationId || "none"}
+                                onValueChange={(value) => handleOrgChange(user.id, value === "none" ? "" : value)}
+                                disabled={isPending}
+                              >
+                                <SelectTrigger className="w-[180px]">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="none">Sin asignar</SelectItem>
+                                  {orgs.map((org) => (
+                                    <SelectItem key={org.id} value={org.id}>
+                                      {org.nombre}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                            <TableCell>
+                              {user.ultimoAcceso ? (
+                                <span className="text-sm text-muted-foreground">
+                                  {new Date(user.ultimoAcceso).toLocaleDateString("es-CO", {
+                                    day: "2-digit",
+                                    month: "short",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </span>
+                              ) : (
+                                <span className="text-sm text-muted-foreground">—</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
                       })}
-                    </p>
-                  )}
+                    </TableBody>
+                  </Table>
                 </div>
-                <div className="flex flex-col items-end gap-2">
-                  {rolePill(user.rol)}
-                  <span className="text-[11px] rounded-full border border-border px-2 py-0.5 text-muted-foreground">
-                    Estado: {user.estado || "activo"}
-                  </span>
-                  <span className="text-[11px] rounded-full border border-border px-2 py-0.5 text-muted-foreground">
-                    Tier: {user.tier || "standard"}
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3">
-                <label className="text-xs font-medium text-muted-foreground flex flex-col gap-1">
-                  Rol
-                  <select
-                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
-                    value={user.rol}
-                    onChange={(e) => handleRoleChange(user.id, e.target.value as Role)}
-                    disabled={pending?.userId === user.id}
-                  >
-                    {ROLE_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="text-xs font-medium text-muted-foreground flex flex-col gap-1">
-                  Tier
-                  <input
-                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
-                    value={user.tier || ""}
-                    onChange={(e) => handleTierChange(user.id, e.target.value)}
-                    disabled={pending?.userId === user.id}
-                  />
-                </label>
-
-                <label className="text-xs font-medium text-muted-foreground flex flex-col gap-1">
-                  Estado
-                  <select
-                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
-                    value={user.estado || "activo"}
-                    onChange={(e) => handleStateChange(user.id, e.target.value)}
-                    disabled={pending?.userId === user.id}
-                  >
-                    <option value="activo">Activo</option>
-                    <option value="inactivo">Inactivo</option>
-                  </select>
-                </label>
-
-                <label className="text-xs font-medium text-muted-foreground flex flex-col gap-1">
-                  Organización
-                  <select
-                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
-                    value={user.organizationId || ""}
-                    onChange={(e) => handleOrgChange(user.id, e.target.value)}
-                    disabled={pending?.userId === user.id}
-                  >
-                    <option value="">Sin asignar</option>
-                    {orgs.map((org) => (
-                      <option key={org.id} value={org.id}>
-                        {org.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-            </article>
-          ))}
-        </div>
+              </CardContent>
+            </Card>
+          )}
+        </>
       )}
-      </>
-      )}
-    </section>
+    </div>
   );
 }

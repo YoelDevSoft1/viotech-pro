@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getAccessToken } from "@/lib/auth";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { TicketsPanel } from "@/components/dashboard/TicketsPanel";
 
 export default function ClientTicketsPage() {
@@ -22,8 +22,7 @@ export default function ClientTicketsPage() {
   }, [router]);
 
   return (
-    <main className="min-h-screen bg-background px-6 py-6 md:py-8">
-      <div className="max-w-7xl mx-auto space-y-4 px-2 md:px-4">
+    <div className="space-y-4">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="space-y-3">
             <Breadcrumb items={[{ href: "/client", label: "Inicio" }, { href: "/client/tickets", label: "Tickets" }]} />
@@ -44,10 +43,9 @@ export default function ClientTicketsPage() {
           </Link>
         </div>
 
-        <section className="space-y-4">
-          <TicketsPanel token={token} onRequireAuth={() => router.replace("/login?from=/client/tickets")} />
-        </section>
-      </div>
-    </main>
+      <section className="space-y-4">
+        <TicketsPanel token={token} onRequireAuth={() => router.replace("/login?from=/client/tickets")} />
+      </section>
+    </div>
   );
 }

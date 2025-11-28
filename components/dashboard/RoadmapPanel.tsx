@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import { CalendarClock, Compass, ArrowRight } from "lucide-react";
+import { Compass } from "lucide-react";
 import { useServices } from "@/lib/hooks/useServices";
-import { LoadingState, ErrorState, EmptyState } from "@/components/ui/State";
+import { LoadingState, ErrorState, EmptyState } from "@/components/ui/state";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 type TimelineEvent = {
   id: string;
@@ -48,49 +49,38 @@ export function RoadmapPanel() {
   if (!services.length) return <EmptyState title="Sin servicios aún" message="Activa tu primer proyecto para ver hitos y renovaciones." />;
 
   return (
-    <section className="rounded-3xl border border-border/70 bg-background/80 p-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Roadmap inmediato</p>
-          <h2 className="text-2xl font-medium text-foreground">Siguientes hitos</h2>
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Roadmap</CardTitle>
+            <CardDescription>Próximos hitos y renovaciones</CardDescription>
+          </div>
+          <Compass className="w-5 h-5 text-muted-foreground" />
         </div>
-        <Compass className="w-5 h-5 text-muted-foreground" />
-      </div>
-
-      {upcoming.length ? (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {upcoming.map((item) => (
-            <div key={item.id} className="rounded-2xl border border-border/70 bg-background/60 p-4 space-y-2">
-              <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                {item.type === "renovacion" ? "Renovación" : "Kickoff"}
-              </p>
-              <p className="text-xl font-medium text-foreground">{item.title}</p>
-              <p className="text-sm text-muted-foreground">{formatDate(item.date)}</p>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <EmptyState
-          title="Sin hitos calendarizados"
-          message="Define próximos releases con tu PM para verlos aquí."
-        />
-      )}
-
-      <div className="rounded-2xl border border-border/70 bg-background/70 p-4 flex items-center justify-between">
-        <div className="space-y-1 text-sm">
-          <p className="text-foreground font-medium">Coordina el siguiente release</p>
-          <p className="text-muted-foreground">Agenda con tu PM para priorizar backlog y despliegues.</p>
-        </div>
-        <a
-          href="https://calendly.com/viotech/demo"
-          className="inline-flex items-center gap-2 text-xs font-medium text-foreground hover:underline"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Agendar
-          <ArrowRight className="w-3 h-3" />
-        </a>
-      </div>
-    </section>
+      </CardHeader>
+      <CardContent>
+        {upcoming.length ? (
+          <div className="space-y-3">
+            {upcoming.map((item) => (
+              <div key={item.id} className="flex items-start justify-between p-3 rounded-lg border bg-card">
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                    {item.type === "renovacion" ? "Renovación" : "Kickoff"}
+                  </p>
+                  <p className="text-sm font-medium">{item.title}</p>
+                  <p className="text-xs text-muted-foreground">{formatDate(item.date)}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            title="Sin hitos calendarizados"
+            message="Define próximos releases con tu PM."
+          />
+        )}
+      </CardContent>
+    </Card>
   );
 }

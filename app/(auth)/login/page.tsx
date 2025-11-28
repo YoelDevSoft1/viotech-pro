@@ -1,387 +1,504 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { useState, type ChangeEvent, type FormEvent } from "react";
-import { ArrowRight, Lock, X } from "lucide-react";
-import { buildApiUrl } from "@/lib/api";
-import { saveTokens } from "@/lib/auth";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Loader2, Eye, EyeOff, Lock, Mail, User, Quote } from "lucide-react";
+
+// Componentes UI (Shadcn)
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+
+// Hooks de lógica
+import { useLogin, useRegister } from "@/lib/hooks/useAuth";
+
+// --- Esquemas de Validación (Zod) ---
+const loginSchema = z.object({
+  email: z.string().email("Ingresa un correo válido"),
+  password: z.string().min(1, "La contraseña es obligatoria"),
+  remember: z.boolean().default(false),
+});
+
+const registerSchema = z.object({
+  nombre: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
+  email: z.string().email("Ingresa un correo válido"),
+  password: z.string().min(8, "Mínimo 8 caracteres"),
+  confirmPassword: z.string()
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Las contraseñas no coinciden",
+  path: ["confirmPassword"],
+});
 
 export default function LoginPage() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  const [loginError, setLoginError] = useState<string | null>(null);
-  const [loginSuccess, setLoginSuccess] = useState<string | null>(null);
-  const [loginLoading, setLoginLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const [registerName, setRegisterName] = useState("");
-  const [registerEmail, setRegisterEmail] = useState("");
-  const [registerPassword, setRegisterPassword] = useState("");
-  const [registerConfirmPassword, setRegisterConfirmPassword] = useState("");
-  const [registerError, setRegisterError] = useState<string | null>(null);
-  const [registerSuccess, setRegisterSuccess] = useState<string | null>(null);
-  const [registerLoading, setRegisterLoading] = useState(false);
+  const [showPass, setShowPass] = useState(false);
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  
+  // React Query Hooks
+  const { mutate: login, isPending: isLoggingIn } = useLogin();
+  const { mutate: register, isPending: isRegistering } = useRegister();
 
-  const getRedirectPath = () => {
-    if (typeof window === "undefined") return "/dashboard";
-    const params = new URLSearchParams(window.location.search);
-    return params.get("from") || "/dashboard";
+  // Formulario de Login
+  const loginForm = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "", remember: false },
+  });
+
+  // Formulario de Registro
+  const registerForm = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: { nombre: "", email: "", password: "", confirmPassword: "" },
+  });
+
+  // Submit Handlers
+  const onLogin = (values: z.infer<typeof loginSchema>) => {
+    login(values);
   };
 
-  const handleLoginSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setLoginError(null);
-    setLoginSuccess(null);
-    setLoginLoading(true);
-
-    try {
-      const response = await fetch(buildApiUrl("/auth/login"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: loginEmail.trim(),
-          password: loginPassword,
-        }),
-      });
-
-      const data = await response.json().catch(() => null);
-
-      if (!response.ok || !data?.data?.token) {
-        throw new Error(data?.error || data?.message || "No se pudo iniciar sesión.");
+  const onRegister = (values: z.infer<typeof registerSchema>) => {
+    register(values, {
+      onSuccess: () => {
+        setIsRegisterOpen(false);
+        registerForm.reset();
+        loginForm.setValue("email", values.email);
       }
-
-      const token: string = data.data.token;
-      const refreshToken: string = data.data.refreshToken || "";
-      const nombre: string = data.data.nombre || data.data.user?.nombre || "";
-
-      saveTokens(token, refreshToken, nombre, rememberMe);
-
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(
-          new CustomEvent("authChanged", {
-            detail: { isAuthenticated: true, userName: nombre },
-          }),
-        );
-      }
-
-      setLoginSuccess("Inicio de sesión exitoso. Redirigiendo...");
-      setLoginPassword("");
-
-      const redirectPath = getRedirectPath();
-      setTimeout(() => {
-        if (typeof window !== "undefined") {
-          window.location.href = redirectPath;
-        }
-      }, 800);
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Error desconocido al iniciar sesión.";
-      setLoginError(message);
-    } finally {
-      setLoginLoading(false);
-    }
+    });
   };
-
-  const handleRegisterSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setRegisterError(null);
-    setRegisterSuccess(null);
-
-    if (registerPassword.length < 8) {
-      setRegisterError("La contraseña debe tener al menos 8 caracteres.");
-      return;
-    }
-
-    if (registerPassword !== registerConfirmPassword) {
-      setRegisterError("Las contraseñas no coinciden.");
-      return;
-    }
-
-    setRegisterLoading(true);
-    try {
-      const response = await fetch(buildApiUrl("/auth/registro"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nombre: registerName.trim(),
-          email: registerEmail.trim(),
-          password: registerPassword,
-        }),
-      });
-
-      const data = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(data?.error || data?.message || "No se pudo crear la cuenta.");
-      }
-
-      setRegisterSuccess(
-        data?.message || "Cuenta creada. Inicia sesión con tus credenciales.",
-      );
-      setLoginEmail(registerEmail.trim());
-      setRegisterName("");
-      setRegisterEmail("");
-      setRegisterPassword("");
-      setRegisterConfirmPassword("");
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Ocurrió un error al registrar.";
-      setRegisterError(message);
-    } finally {
-      setRegisterLoading(false);
-    }
-  };
-
-  const handleInputChange =
-    (setter: (value: string) => void) =>
-    (event: ChangeEvent<HTMLInputElement>) =>
-      setter(event.target.value);
 
   return (
-    <main className="min-h-screen bg-background px-6 py-10 md:py-12 flex items-center">
-      <div className="w-full max-w-5xl mx-auto grid gap-8 lg:grid-cols-[1fr,1fr]">
-        <section className="rounded-3xl border border-border/70 bg-muted/20 p-8 space-y-4">
-          <p className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-1 text-xs uppercase tracking-[0.3em] text-muted-foreground">
-            Acceso seguro
-          </p>
-          <h1 className="text-3xl font-medium text-foreground leading-tight">
-            Inicia sesión para administrar tus proyectos y tickets.
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Usa tu email y contraseña registrados. Si olvidaste tu acceso, recupera la
-            contraseña o crea tu cuenta.
-          </p>
-          <div className="text-xs text-muted-foreground">
-            <p>
-              ¿Problemas? <Link href="/forgot-password" className="underline">Recuperar contraseña</Link>
-            </p>
-          </div>
-        </section>
-
-        <section className="rounded-3xl border border-border/70 bg-background/80 p-8 space-y-6">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-foreground">Iniciar sesión</p>
-            <Lock className="w-4 h-4 text-muted-foreground" />
-          </div>
-          <form className="space-y-4" onSubmit={handleLoginSubmit}>
-            <div className="space-y-2">
-              <label
-                htmlFor="login-email"
-                className="text-xs uppercase tracking-[0.3em] text-muted-foreground"
+    <>
+      <div className="container relative hidden h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
+        {/* Columna Izquierda - Testimonial/Branding */}
+        <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-background" />
+          <div className="relative z-20 flex items-center text-lg font-medium">
+            <div className="inline-flex items-center justify-center h-10 w-10 rounded-lg bg-primary/20 text-primary mb-0">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-6 w-6"
               >
-                Correo electrónico
-              </label>
-              <input
-                id="login-email"
-                name="email"
-                type="email"
-                required
-                className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40"
-                placeholder="tu@correo.com"
-                autoComplete="email"
-                value={loginEmail}
-                onChange={handleInputChange(setLoginEmail)}
-              />
+                <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" />
+              </svg>
             </div>
-            <div className="space-y-2">
-              <label
-                htmlFor="login-password"
-                className="text-xs uppercase tracking-[0.3em] text-muted-foreground"
-              >
-                Contraseña
-              </label>
-              <div className="relative">
-                <input
-                  id="login-password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  required
-                  className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40 pr-24"
-                  placeholder="********"
-                  autoComplete="current-password"
-                  value={loginPassword}
-                  onChange={handleInputChange(setLoginPassword)}
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-1.5 right-1.5 rounded-full border border-border px-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                >
-                  {showPassword ? "Ocultar" : "Ver"}
-                </button>
-              </div>
-            </div>
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <label className="inline-flex items-center gap-2" htmlFor="login-remember">
-                <input
-                  id="login-remember"
-                  name="remember"
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="accent-foreground"
-                />
-                Recordarme
-              </label>
-              <Link href="/forgot-password" className="underline">
-                Olvidé mi contraseña
-              </Link>
-            </div>
-
-            {loginError && (
-              <p className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs text-red-500">
-                {loginError}
+            <span className="ml-2">VioTech Solutions</span>
+          </div>
+          <div className="relative z-20 mt-auto">
+            <blockquote className="space-y-2">
+              <Quote className="h-8 w-8 text-primary/60" />
+              <p className="text-lg text-foreground/90">
+                "Esta plataforma ha transformado la forma en que gestionamos nuestros servicios.
+                La interfaz es intuitiva y el soporte excepcional."
               </p>
-            )}
-            {loginSuccess && (
-              <p className="rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-xs text-green-600">
-                {loginSuccess}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={loginLoading}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-4 py-3 text-sm font-medium text-background hover:scale-[1.02] transition-transform disabled:opacity-60"
-            >
-              {loginLoading ? "Ingresando..." : "Iniciar sesión"}
-            </button>
-          </form>
-
-          <div className="border-t border-border/60 pt-4 text-sm text-muted-foreground space-y-2">
-            <p>¿Aún no tienes cuenta?</p>
-            <button
-              type="button"
-              onClick={() => setShowRegisterModal(true)}
-              className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-medium text-foreground hover:bg-muted/40"
-            >
-              Crear cuenta
-              <ArrowRight className="w-3 h-3" />
-            </button>
-          </div>
-        </section>
-      </div>
-
-      {showRegisterModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm px-4">
-          <div className="w-full max-w-lg rounded-3xl border border-border bg-background p-8 space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                  Registro
-                </p>
-                <h4 className="text-2xl font-medium text-foreground">Crear cuenta</h4>
-              </div>
-              <button
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground"
-                onClick={() => setShowRegisterModal(false)}
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form className="space-y-4" onSubmit={handleRegisterSubmit}>
-              <div className="space-y-2">
-                <label
-                  htmlFor="register-name"
-                  className="text-xs uppercase tracking-[0.3em] text-muted-foreground"
-                >
-                  Nombre
-                </label>
-                <input
-                  id="register-name"
-                  name="name"
-                  type="text"
-                  required
-                  className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40"
-                  placeholder="Tu nombre"
-                  autoComplete="name"
-                  value={registerName}
-                  onChange={handleInputChange(setRegisterName)}
-                />
-              </div>
-              <div className="space-y-2">
-                <label
-                  htmlFor="register-email"
-                  className="text-xs uppercase tracking-[0.3em] text-muted-foreground"
-                >
-                  Correo electrónico
-                </label>
-                <input
-                  id="register-email"
-                  name="email"
-                  type="email"
-                  required
-                  className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40"
-                  placeholder="tu@correo.com"
-                  autoComplete="email"
-                  value={registerEmail}
-                  onChange={handleInputChange(setRegisterEmail)}
-                />
-              </div>
-              <div className="space-y-2">
-                <label
-                  htmlFor="register-password"
-                  className="text-xs uppercase tracking-[0.3em] text-muted-foreground"
-                >
-                  Contraseña
-                </label>
-                <input
-                  id="register-password"
-                  name="password"
-                  type="password"
-                  required
-                  className="w-full rounded-2xl border border-border bg-transparent px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40"
-                  placeholder="Mínimo 8 caracteres"
-                  autoComplete="new-password"
-                  value={registerPassword}
-                  onChange={handleInputChange(setRegisterPassword)}
-                />
-                <input
-                  id="register-confirm-password"
-                  name="confirmPassword"
-                  type="password"
-                  required
-                  className="w-full rounded-2xl border border-border bg-transparent px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/40"
-                  placeholder="Repite la contraseña"
-                  autoComplete="new-password"
-                  value={registerConfirmPassword}
-                  onChange={handleInputChange(setRegisterConfirmPassword)}
-                />
-              </div>
-
-              {registerError && (
-                <p className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs text-red-500">
-                  {registerError}
-                </p>
-              )}
-              {registerSuccess && (
-                <p className="rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-xs text-green-600">
-                  {registerSuccess}
-                </p>
-              )}
-
-              <div className="flex items-center gap-3">
-                <button
-                  type="submit"
-                  disabled={registerLoading}
-                  className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-xs font-medium text-background hover:scale-[1.02] transition-transform disabled:opacity-60"
-                >
-                  {registerLoading ? "Creando..." : "Crear cuenta"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowRegisterModal(false)}
-                  className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </form>
+              <footer className="text-sm text-muted-foreground">
+                <div className="font-semibold text-foreground">Sofia Davis</div>
+                <div>CEO, Acme Inc</div>
+              </footer>
+            </blockquote>
           </div>
         </div>
-      )}
-    </main>
+
+        {/* Columna Derecha - Formulario */}
+        <div className="lg:p-8">
+          <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+            <div className="flex flex-col space-y-2 text-center">
+              <h1 className="text-2xl font-semibold tracking-tight">
+                Crear una cuenta
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Ingresa tu correo electrónico para crear tu cuenta
+              </p>
+            </div>
+
+            {/* Formulario de Login */}
+            <Card className="border-border/60 shadow-lg">
+              <CardHeader className="space-y-1">
+                <CardTitle className="text-xl">Iniciar Sesión</CardTitle>
+                <CardDescription>
+                  Ingresa tus credenciales para continuar
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...loginForm}>
+                  <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
+                    <FormField
+                      control={loginForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Correo Electrónico</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                              <Input 
+                                placeholder="nombre@empresa.com" 
+                                className="pl-9" 
+                                {...field} 
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={loginForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex items-center justify-between">
+                            <FormLabel>Contraseña</FormLabel>
+                            <Link 
+                              href="/forgot-password" 
+                              className="text-xs text-muted-foreground hover:text-primary underline-offset-4 hover:underline"
+                            >
+                              ¿Olvidaste tu contraseña?
+                            </Link>
+                          </div>
+                          <FormControl>
+                            <div className="relative">
+                              <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                              <Input 
+                                type={showPass ? "text" : "password"} 
+                                placeholder="••••••••" 
+                                className="pl-9 pr-9" 
+                                {...field} 
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowPass(!showPass)}
+                                className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
+                              >
+                                {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                              </button>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={loginForm.control}
+                      name="remember"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-2 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="text-sm font-normal text-muted-foreground cursor-pointer">
+                              Recordar mi sesión
+                            </FormLabel>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+
+                    <Button type="submit" className="w-full" disabled={isLoggingIn}>
+                      {isLoggingIn && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {isLoggingIn ? "Validando..." : "Iniciar Sesión"}
+                    </Button>
+                  </form>
+                </Form>
+
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <Separator />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">
+                      O continúa con
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4">
+                  <Button 
+                    variant="outline" 
+                    type="button"
+                    onClick={() => setIsRegisterOpen(true)}
+                    className="w-full"
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    Crear cuenta nueva
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <p className="px-8 text-center text-sm text-muted-foreground">
+              Al continuar, aceptas nuestros{" "}
+              <Link
+                href="/terms"
+                className="underline underline-offset-4 hover:text-primary"
+              >
+                Términos de Servicio
+              </Link>{" "}
+              y{" "}
+              <Link
+                href="/privacy"
+                className="underline underline-offset-4 hover:text-primary"
+              >
+                Política de Privacidad
+              </Link>
+              .
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Versión Móvil - Sin dos columnas */}
+      <div className="container relative flex h-screen flex-col items-center justify-center md:hidden">
+        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+          <div className="flex flex-col space-y-2 text-center">
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Crear una cuenta
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Ingresa tu correo electrónico para crear tu cuenta
+            </p>
+          </div>
+
+          <Card className="border-border/60 shadow-lg">
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-xl">Iniciar Sesión</CardTitle>
+              <CardDescription>
+                Ingresa tus credenciales para continuar
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Form {...loginForm}>
+                <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
+                  <FormField
+                    control={loginForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Correo Electrónico</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input 
+                              placeholder="nombre@empresa.com" 
+                              className="pl-9" 
+                              {...field} 
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={loginForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center justify-between">
+                          <FormLabel>Contraseña</FormLabel>
+                          <Link 
+                            href="/forgot-password" 
+                            className="text-xs text-muted-foreground hover:text-primary underline-offset-4 hover:underline"
+                          >
+                            ¿Olvidaste tu contraseña?
+                          </Link>
+                        </div>
+                        <FormControl>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input 
+                              type={showPass ? "text" : "password"} 
+                              placeholder="••••••••" 
+                              className="pl-9 pr-9" 
+                              {...field} 
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPass(!showPass)}
+                              className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
+                            >
+                              {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={loginForm.control}
+                    name="remember"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-2 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="text-sm font-normal text-muted-foreground cursor-pointer">
+                            Recordar mi sesión
+                          </FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  <Button type="submit" className="w-full" disabled={isLoggingIn}>
+                    {isLoggingIn && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isLoggingIn ? "Validando..." : "Iniciar Sesión"}
+                  </Button>
+                </form>
+              </Form>
+
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <Separator />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">
+                    O continúa con
+                  </span>
+                </div>
+              </div>
+
+              <Button 
+                variant="outline" 
+                type="button"
+                onClick={() => setIsRegisterOpen(true)}
+                className="w-full"
+              >
+                <User className="mr-2 h-4 w-4" />
+                Crear cuenta nueva
+              </Button>
+            </CardContent>
+          </Card>
+
+          <p className="px-8 text-center text-sm text-muted-foreground">
+            Al continuar, aceptas nuestros{" "}
+            <Link
+              href="/terms"
+              className="underline underline-offset-4 hover:text-primary"
+            >
+              Términos de Servicio
+            </Link>{" "}
+            y{" "}
+            <Link
+              href="/privacy"
+              className="underline underline-offset-4 hover:text-primary"
+            >
+              Política de Privacidad
+            </Link>
+            .
+          </p>
+        </div>
+      </div>
+
+      {/* Modal de Registro */}
+      <Dialog open={isRegisterOpen} onOpenChange={setIsRegisterOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Crear Cuenta</DialogTitle>
+            <DialogDescription>
+              Únete a VioTech para gestionar tus servicios.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Form {...registerForm}>
+            <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-4 mt-2">
+              <FormField
+                control={registerForm.control}
+                name="nombre"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nombre completo</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input placeholder="Juan Pérez" className="pl-9" {...field} />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={registerForm.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input placeholder="juan@empresa.com" className="pl-9" {...field} />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <FormField
+                  control={registerForm.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Contraseña</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="Min 8 chars" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={registerForm.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Repetir</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="Confirmar" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <div className="pt-4 flex justify-end gap-2">
+                <Button type="button" variant="ghost" onClick={() => setIsRegisterOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={isRegistering}>
+                  {isRegistering && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isRegistering ? "Creando..." : "Registrarse"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
