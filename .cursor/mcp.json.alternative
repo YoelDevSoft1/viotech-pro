@@ -1,32 +1,25 @@
 {
   "mcpServers": {
     "filesystem": {
-      "command": "npx",
+      "command": "node",
       "args": [
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
+        "${APPDATA}\\npm\\node_modules\\@modelcontextprotocol\\server-filesystem\\dist\\index.js",
         "C:\\Users\\Admin\\Documents\\SMD VITAL\\SMD VITAL\\viotech-pro",
         "C:\\Users\\Admin\\Documents\\SMD VITAL\\SMD VITAL\\viotech-pro\\docs"
       ]
     },
     "secure-terminal": {
       "command": "npx",
-      "args": [
-        "-y",
-        "tumf-mcp-shell-server"
-      ],
+      "args": ["-y", "tumf-mcp-shell-server"],
       "env": {
         "ALLOW_COMMANDS": "npm,node,tsc,next,docker,git,ls,cat,grep,find,psql,pwsh,powershell"
       }
     },
     "github-remote": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-github"
-      ],
+      "args": ["-y", "@modelcontextprotocol/server-github"],
       "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "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"
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "ghp_YOUR_TOKEN_HERE"
       }
     },
     "postgres-advanced": {
@@ -42,36 +35,22 @@
     },
     "brave-search": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-brave-search"
-      ],
+      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
       "env": {
-        "BRAVE_API_KEY": "BSAGDQWRi7quKtFH0MNo9kCJ6UN8V3K"
+        "BRAVE_API_KEY": "BSA_YOUR_API_KEY_HERE"
       }
     },
     "sequential-thinking": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-sequential-thinking"
-      ]
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
     },
     "memory": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-memory"
-      ]
-    },
-    "shadcn": {
-      "command": "npx",
-      "args": [
-        "shadcn@latest",
-        "mcp"
-      ]
+      "args": ["-y", "@modelcontextprotocol/server-memory"]
     }
   }
 }
+
+
 
 

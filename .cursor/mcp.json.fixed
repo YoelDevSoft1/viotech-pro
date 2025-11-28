@@ -1,0 +1,48 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "C:\\Users\\Admin\\Documents\\SMD VITAL\\SMD VITAL\\viotech-pro"
+      ]
+    },
+    "secure-terminal": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-everything"],
+      "env": {
+        "ALLOW_COMMANDS": "npm,node,tsc,next,docker,git,ls,cat,grep,find,psql,pwsh,powershell"
+      }
+    },
+    "postgres-advanced": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "POSTGRES_CONNECTION_STRING=postgresql://admin:YOUR_PASSWORD@host.docker.internal:5432/tickets_db",
+        "ghcr.io/henkdz/postgresql-mcp-server:latest"
+      ]
+    },
+    "brave-search": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+      "env": {
+        "BRAVE_API_KEY": "BSA_YOUR_API_KEY_HERE"
+      }
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"]
+    }
+  }
+}
+
+
+

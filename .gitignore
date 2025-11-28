@@ -33,6 +33,11 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# Cursor MCP secrets
+.cursor/.env.local
+.cursor/mcp.json
+!.cursor/mcp.json.template
+
 # vercel
 .vercel
 

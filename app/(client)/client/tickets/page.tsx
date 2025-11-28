@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, MessageSquare } from "lucide-react";
 import { getAccessToken } from "@/lib/auth";
-import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
 import { TicketsPanel } from "@/components/dashboard/TicketsPanel";
 
 export default function ClientTicketsPage() {
@@ -22,28 +22,32 @@ export default function ClientTicketsPage() {
   }, [router]);
 
   return (
-    <div className="space-y-4">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div className="space-y-3">
-            <Breadcrumb items={[{ href: "/client", label: "Inicio" }, { href: "/client/tickets", label: "Tickets" }]} />
-            <div className="space-y-1">
-              <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Portal cliente</p>
-              <h1 className="text-3xl font-medium text-foreground">Tickets y soporte</h1>
-              <p className="text-sm text-muted-foreground">
-                Crea, comenta, adjunta evidencias y revisa el estado de tus solicitudes.
-              </p>
-            </div>
-          </div>
-          <Link
-            href="/client"
-            className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Volver al panel
-          </Link>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/dashboard" className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Volver al panel
+            </Link>
+          </Button>
         </div>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+              <MessageSquare className="h-8 w-8" />
+              Tickets y Soporte
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Crea, comenta, adjunta evidencias y revisa el estado de tus solicitudes.
+            </p>
+          </div>
+        </div>
+      </div>
 
-      <section className="space-y-4">
+      {/* Tickets Panel */}
+      <section>
         <TicketsPanel token={token} onRequireAuth={() => router.replace("/login?from=/client/tickets")} />
       </section>
     </div>

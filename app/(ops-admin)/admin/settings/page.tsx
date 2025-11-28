@@ -1,12 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Shield, User, Building2, RefreshCcw, AlertTriangle, CheckCircle2, Lock, Users } from "lucide-react";
+import { User, Building2, RefreshCcw, AlertTriangle, CheckCircle2, Lock, Users, ArrowLeft, Mail, KeyRound } from "lucide-react";
 import { buildApiUrl } from "@/lib/api";
 import { getAccessToken, refreshAccessToken, isTokenExpired, logout } from "@/lib/auth";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import OrgSelector, { type Org } from "@/components/OrgSelector";
+import Link from "next/link";
 
 type MeResponse = {
   id: string;
@@ -159,171 +164,247 @@ export default function AdminSettingsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-background px-6 py-10 md:py-12">
-      <div className="w-full space-y-8">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/admin" className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Volver
+            </Link>
+          </Button>
+        </div>
         <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Configuración</p>
-            <h1 className="text-3xl font-medium text-foreground">Ajustes del panel</h1>
-            <p className="text-sm text-muted-foreground">
-              Perfil, seguridad y organización para administradores.
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Configuración</h1>
+            <p className="text-muted-foreground">
+              Gestiona tu perfil, seguridad y organización.
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={loadProfile} disabled={loading}>
-              <RefreshCcw className="w-4 h-4" />
-              Refrescar
-            </Button>
-          </div>
+          <Button variant="outline" size="sm" onClick={loadProfile} disabled={loading}>
+            <RefreshCcw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            Refrescar
+          </Button>
         </div>
+      </div>
 
-        {error && (
-          <div className="flex items-center gap-2 rounded-2xl border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-sm text-amber-700">
-            <AlertTriangle className="w-4 h-4" />
-            {error}
-          </div>
-        )}
+      {/* Error Alert */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Card className="space-y-3 p-5">
-            <div className="flex items-center gap-2">
-              <User className="w-4 h-4 text-foreground" />
-              <p className="text-sm font-medium text-foreground">Cuenta</p>
-            </div>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Cuenta (ID)</p>
-                <p className="text-foreground font-mono text-xs">{me?.id || "—"}</p>
+      {/* Profile and Security Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Información de Cuenta
+            </CardTitle>
+            <CardDescription>Datos de tu perfil de usuario</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="space-y-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} className="h-12 w-full" />
+                ))}
               </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Nombre</p>
-                <p className="text-foreground">{me?.nombre || "—"}</p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Correo</p>
-                <p className="text-foreground">{me?.email || "—"}</p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Rol</p>
-                <p className="text-foreground">{me?.rol || "—"}</p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Tier</p>
-                <p className="text-foreground">{me?.tier || "—"}</p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Estado</p>
-                <p className="text-foreground">{me?.estado || "—"}</p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Org. asignada</p>
-                <p className="text-foreground">{orgFromProfile || "—"}</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="space-y-3 p-5">
-            <div className="flex items-center gap-2">
-              <Lock className="w-4 h-4 text-foreground" />
-              <p className="text-sm font-medium text-foreground">Seguridad (MFA)</p>
-            </div>
-            {mfaError && (
-              <p className="text-xs text-amber-700 flex items-center gap-1">
-                <AlertTriangle className="w-4 h-4" />
-                {mfaError}
-              </p>
-            )}
-            <div className="space-y-2 text-sm">
-                <div className="flex items-center justify-between rounded-xl border border-border/70 bg-muted/20 px-3 py-2">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Estado MFA</p>
-                    <p className="text-foreground">
-                      {mfa ? (mfa.enabled ? "Habilitado" : "Deshabilitado") : "—"}
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">ID de Cuenta</p>
+                  <p className="text-sm font-mono text-foreground break-all">{me?.id || "—"}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Nombre</p>
+                  <p className="text-sm font-medium text-foreground">{me?.nombre || "—"}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Correo</p>
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-3 w-3 text-muted-foreground" />
+                    <p className="text-sm text-foreground">{me?.email || "—"}</p>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Rol</p>
+                  <Badge variant="outline" className="capitalize">
+                    {me?.rol || "—"}
+                  </Badge>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Tier</p>
+                  <Badge variant="secondary" className="capitalize">
+                    {me?.tier || "—"}
+                  </Badge>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Estado</p>
+                  <Badge variant={me?.estado === "activo" ? "default" : "secondary"} className="capitalize">
+                    {me?.estado || "—"}
+                  </Badge>
+                </div>
+                <div className="space-y-1 col-span-2">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Organización Asignada</p>
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-3 w-3 text-muted-foreground" />
+                    <p className="text-sm font-mono text-foreground break-all">
+                      {orgFromProfile || "—"}
                     </p>
                   </div>
-                  {mfa?.enabled ? (
-                    <CheckCircle2 className="w-4 h-4 text-green-600" />
-                  ) : (
-                  <AlertTriangle className="w-4 h-4 text-amber-600" />
-                )}
+                </div>
               </div>
-              {mfa?.lastVerifiedAt && (
-                <p className="text-xs text-muted-foreground">
-                  Última verificación: {new Date(mfa.lastVerifiedAt).toLocaleString()}
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lock className="h-5 w-5" />
+              Seguridad (MFA)
+            </CardTitle>
+            <CardDescription>Autenticación de dos factores</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {mfaError && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription className="text-sm">{mfaError}</AlertDescription>
+              </Alert>
+            )}
+            <div className="flex items-center justify-between rounded-lg border bg-muted/50 p-4">
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Estado MFA</p>
+                <p className="text-sm font-medium text-foreground">
+                  {mfa ? (mfa.enabled ? "Habilitado" : "Deshabilitado") : "Cargando..."}
                 </p>
+              </div>
+              {mfa?.enabled ? (
+                <CheckCircle2 className="h-5 w-5 text-green-600" />
+              ) : (
+                <AlertTriangle className="h-5 w-5 text-amber-600" />
               )}
             </div>
-          </Card>
-        </div>
+            {mfa?.lastVerifiedAt && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <KeyRound className="h-3 w-3" />
+                <span>
+                  Última verificación: {new Date(mfa.lastVerifiedAt).toLocaleString("es-CO")}
+                </span>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
-        <Card className="space-y-3 p-5">
-          <div className="flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-foreground" />
-            <p className="text-sm font-medium text-foreground">Organización activa (UI)</p>
-          </div>
-          <p className="text-xs text-muted-foreground">
+      {/* Organization Selector */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building2 className="h-5 w-5" />
+            Organización Activa
+          </CardTitle>
+          <CardDescription>
             Cambia la organización con la que trabajas en el panel. Esto usa los datos reales de /api/organizations.
-          </p>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
           <OrgSelector
             label="Selecciona organización"
             onChange={(org: Org | null) => setOrgFromProfile(org?.id || null)}
           />
-        </Card>
+        </CardContent>
+      </Card>
 
-        <Card className="space-y-3 p-5">
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-foreground" />
-            <p className="text-sm font-medium text-foreground">Usuarios (admin)</p>
-          </div>
+      {/* Users Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Usuarios del Sistema
+          </CardTitle>
+          <CardDescription>Lista de todos los usuarios registrados</CardDescription>
+        </CardHeader>
+        <CardContent>
           {usersError && (
-            <div className="flex items-center gap-2 rounded-xl border border-amber-500/60 bg-amber-500/10 px-3 py-2 text-xs text-amber-700">
-              <AlertTriangle className="w-4 h-4" />
-              {usersError}
-            </div>
+            <Alert variant="destructive" className="mb-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>{usersError}</AlertDescription>
+            </Alert>
           )}
           {usersLoading ? (
-            <p className="text-sm text-muted-foreground">Cargando usuarios...</p>
+            <div className="space-y-2">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
+            </div>
+          ) : users.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">
+              No hay usuarios registrados.
+            </p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead className="text-xs uppercase text-muted-foreground">
-                  <tr>
-                    <th className="text-left py-2 pr-3">Cuenta</th>
-                    <th className="text-left py-2 pr-3">Nombre</th>
-                    <th className="text-left py-2 pr-3">Correo</th>
-                    <th className="text-left py-2 pr-3">Rol</th>
-                    <th className="text-left py-2 pr-3">Tier</th>
-                    <th className="text-left py-2 pr-3">Estado</th>
-                    <th className="text-left py-2">Org</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60">
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead>Correo</TableHead>
+                    <TableHead>Rol</TableHead>
+                    <TableHead>Tier</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Organización</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {users.map((u) => (
-                    <tr key={u.id}>
-                      <td className="py-2 pr-3 font-mono text-xs text-muted-foreground">
-                        {u.id.slice(0, 6)}…
-                      </td>
-                      <td className="py-2 pr-3">{u.nombre || "—"}</td>
-                      <td className="py-2 pr-3">{u.email}</td>
-                      <td className="py-2 pr-3">{u.rol}</td>
-                      <td className="py-2 pr-3">{u.tier || "—"}</td>
-                      <td className="py-2 pr-3">{u.estado || "—"}</td>
-                      <td className="py-2">{u.organizationId || "—"}</td>
-                    </tr>
+                    <TableRow key={u.id}>
+                      <TableCell>
+                        <span className="font-mono text-xs text-muted-foreground">
+                          {u.id.slice(0, 8)}...
+                        </span>
+                      </TableCell>
+                      <TableCell className="font-medium">{u.nombre || "—"}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-sm">{u.email}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="capitalize">
+                          {u.rol}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="capitalize">
+                          {u.tier || "—"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={u.estado === "activo" ? "default" : "secondary"} className="capitalize">
+                          {u.estado || "—"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-mono text-xs text-muted-foreground">
+                          {u.organizationId ? `${u.organizationId.slice(0, 8)}...` : "—"}
+                        </span>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                  {users.length === 0 && (
-                    <tr>
-                      <td className="py-3 text-sm text-muted-foreground" colSpan={7}>
-                        No hay usuarios.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           )}
-        </Card>
-      </div>
-    </main>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

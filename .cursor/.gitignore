@@ -1,0 +1,23 @@
+# Variables de entorno con credenciales
+.env.local
+.env
+*.env
+
+# Tokens y API keys
+*.key
+*.token
+secrets.json
+
+# Logs
+*.log
+logs/
+
+# Archivos temporales
+*.tmp
+*.temp
+.DS_Store
+
+
+
+
+
