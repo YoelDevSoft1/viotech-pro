@@ -7,7 +7,14 @@ import OrgSelector from "@/components/OrgSelector";
 import { buildApiUrl } from "@/lib/api";
 import { getAccessToken, isTokenExpired, refreshAccessToken, logout } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { Breadcrumb } from "@/components/ui/breadcrumb";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 type AlertItem = {
   id: string;
@@ -103,7 +110,17 @@ export default function InternalHome() {
     <main className="min-h-screen bg-background px-6 py-10 md:py-12">
       <div className="max-w-6xl mx-auto space-y-10">
         <div className="space-y-3">
-          <Breadcrumb items={[{ href: "/internal", label: "Interno" }]} />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/internal">Interno</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Panel de Control</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
           <div className="space-y-2">
           <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
             Panel interno

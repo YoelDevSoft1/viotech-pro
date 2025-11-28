@@ -3,8 +3,16 @@
   publish = ".next"
 
 [build.environment]
+  # Node version
+  NODE_VERSION = "20"
   # Deshabilitar Turbopack para evitar problemas de resolución de módulos
   NEXT_PRIVATE_SKIP_TURBO = "1"
+  # Habilitar modo legacy de Next.js si hay problemas
+  NEXT_TELEMETRY_DISABLED = "1"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+# Configuración para ignorar ciertos errores durante el build
+[build.processing]
+  skip_processing = false
