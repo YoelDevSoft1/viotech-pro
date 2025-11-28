@@ -1,6 +1,11 @@
 import { useMutation } from "@tanstack/react-query";
 import { apiClient } from "@/lib/apiClient";
-import { login, type LoginCredentials } from "@/lib/auth"; // Asumo que tienes una función base 'login' que guarda el token
+
+type LoginCredentials = {
+  email: string;
+  password: string;
+  remember?: boolean;
+};
 
 export function useLoginMutation() {
   return useMutation({

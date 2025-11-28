@@ -34,12 +34,13 @@ export function useMetrics() {
   });
 
   // Mapeamos a la interfaz que tu aplicación ya espera para no romper nada
+  const { error: queryError, ...restQuery } = query;
   return {
     metrics: query.data || null,
     loading: query.isLoading,
-    error: query.error ? (query.error as Error).message : null,
+    error: queryError ? (queryError as Error).message : null,
     refresh: query.refetch,
     // Exportamos también el objeto query original por si necesitas más control
-    ...query
+    ...restQuery
   };
 }

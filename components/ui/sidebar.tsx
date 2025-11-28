@@ -371,7 +371,7 @@ const SidebarFooter = React.forwardRef<HTMLDivElement, React.ComponentProps<"div
 SidebarFooter.displayName = "SidebarFooter"
 
 const SidebarSeparator = React.forwardRef<
-  React.ElementRef<typeof React.Component>,
+  HTMLDivElement,
   React.ComponentProps<"div">
 >(({ className, ...props }, ref) => {
   return (

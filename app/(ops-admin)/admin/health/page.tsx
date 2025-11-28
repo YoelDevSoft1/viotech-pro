@@ -318,7 +318,7 @@ export default function AdminHealthPage() {
             <Alert variant="destructive" className="mb-4">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                {metricsError instanceof Error ? metricsError.message : String(metricsError)}
+                {metricsError || "Error desconocido"}
               </AlertDescription>
             </Alert>
           )}

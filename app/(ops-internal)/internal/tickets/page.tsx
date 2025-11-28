@@ -7,7 +7,7 @@ import { useMutation } from "@tanstack/react-query";
 import { ArrowLeft, Filter } from "lucide-react";
 
 import OrgSelector, { type Org } from "@/components/OrgSelector";
-import { Select } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useOrg } from "@/lib/useOrg";
 import { useTickets } from "@/lib/hooks/useTickets";
 import { apiClient } from "@/lib/apiClient";
@@ -91,19 +91,35 @@ export default function InternalTicketsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <OrgSelector onChange={(org: Org | null) => setOrgId(org?.id || "")} label="Organización" />
-          <Select label="Estado" value={filters.estado} onChange={(e) => setFilters((f) => ({ ...f, estado: e.target.value }))}>
-            <option value="">Todos</option>
-            <option value="abierto">Abierto</option>
-            <option value="en_progreso">En progreso</option>
-            <option value="resuelto">Resuelto</option>
-          </Select>
-          <Select label="Prioridad" value={filters.prioridad} onChange={(e) => setFilters((f) => ({ ...f, prioridad: e.target.value }))}>
-            <option value="">Todas</option>
-            <option value="baja">Baja</option>
-            <option value="media">Media</option>
-            <option value="alta">Alta</option>
-            <option value="critica">Crítica</option>
-          </Select>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Estado</label>
+            <Select value={filters.estado || ""} onValueChange={(value) => setFilters((f) => ({ ...f, estado: value }))}>
+              <SelectTrigger>
+                <SelectValue placeholder="Todos" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="abierto">Abierto</SelectItem>
+                <SelectItem value="en_progreso">En progreso</SelectItem>
+                <SelectItem value="resuelto">Resuelto</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Prioridad</label>
+            <Select value={filters.prioridad || ""} onValueChange={(value) => setFilters((f) => ({ ...f, prioridad: value }))}>
+              <SelectTrigger>
+                <SelectValue placeholder="Todas" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Todas</SelectItem>
+                <SelectItem value="baja">Baja</SelectItem>
+                <SelectItem value="media">Media</SelectItem>
+                <SelectItem value="alta">Alta</SelectItem>
+                <SelectItem value="critica">Crítica</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {error && <ErrorState message={error} />}
@@ -138,24 +154,32 @@ export default function InternalTicketsPage() {
                   <TableCell className="col-span-2">
                     <Select
                       value={t.estado}
-                      onChange={(e) => updateTicket(t.id, { estado: e.target.value })}
-                      className="w-full"
+                      onValueChange={(value) => updateTicket(t.id, { estado: value })}
                     >
-                      <option value="abierto">Abierto</option>
-                      <option value="en_progreso">En progreso</option>
-                      <option value="resuelto">Resuelto</option>
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="abierto">Abierto</SelectItem>
+                        <SelectItem value="en_progreso">En progreso</SelectItem>
+                        <SelectItem value="resuelto">Resuelto</SelectItem>
+                      </SelectContent>
                     </Select>
                   </TableCell>
                   <TableCell className="col-span-2">
                     <Select
                       value={t.prioridad}
-                      onChange={(e) => updateTicket(t.id, { prioridad: e.target.value })}
-                      className="w-full"
+                      onValueChange={(value) => updateTicket(t.id, { prioridad: value })}
                     >
-                      <option value="baja">Baja</option>
-                      <option value="media">Media</option>
-                      <option value="alta">Alta</option>
-                      <option value="critica">Crítica</option>
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="baja">Baja</SelectItem>
+                        <SelectItem value="media">Media</SelectItem>
+                        <SelectItem value="alta">Alta</SelectItem>
+                        <SelectItem value="critica">Crítica</SelectItem>
+                      </SelectContent>
                     </Select>
                   </TableCell>
                   <TableCell className="col-span-2 text-sm text-muted-foreground">

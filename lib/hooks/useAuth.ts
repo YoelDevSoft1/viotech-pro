@@ -5,9 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
 // Login
-export function useLogin() {
+export function useLogin(redirectTo?: string) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   
   return useMutation({
     mutationFn: async (credentials: any) => {
@@ -28,7 +27,7 @@ export function useLogin() {
       }
 
       toast.success(`Bienvenido, ${userName}`);
-      const from = searchParams.get("from") || "/client/dashboard";
+      const from = redirectTo || "/client/dashboard";
       router.replace(from);
     },
     onError: (error: any) => {

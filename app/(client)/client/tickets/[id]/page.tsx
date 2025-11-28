@@ -40,12 +40,11 @@ export default function ClientTicketDetail({ params }: { params: { id: string } 
         <ErrorState
           title="No pudimos cargar el ticket"
           message={error || "Reintenta más tarde."}
-          action={
-            <Button onClick={() => refresh()} variant="outline">
-              Reintentar
-            </Button>
-          }
-        />
+        >
+          <Button onClick={() => refresh()} variant="outline" className="mt-2">
+            Reintentar
+          </Button>
+        </ErrorState>
       </div>
     );
   }

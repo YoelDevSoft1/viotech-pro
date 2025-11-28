@@ -146,7 +146,7 @@ export default function AdminTicketsPage() {
     prioridad: filters.prioridad || undefined,
     impacto: filters.impacto || undefined,
     categoria: filters.categoria || undefined,
-    asignadoA: filters.asignadoA === "unassigned" ? null : filters.asignadoA || undefined,
+    asignadoA: filters.asignadoA === "unassigned" ? undefined : filters.asignadoA || undefined,
     projectId: filters.projectId || undefined,
     organizationId: orgId || undefined,
     sort: sortField,

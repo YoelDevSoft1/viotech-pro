@@ -10,7 +10,6 @@ import { TicketsPanel } from "@/components/dashboard/TicketsPanel";
 
 export default function ClientTicketsPage() {
   const router = useRouter();
-  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
     const stored = getAccessToken();
@@ -18,7 +17,6 @@ export default function ClientTicketsPage() {
       router.replace("/login?from=/client/tickets");
       return;
     }
-    setToken(stored);
   }, [router]);
 
   return (
@@ -48,7 +46,7 @@ export default function ClientTicketsPage() {
 
       {/* Tickets Panel */}
       <section>
-        <TicketsPanel token={token} onRequireAuth={() => router.replace("/login?from=/client/tickets")} />
+        <TicketsPanel />
       </section>
     </div>
   );

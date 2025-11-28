@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Loader2, Eye, EyeOff, Lock, Mail, User, Quote } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 // Componentes UI (Shadcn)
 import { Button } from "@/components/ui/button";
@@ -36,16 +37,18 @@ const registerSchema = z.object({
   path: ["confirmPassword"],
 });
 
-export default function LoginPage() {
+function LoginPageContent() {
   const [showPass, setShowPass] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("from") || undefined;
   
   // React Query Hooks
-  const { mutate: login, isPending: isLoggingIn } = useLogin();
+  const { mutate: login, isPending: isLoggingIn } = useLogin(redirectTo);
   const { mutate: register, isPending: isRegistering } = useRegister();
 
   // Formulario de Login
-  const loginForm = useForm<z.infer<typeof loginSchema>>({
+  const loginForm = useForm<z.input<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "", remember: false },
   });
@@ -57,8 +60,13 @@ export default function LoginPage() {
   });
 
   // Submit Handlers
-  const onLogin = (values: z.infer<typeof loginSchema>) => {
-    login(values);
+  const onLogin = (values: z.input<typeof loginSchema>) => {
+    // Ensure remember is always a boolean
+    const processedValues = {
+      ...values,
+      remember: values.remember ?? false,
+    };
+    login(processedValues);
   };
 
   const onRegister = (values: z.infer<typeof registerSchema>) => {
@@ -500,5 +508,13 @@ export default function LoginPage() {
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-screen">Cargando...</div>}>
+      <LoginPageContent />
+    </Suspense>
   );
 }

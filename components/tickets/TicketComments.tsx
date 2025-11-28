@@ -192,15 +192,18 @@ export function TicketComments({
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Calendar className="h-3 w-3" />
                         <span>
-                          {c.createdAt || c.created_at
-                            ? new Date(c.createdAt || c.created_at).toLocaleString("es-CO", {
-                                day: "2-digit",
-                                month: "short",
-                                year: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
-                            : "—"}
+                          {(() => {
+                            const dateStr = c.createdAt || c.created_at;
+                            return dateStr
+                              ? new Date(dateStr).toLocaleString("es-CO", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })
+                              : "—";
+                          })()}
                         </span>
                       </div>
                     </div>

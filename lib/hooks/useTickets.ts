@@ -16,6 +16,7 @@ export type Ticket = {
   slaAtendidoEn?: string | null;
   etiquetas?: any[];
   createdAt: string;
+  updatedAt?: string;
   comentarios?: any[];
   usuario?: { nombre?: string; email?: string };
   organizationId?: string;
@@ -98,6 +99,7 @@ export function useTickets(filters: TicketFilters = {}) {
             slaAtendidoEn: t.slaAtendidoEn || t.sla_atendido_en || null,
             etiquetas: Array.isArray(t.etiquetas) ? t.etiquetas : [],
             createdAt: t.createdAt || t.created_at || new Date().toISOString(),
+            updatedAt: t.updatedAt || t.updated_at || undefined,
             comentarios: t.comentarios || [],
             usuario: t.usuario || null,
             organizationId: t.organizationId || t.organization_id || "",
