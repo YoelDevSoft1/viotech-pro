@@ -104,6 +104,8 @@ interface NewsletterSubscription {
 
 **Descripción:** Obtener lista paginada de artículos publicados
 
+**Autenticación:** ❌ **NO REQUERIDA** - Este endpoint debe ser **público**
+
 **Query Parameters:**
 - `page?: number` (default: 1)
 - `limit?: number` (default: 12, max: 50)
@@ -165,6 +167,11 @@ interface NewsletterSubscription {
 ### **2. GET /api/blog/posts/:slug**
 
 **Descripción:** Obtener artículo individual por slug
+
+**Autenticación:** ❌ **NO REQUERIDA** - Este endpoint debe ser **público**
+
+**Path Parameters:**
+- `slug` (string) - Slug del artículo (URL-friendly)
 
 **Response:**
 ```json

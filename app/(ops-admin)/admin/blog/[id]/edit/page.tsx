@@ -31,6 +31,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 const postSchema = z.object({
   title: z.string().min(3, "Mínimo 3 caracteres").max(500, "Máximo 500 caracteres"),
@@ -38,13 +39,24 @@ const postSchema = z.object({
   content: z.string().min(500, "Mínimo 500 caracteres"),
   categoryId: z.string().min(1, "Selecciona una categoría"),
   tagIds: z.array(z.string()).optional(),
-  featuredImage: z.string().url("URL inválida").optional().or(z.literal("")),
+  featuredImage: z.union([
+    z.string().url("URL inválida"),
+    z.literal(""),
+  ]).optional(),
   isPublished: z.boolean(),
-  publishedAt: z.string().optional(),
+  publishedAt: z.union([
+    z.string(),
+    z.literal(""),
+    z.null(),
+    z.undefined(),
+  ]).optional().nullable(),
   seo: z.object({
-    metaDescription: z.string().max(160, "Máximo 160 caracteres").optional(),
+    metaDescription: z.string().max(160, "Máximo 160 caracteres").optional().or(z.literal("")),
     metaKeywords: z.array(z.string()).optional(),
-    ogImage: z.string().url("URL inválida").optional().or(z.literal("")),
+    ogImage: z.union([
+      z.string().url("URL inválida"),
+      z.literal(""),
+    ]).optional(),
   }).optional(),
 });
 
@@ -62,6 +74,7 @@ export default function EditBlogPostPage() {
 
   const form = useForm<PostFormValues>({
     resolver: zodResolver(postSchema),
+    mode: "onChange", // Validar mientras el usuario escribe
     defaultValues: {
       title: "",
       excerpt: "",
@@ -89,7 +102,7 @@ export default function EditBlogPostPage() {
         tagIds: post.tags.map((t: { id: string; name: string; slug: string }) => t.id),
         featuredImage: post.featuredImage || "",
         isPublished: !!post.publishedAt,
-        publishedAt: post.publishedAt,
+        publishedAt: post.publishedAt || undefined, // Convertir null a undefined
         seo: {
           metaDescription: post.seo?.metaDescription || "",
           metaKeywords: post.seo?.metaKeywords || [],
@@ -100,12 +113,31 @@ export default function EditBlogPostPage() {
   }, [post, form]);
 
   const onSubmit = async (data: PostFormValues) => {
+    console.log("📝 onSubmit llamado con datos:", data);
+    console.log("📝 postId:", postId);
+    console.log("📝 post:", post);
+    console.log("📝 updatePost.isPending:", updatePost.isPending);
+    console.log("📝 form.formState.isValid:", form.formState.isValid);
+    console.log("📝 form.formState.errors:", form.formState.errors);
+    
+    if (!post) {
+      toast.error("El artículo no se ha cargado completamente. Por favor espera un momento.");
+      return;
+    }
+    
+    if (!postId) {
+      toast.error("ID del artículo no válido");
+      return;
+    }
+    
     try {
-      await updatePost.mutateAsync({
+      const payload = {
         id: postId,
         data: {
           ...data,
-          publishedAt: data.isPublished ? (post?.publishedAt || new Date().toISOString()) : undefined,
+          publishedAt: data.isPublished 
+            ? (data.publishedAt || post?.publishedAt || new Date().toISOString()) 
+            : undefined,
           tagIds: data.tagIds?.filter(Boolean),
           featuredImage: data.featuredImage || undefined,
           seo: data.seo?.metaDescription || data.seo?.ogImage || data.seo?.metaKeywords?.length
@@ -116,10 +148,19 @@ export default function EditBlogPostPage() {
               }
             : undefined,
         },
-      });
+      };
+      
+      console.log("📤 Enviando payload:", payload);
+      
+      const response = await updatePost.mutateAsync(payload);
+      
+      console.log("✅ Respuesta recibida:", response);
       router.push("/admin/blog");
-    } catch (error) {
-      // Error manejado en el hook
+    } catch (error: any) {
+      console.error("❌ Error en onSubmit:", error);
+      console.error("❌ Error details:", error?.response?.data);
+      // Error manejado en el hook, pero también lo mostramos aquí para debug
+      toast.error(error?.response?.data?.error || error?.message || "Error al actualizar artículo");
     }
   };
 
@@ -161,7 +202,33 @@ export default function EditBlogPostPage() {
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form 
+          onSubmit={(e) => {
+            console.log("🔵 Form submit event disparado");
+            e.preventDefault();
+            form.handleSubmit(
+              onSubmit,
+              (errors) => {
+                console.error("❌ Errores de validación:", errors);
+                console.error("❌ Estado del formulario:", form.formState);
+                console.error("❌ Valores del formulario:", form.getValues());
+                
+                // Mostrar errores específicos
+                const errorMessages = Object.entries(errors).map(([field, error]: [string, any]) => {
+                  return `${field}: ${error?.message || "Error desconocido"}`;
+                });
+                
+                if (errorMessages.length > 0) {
+                  toast.error(`Errores de validación: ${errorMessages.join(", ")}`);
+                } else {
+                  console.warn("⚠️ Errores de validación vacíos pero handler llamado");
+                  toast.error("Por favor corrige los errores en el formulario");
+                }
+              }
+            )(e);
+          }} 
+          className="space-y-6"
+        >
           <div className="grid gap-6 lg:grid-cols-3">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
