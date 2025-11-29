@@ -15,7 +15,9 @@ export function useCreatePost() {
     onSuccess: (response) => {
       toast.success(response.message || "Artículo creado exitosamente");
       queryClient.invalidateQueries({ queryKey: ["blog-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["blog-posts-admin"] }); // Invalidate admin posts too
       queryClient.invalidateQueries({ queryKey: ["blog-categories"] });
+      console.log("✅ Post creado, invalidando queries:", response);
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.error || error?.message || "Error al crear artículo");
@@ -35,6 +37,7 @@ export function useUpdatePost() {
     onSuccess: (response) => {
       toast.success(response.message || "Artículo actualizado exitosamente");
       queryClient.invalidateQueries({ queryKey: ["blog-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["blog-posts-admin"] }); // Invalidate admin posts too
       queryClient.invalidateQueries({ queryKey: ["blog-post"] });
     },
     onError: (error: any) => {

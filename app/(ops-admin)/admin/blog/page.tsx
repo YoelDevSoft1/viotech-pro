@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Plus, Edit, Trash2, Eye, Search } from "lucide-react";
-import { useBlogPosts, useBlogCategories } from "@/lib/hooks/useBlog";
+import { useBlogPostsAdmin, useBlogCategories } from "@/lib/hooks/useBlog";
 import { useDeletePost } from "@/lib/hooks/useBlogAdmin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,7 +33,7 @@ export default function AdminBlogPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   
-  const { data: postsData, isLoading } = useBlogPosts({
+  const { data: postsData, isLoading } = useBlogPostsAdmin({
     search: searchQuery || undefined,
     limit: 50,
   });

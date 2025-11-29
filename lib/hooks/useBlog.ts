@@ -15,7 +15,7 @@ import type {
   NewsletterUnsubscribeResponse,
 } from "@/lib/types/blog";
 
-// Obtener lista de artículos
+// Obtener lista de artículos (público - solo publicados)
 export function useBlogPosts(filters?: BlogFilters) {
   return useQuery({
     queryKey: ["blog-posts", filters],
@@ -32,6 +32,71 @@ export function useBlogPosts(filters?: BlogFilters) {
       return response.data;
     },
     staleTime: 1000 * 60 * 5, // 5 minutos
+  });
+}
+
+// Obtener TODOS los artículos (admin - incluye borradores)
+export function useBlogPostsAdmin(filters?: BlogFilters) {
+  return useQuery({
+    queryKey: ["blog-posts-admin", filters],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      // Agregar parámetro para obtener todos los posts (incluyendo borradores)
+      params.append("all", "true");
+      if (filters?.category) params.append("category", filters.category);
+      if (filters?.tag) params.append("tag", filters.tag);
+      if (filters?.search) params.append("search", filters.search);
+      if (filters?.page) params.append("page", filters.page.toString());
+      if (filters?.limit) params.append("limit", filters.limit.toString());
+
+      const url = `/blog/posts?${params.toString()}`;
+      console.log("📦 Fetching admin posts from:", url);
+      
+      const response = await apiClient.get(url);
+      const result = response.data;
+      
+      console.log("📦 Full Response:", response);
+      console.log("📦 Response.data (result):", result);
+      console.log("📦 result.success:", result?.success);
+      console.log("📦 result.data:", result?.data);
+      console.log("📦 result.data.posts:", result?.data?.posts);
+      console.log("📦 result.data.posts length:", result?.data?.posts?.length);
+      
+      // El backend retorna: { success: true, data: { posts: [...], total: ... } }
+      if (!result || result.success === false) {
+        const errorMsg = result?.error || "Error al cargar posts";
+        console.error("❌ Error en respuesta:", errorMsg);
+        throw new Error(errorMsg);
+      }
+      
+      // Acceder a result.data para obtener el objeto con posts
+      if (result.data && typeof result.data === 'object' && 'posts' in result.data) {
+        console.log("✅ Posts encontrados:", result.data.posts.length);
+        return result.data as BlogResponse;
+      }
+      
+      // Si el formato es diferente, intentar acceder directamente
+      if (Array.isArray(result.data)) {
+        console.log("⚠️ Formato inesperado: result.data es un array directo");
+        return {
+          posts: result.data as BlogPost[],
+          total: result.data.length,
+          page: 1,
+          limit: filters?.limit || 50,
+          totalPages: 1,
+        };
+      }
+      
+      console.error("❌ Formato de respuesta inesperado:", result);
+      return {
+        posts: [],
+        total: 0,
+        page: 1,
+        limit: filters?.limit || 50,
+        totalPages: 0,
+      };
+    },
+    staleTime: 1000 * 60 * 2, // 2 minutos para admin (más fresco)
   });
 }
 

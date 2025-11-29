@@ -224,6 +224,165 @@ Content-Type: application/json
 
 ---
 
+#### **3. GET /api/blog/posts** (Admin - Listar todos los posts)
+
+**Descripción:** Obtener lista de TODOS los artículos (incluyendo borradores) para administradores
+
+**Autenticación:** Requerida (rol: admin)
+
+**Query Parameters:**
+- `all?: boolean` (default: `false`) - **IMPORTANTE:** Si `all=true`, retornar TODOS los posts (publicados y borradores). Si `all=false` o no se envía, retornar solo publicados (comportamiento público).
+- `page?: number` (default: 1)
+- `limit?: number` (default: 12, max: 50)
+- `category?: string` (slug de categoría)
+- `tag?: string` (slug de tag)
+- `search?: string` (búsqueda en título y contenido)
+
+**Ejemplo de Request:**
+```
+GET /api/blog/posts?all=true&limit=50
+Authorization: Bearer {token}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Operación exitosa",
+  "data": {
+    "posts": [
+      {
+        "id": "uuid",
+        "slug": "titulo-del-articulo",
+        "title": "Título del artículo",
+        "excerpt": "Resumen corto...",
+        "author": {
+          "id": "uuid",
+          "name": "Admin User",
+          "avatar": "https://..."
+        },
+        "category": {
+          "id": "uuid",
+          "name": "Consultoría",
+          "slug": "consultoria"
+        },
+        "tags": [...],
+        "featuredImage": "https://...",
+        "isPublished": false,  // ← Puede ser false (borrador)
+        "publishedAt": null,    // ← Puede ser null si es borrador
+        "createdAt": "2024-12-01T10:00:00.000Z",
+        "updatedAt": "2024-12-01T10:00:00.000Z",
+        "views": 0
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "limit": 50,
+    "totalPages": 1
+  }
+}
+```
+
+**Lógica de Filtrado:**
+- Si `all=true` Y usuario es admin: Retornar TODOS los posts (publicados y borradores)
+- Si `all=false` o no se envía: Retornar solo posts con `isPublished: true` (comportamiento público)
+- Ordenar por `createdAt DESC` (más recientes primero)
+- Incluir relaciones: author, category, tags
+
+**Validaciones:**
+- Verificar que el usuario tenga rol de admin
+- Si `all=true` sin autenticación admin, retornar error 403
+
+---
+
+#### **4. GET /api/blog/categories** (Admin - Listar todas las categorías)
+
+**Descripción:** Obtener TODAS las categorías (incluyendo las sin posts publicados) para administradores
+
+**Autenticación:** Requerida (rol: admin)
+
+**Query Parameters:**
+- `all?: boolean` (default: `false`) - Si `all=true`, retornar TODAS las categorías. Si `all=false`, retornar solo categorías con posts publicados (comportamiento público).
+
+**Ejemplo de Request:**
+```
+GET /api/blog/categories?all=true
+Authorization: Bearer {token}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Operación exitosa",
+  "data": [
+    {
+      "id": "uuid",
+      "name": "Consultoría",
+      "slug": "consultoria",
+      "description": "Artículos sobre consultoría TI",
+      "postCount": 15  // Incluye borradores si all=true
+    },
+    {
+      "id": "uuid-2",
+      "name": "Nueva Categoría",
+      "slug": "nueva-categoria",
+      "description": "Sin posts aún",
+      "postCount": 0  // ← Esta categoría no aparecería sin all=true
+    }
+  ]
+}
+```
+
+**Lógica:**
+- Si `all=true` Y usuario es admin: Retornar TODAS las categorías (incluso con `postCount: 0`)
+- Si `all=false` o no se envía: Retornar solo categorías con posts publicados (comportamiento público)
+
+---
+
+#### **5. GET /api/blog/tags** (Admin - Listar todos los tags)
+
+**Descripción:** Obtener TODOS los tags (incluyendo los sin posts publicados) para administradores
+
+**Autenticación:** Requerida (rol: admin)
+
+**Query Parameters:**
+- `all?: boolean` (default: `false`) - Si `all=true`, retornar TODOS los tags. Si `all=false`, retornar solo tags con posts publicados (comportamiento público).
+
+**Ejemplo de Request:**
+```
+GET /api/blog/tags?all=true
+Authorization: Bearer {token}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Operación exitosa",
+  "data": [
+    {
+      "id": "uuid",
+      "name": "TI",
+      "slug": "ti",
+      "postCount": 25  // Incluye borradores si all=true
+    },
+    {
+      "id": "uuid-2",
+      "name": "Nuevo Tag",
+      "slug": "nuevo-tag",
+      "postCount": 0  // ← Este tag no aparecería sin all=true
+    }
+  ]
+}
+```
+
+**Lógica:**
+- Si `all=true` Y usuario es admin: Retornar TODOS los tags (incluso con `postCount: 0`)
+- Si `all=false` o no se envía: Retornar solo tags con posts publicados (comportamiento público)
+
+---
+
 ## 🎯 Parte 2: Sistema de Comentarios
 
 ### **Estructura de Datos**
