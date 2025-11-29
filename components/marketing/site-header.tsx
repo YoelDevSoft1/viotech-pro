@@ -72,8 +72,17 @@ export function SiteHeader() {
   const { data: currentUser } = useQuery({
     queryKey: ["auth-user"],
     queryFn: async () => {
-      const { data } = await apiClient.get("/auth/me");
-      return data?.data?.user || data?.user || null;
+      try {
+        const { data } = await apiClient.get("/auth/me");
+        return data?.data?.user || data?.user || null;
+      } catch (error: any) {
+        // Si es 401, no hay usuario autenticado - esto es normal, no es un error
+        if (error?.response?.status === 401) {
+          return null; // Retornar null silenciosamente
+        }
+        // Para otros errores, lanzar el error
+        throw error;
+      }
     },
     enabled: mounted && isAuthenticated, // Solo si está montado y hay token
     staleTime: Infinity,

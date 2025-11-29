@@ -51,8 +51,17 @@ export function useCurrentUser() {
   return useQuery({
     queryKey: ["auth-user"],
     queryFn: async () => {
+      try {
         const { data } = await apiClient.get("/auth/me");
         return data?.data?.user || data?.user || null;
+      } catch (error: any) {
+        // Si es 401, no hay usuario autenticado - esto es normal, no es un error
+        if (error?.response?.status === 401) {
+          return null; // Retornar null silenciosamente
+        }
+        // Para otros errores, lanzar el error
+        throw error;
+      }
     },
     staleTime: Infinity, // El usuario no cambia en la sesión
     retry: false, // No reintentar si falla (probablemente no autenticado)

@@ -119,6 +119,17 @@ apiClient.interceptors.response.use(
 
     // Si recibimos 401 (Token inválido/expirado) del backend
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      // Endpoints que pueden retornar 401 de forma esperada (no mostrar error al usuario)
+      const silent401Endpoints = ['/auth/me'];
+      const isSilent401 = originalRequest?.url && 
+        silent401Endpoints.some(endpoint => originalRequest.url?.includes(endpoint));
+      
+      // Si es un endpoint que puede retornar 401 silenciosamente, no modificar el error
+      if (isSilent401) {
+        // Devolver el error original para que el hook lo maneje silenciosamente
+        return Promise.reject(error);
+      }
+      
       // Si es un endpoint público, permitir el error 401 sin intentar refrescar
       if (isPublicEndpoint(originalRequest.url)) {
         // Para endpoints públicos, un 401 puede ser válido (no requiere autenticación)
