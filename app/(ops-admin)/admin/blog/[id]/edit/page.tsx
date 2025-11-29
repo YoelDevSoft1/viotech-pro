@@ -86,7 +86,7 @@ export default function EditBlogPostPage() {
         excerpt: post.excerpt,
         content: post.content || "",
         categoryId: post.category.id,
-        tagIds: post.tags.map((t) => t.id),
+        tagIds: post.tags.map((t: { id: string; name: string; slug: string }) => t.id),
         featuredImage: post.featuredImage || "",
         isPublished: !!post.publishedAt,
         publishedAt: post.publishedAt,
