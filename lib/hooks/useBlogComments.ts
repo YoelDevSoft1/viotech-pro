@@ -17,14 +17,39 @@ export function useBlogComments(
   return useQuery({
     queryKey: ["blog-comments", slug, approved, includeReplies],
     queryFn: async () => {
-      const { data } = await apiClient.get(
-        `/blog/posts/${slug}/comments?approved=${approved}&includeReplies=${includeReplies}`
-      );
-      const response = data as BlogCommentsResponse;
-      return response.data;
+      try {
+        // Construir URL con query parameters correctamente
+        const params = new URLSearchParams();
+        params.append("approved", approved.toString());
+        params.append("includeReplies", includeReplies.toString());
+        
+        const url = `/blog/posts/${slug}/comments?${params.toString()}`;
+        console.log("🔍 Fetching comments from:", url);
+        
+        const { data } = await apiClient.get(url);
+        const response = data as BlogCommentsResponse;
+        
+        console.log("✅ Comments response:", response);
+        return response.data || [];
+      } catch (error: any) {
+        console.error("❌ Error fetching comments:", error);
+        console.error("❌ Error response:", error?.response?.data);
+        
+        // Si es 400, puede ser que el endpoint no esté implementado o tenga parámetros incorrectos
+        if (error?.response?.status === 400) {
+          console.warn("⚠️ Endpoint de comentarios retornó 400. Verifica:");
+          console.warn("  1. Que el endpoint esté implementado en el backend");
+          console.warn("  2. Que los parámetros sean correctos");
+          console.warn("  3. Que el endpoint sea público (sin autenticación)");
+        }
+        
+        // Retornar array vacío en lugar de lanzar error para que la UI no se rompa
+        return [];
+      }
     },
     enabled: !!slug,
     staleTime: 1000 * 60 * 2, // 2 minutos
+    retry: false, // No reintentar si falla
   });
 }
 

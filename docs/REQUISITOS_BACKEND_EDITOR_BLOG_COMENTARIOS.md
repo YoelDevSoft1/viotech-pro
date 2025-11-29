@@ -478,6 +478,8 @@ interface BlogComment {
 
 **Descripción:** Obtener comentarios de un artículo
 
+**Autenticación:** ❌ **NO REQUERIDA** - Este endpoint debe ser **público**
+
 **Query Parameters:**
 - `approved?: boolean` (default: `true` para público, `false` para admin)
 - `includeReplies?: boolean` (default: `true`)
@@ -525,7 +527,7 @@ interface BlogComment {
 
 **Descripción:** Crear nuevo comentario
 
-**Autenticación:** Opcional (si está autenticado, usar datos del usuario)
+**Autenticación:** ⚠️ **OPCIONAL** - No requerida, pero si el usuario está autenticado, usar sus datos
 
 **Body:**
 ```json
@@ -750,11 +752,23 @@ CREATE INDEX idx_blog_comment_likes_user ON blog_comment_likes(user_id);
 - Comentarios anónimos: `isApproved: false` (requieren aprobación)
 - Endpoint de admin para aprobar/rechazar
 
-### **4. Prevención de Spam**
+### **4. Prevención de Spam** ⚠️ **MEJORAS RECOMENDADAS**
 
+**Implementación Actual:**
 - Rate limiting: máximo 5 comentarios por IP/hora
 - Validación de contenido (no solo URLs, evitar spam)
 - Opcional: Integración con servicio anti-spam (Akismet, etc.)
+
+**Mejoras Recomendadas (Ver `docs/MEJORAS_SEGURIDAD_COMENTARIOS.md`):**
+- ⚠️ **Email obligatorio** para comentarios anónimos
+- ⚠️ **CAPTCHA** (reCAPTCHA v3 o hCaptcha) para anónimos
+- ⚠️ **Rate limiting más estricto**: 2-3 comentarios/IP/hora
+- ⚠️ **Filtros de spam mejorados**: Detección de patrones, múltiples URLs, palabras clave
+- ⚠️ **Honeypot field**: Campo oculto para detectar bots
+- ⚠️ **Validación de email**: Rechazar emails desechables (disposable)
+- ⚠️ **Análisis de patrones**: Detectar comentarios duplicados o similares
+
+**Nota:** Para producción, se recomienda implementar al menos email obligatorio + CAPTCHA para comentarios anónimos.
 
 ---
 
