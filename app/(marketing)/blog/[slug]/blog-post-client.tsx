@@ -109,9 +109,6 @@ export function BlogPostPageClient({ post, slug }: BlogPostPageClientProps) {
               )}
               <div>
                 <p className="font-semibold">{post.author.name}</p>
-                {post.author.bio && (
-                  <p className="text-sm text-muted-foreground">{post.author.bio}</p>
-                )}
               </div>
             </div>
 
