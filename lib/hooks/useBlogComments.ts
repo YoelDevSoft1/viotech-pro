@@ -171,11 +171,34 @@ export function useApproveComment() {
       commentId: string;
       isApproved: boolean;
     }) => {
-      const { data: response } = await apiClient.put(
-        `/blog/posts/${slug}/comments/${commentId}/approve`,
-        { isApproved }
-      );
-      return response;
+      // Verificar que tenemos token antes de hacer la petición
+      const { getAccessToken } = await import("@/lib/auth");
+      const token = getAccessToken();
+      
+      if (!token) {
+        console.error("❌ No hay token disponible para aprobar comentario");
+        throw new Error("No estás autenticado. Por favor, inicia sesión nuevamente.");
+      }
+      
+      console.log("🔐 Token disponible:", token.substring(0, 20) + "...");
+      console.log("📤 Aprobando comentario:", { slug, commentId, isApproved });
+      
+      try {
+        const { data: response } = await apiClient.put(
+          `/blog/posts/${slug}/comments/${commentId}/approve`,
+          { isApproved }
+        );
+        console.log("✅ Comentario aprobado exitosamente:", response);
+        return response;
+      } catch (error: any) {
+        console.error("❌ Error al aprobar comentario:", {
+          status: error?.response?.status,
+          statusText: error?.response?.statusText,
+          data: error?.response?.data,
+          message: error?.message,
+        });
+        throw error;
+      }
     },
     onSuccess: (response, variables) => {
       toast.success(response.message || "Comentario moderado");
@@ -184,7 +207,14 @@ export function useApproveComment() {
       queryClient.invalidateQueries({ queryKey: ["blog-comments-admin"] }); // Invalidar lista admin
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.error || error?.message || "Error al moderar comentario");
+      const errorMessage = error?.response?.data?.error || error?.response?.data?.message || error?.message || "Error al moderar comentario";
+      
+      // Si es 401, sugerir reautenticación
+      if (error?.response?.status === 401) {
+        toast.error("Sesión expirada. Por favor, inicia sesión nuevamente.");
+      } else {
+        toast.error(errorMessage);
+      }
     },
   });
 }

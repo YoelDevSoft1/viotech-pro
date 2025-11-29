@@ -68,6 +68,15 @@ apiClient.interceptors.request.use(
     const token = await getValidToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      // Debug: Verificar que el token se agregó correctamente
+      if (config.url?.includes('/approve')) {
+        console.log("🔐 Token agregado a petición de aprobación:", config.url);
+      }
+    } else {
+      // Si no hay token y no es endpoint público, loguear advertencia
+      if (config.url && !isPublicEndpoint(config.url)) {
+        console.warn("⚠️ No hay token disponible para:", config.url);
+      }
     }
 
     // Si es FormData, no establecer Content-Type (axios lo hace automáticamente)
@@ -167,16 +176,22 @@ apiClient.interceptors.response.use(
       const currentToken = getAccessToken();
       if (!currentToken) {
         // No hay token, no intentar refrescar - simplemente rechazar silenciosamente
+        console.error("❌ No hay token disponible para refrescar");
         return Promise.reject(new Error("No autenticado. Por favor, inicia sesión."));
       }
 
+      console.log("🔄 Intentando refrescar token...");
       try {
         const newToken = await refreshAccessToken();
         if (newToken) {
+          console.log("✅ Token refrescado exitosamente");
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
           return apiClient(originalRequest);
+        } else {
+          console.error("❌ No se pudo refrescar el token");
         }
       } catch (refreshError) {
+        console.error("❌ Error al refrescar token:", refreshError);
         // Si el refresh falla, limpiar tokens pero no redirigir automáticamente
         // Dejar que cada componente maneje el error según su contexto
         await logout();
