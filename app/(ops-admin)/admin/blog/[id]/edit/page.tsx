@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useUpdatePost } from "@/lib/hooks/useBlogAdmin";
-import { useBlogPostById, useBlogCategoriesAdmin, useBlogTags } from "@/lib/hooks/useBlog";
+import { useBlogPostById, useBlogCategoriesAdmin, useBlogTagsAdmin } from "@/lib/hooks/useBlog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -58,7 +58,7 @@ export default function EditBlogPostPage() {
   const { data: post, isLoading: postLoading } = useBlogPostById(postId);
   const updatePost = useUpdatePost();
   const { data: categories, isLoading: categoriesLoading } = useBlogCategoriesAdmin();
-  const { data: tags, isLoading: tagsLoading } = useBlogTags();
+  const { data: tags, isLoading: tagsLoading } = useBlogTagsAdmin();
 
   const form = useForm<PostFormValues>({
     resolver: zodResolver(postSchema),

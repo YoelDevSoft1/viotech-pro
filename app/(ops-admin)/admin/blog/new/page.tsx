@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useCreatePost } from "@/lib/hooks/useBlogAdmin";
-import { useBlogCategoriesAdmin, useBlogTags } from "@/lib/hooks/useBlog";
+import { useBlogCategoriesAdmin, useBlogTagsAdmin } from "@/lib/hooks/useBlog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -54,7 +54,7 @@ export default function NewBlogPostPage() {
   const router = useRouter();
   const createPost = useCreatePost();
   const { data: categories, isLoading: categoriesLoading, error: categoriesError } = useBlogCategoriesAdmin();
-  const { data: tags, isLoading: tagsLoading, error: tagsError } = useBlogTags();
+  const { data: tags, isLoading: tagsLoading, error: tagsError } = useBlogTagsAdmin();
 
   // Debug: Ver qué datos tenemos
   console.log("🔍 Categories:", categories);

@@ -142,7 +142,7 @@ export function useBlogCategoriesAdmin() {
   });
 }
 
-// Obtener tags
+// Obtener tags (público - solo con posts publicados)
 export function useBlogTags() {
   return useQuery({
     queryKey: ["blog-tags"],
@@ -151,20 +151,15 @@ export function useBlogTags() {
         const response = await apiClient.get("/blog/tags");
         const result = response.data;
         
-        // El backend retorna: { success: true, data: [...] }
-        // apiClient.get() ya extrae response.data, entonces result = { success: true, data: [...] }
-        
-        if (!result.success) {
-          throw new Error(result.error || "Error al cargar tags");
+        if (!result || result.success === false) {
+          const errorMsg = result?.error || "Error al cargar tags";
+          throw new Error(errorMsg);
         }
         
-        // Acceder a result.data para obtener el array de tags
         if (Array.isArray(result.data)) {
           return result.data as BlogTag[];
         }
         
-        // Si data no es un array, retornar array vacío
-        console.warn("⚠️ result.data no es un array:", result.data);
         return [];
       } catch (error: any) {
         console.error("❌ Error al obtener tags:", error);
@@ -172,7 +167,38 @@ export function useBlogTags() {
       }
     },
     staleTime: 1000 * 60 * 30, // 30 minutos
-    retry: 1, // Reintentar solo una vez
+    retry: 1,
+  });
+}
+
+// Obtener TODOS los tags (admin - incluye los sin posts)
+export function useBlogTagsAdmin() {
+  return useQuery({
+    queryKey: ["blog-tags-admin"],
+    queryFn: async () => {
+      try {
+        // Usar parámetro ?all=true para obtener todos los tags
+        const response = await apiClient.get("/blog/tags?all=true");
+        const result = response.data;
+        
+        if (!result || result.success === false) {
+          const errorMsg = result?.error || "Error al cargar tags";
+          throw new Error(errorMsg);
+        }
+        
+        // Acceder a result.data para obtener el array de tags
+        if (Array.isArray(result.data)) {
+          return result.data as BlogTag[];
+        }
+        
+        return [];
+      } catch (error: any) {
+        console.error("❌ Error al obtener tags (admin):", error);
+        throw error;
+      }
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutos para admin
+    retry: 1,
   });
 }
 
