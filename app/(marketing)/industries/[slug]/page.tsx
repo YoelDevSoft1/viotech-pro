@@ -6,7 +6,7 @@ const industries = {
   fintech: {
     title: "Consultoría TI para Fintech",
     description: "Soluciones tecnológicas especializadas para el sector financiero. Compliance, seguridad y escalabilidad para tu fintech.",
-    icon: "TrendingUp",
+    icon: "TrendingUp" as const,
     challenges: [
       "Cumplimiento regulatorio complejo",
       "Seguridad de datos financieros",
@@ -27,7 +27,7 @@ const industries = {
   retail: {
     title: "Transformación Digital para Retail",
     description: "E-commerce, sistemas de inventario y experiencia omnicanal para retailers que buscan competir en el mercado digital.",
-    icon: "ShoppingCart",
+    icon: "ShoppingCart" as const,
     challenges: [
       "E-commerce lento y poco optimizado",
       "Gestión de inventario desorganizada",
@@ -48,7 +48,7 @@ const industries = {
   healthcare: {
     title: "Tecnología para el Sector Salud",
     description: "Sistemas de gestión hospitalaria, telemedicina y plataformas de salud digital con cumplimiento HIPAA.",
-    icon: "Heart",
+    icon: "Heart" as const,
     challenges: [
       "Sistemas de gestión obsoletos",
       "Procesos manuales ineficientes",
