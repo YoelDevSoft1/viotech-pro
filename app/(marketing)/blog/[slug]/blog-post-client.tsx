@@ -182,10 +182,12 @@ export function BlogPostPageClient({ post, slug }: BlogPostPageClientProps) {
       <section className="py-12 bg-background">
         <div className="container mx-auto px-4 md:px-6">
           <div className="max-w-4xl mx-auto">
-            <div
-              className="prose prose-lg dark:prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
+            {post.content && (
+              <div
+                className="prose prose-lg dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: post.content }}
+              />
+            )}
 
             {/* Tags */}
             {post.tags.length > 0 && (
