@@ -13,10 +13,6 @@ const baseURL = envUrl
   ? `${envUrl}/api`  // Resultado: https://viotech-main.onrender.com/api
   : "http://localhost:3000/api";
 
-// --- DEBUG LOG (Para que verifiques en consola) ---
-if (typeof window !== "undefined") {
-  console.log("🔌 Conectando a Backend:", baseURL);
-}
 
 export const apiClient = axios.create({
   baseURL,
@@ -41,17 +37,34 @@ const getValidToken = async (): Promise<string | null> => {
 };
 
 // Lista de endpoints públicos que NO requieren autenticación
+// IMPORTANTE: Solo endpoints específicos, no usar includes() para evitar falsos positivos
 const PUBLIC_ENDPOINTS = [
-  '/blog/posts', // Lista de posts
-  '/blog/posts/', // Post individual por slug (incluye comentarios)
+  '/blog/posts?', // Lista de posts (GET con query params)
   '/blog/categories', // Categorías
   '/blog/tags', // Tags
   '/blog/newsletter/subscribe', // Newsletter
 ];
 
-const isPublicEndpoint = (url: string | undefined): boolean => {
+// Endpoints que son públicos solo si son GET (lectura)
+const PUBLIC_GET_PATTERNS = [
+  /^\/blog\/posts\/[^\/]+$/, // GET /blog/posts/:slug (post individual)
+  /^\/blog\/posts\/[^\/]+\/comments$/, // GET /blog/posts/:slug/comments (comentarios públicos)
+];
+
+const isPublicEndpoint = (url: string | undefined, method?: string): boolean => {
   if (!url) return false;
-  return PUBLIC_ENDPOINTS.some(endpoint => url.includes(endpoint));
+  
+  // Verificar endpoints exactos
+  if (PUBLIC_ENDPOINTS.some(endpoint => url.startsWith(endpoint))) {
+    return true;
+  }
+  
+  // Verificar patrones GET públicos (solo lectura)
+  if (method === 'get' || !method) {
+    return PUBLIC_GET_PATTERNS.some(pattern => pattern.test(url));
+  }
+  
+  return false;
 };
 
 // Interceptor de REQUEST
@@ -61,23 +74,21 @@ apiClient.interceptors.request.use(
     if ((config as any).auth === false) return config;
 
     // Si es un endpoint público, no agregar token
-    if (isPublicEndpoint(config.url)) {
+    if (isPublicEndpoint(config.url, config.method)) {
       return config;
+    }
+
+    // Asegurar que headers existe
+    if (!config.headers) {
+      config.headers = {} as any;
     }
 
     const token = await getValidToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      // Debug: Verificar que el token se agregó correctamente
-      if (config.url?.includes('/approve')) {
-        console.log("🔐 Token agregado a petición de aprobación:", config.url);
-      }
-    } else {
-      // Si no hay token y no es endpoint público, loguear advertencia
-      if (config.url && !isPublicEndpoint(config.url)) {
-        console.warn("⚠️ No hay token disponible para:", config.url);
-      }
     }
+    
+    return config;
 
     // Si es FormData, no establecer Content-Type (axios lo hace automáticamente)
     // Esto permite que axios establezca el boundary correcto para multipart/form-data
@@ -175,23 +186,16 @@ apiClient.interceptors.response.use(
       // Verificar si hay un token antes de intentar refrescar
       const currentToken = getAccessToken();
       if (!currentToken) {
-        // No hay token, no intentar refrescar - simplemente rechazar silenciosamente
-        console.error("❌ No hay token disponible para refrescar");
         return Promise.reject(new Error("No autenticado. Por favor, inicia sesión."));
       }
 
-      console.log("🔄 Intentando refrescar token...");
       try {
         const newToken = await refreshAccessToken();
         if (newToken) {
-          console.log("✅ Token refrescado exitosamente");
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
           return apiClient(originalRequest);
-        } else {
-          console.error("❌ No se pudo refrescar el token");
         }
       } catch (refreshError) {
-        console.error("❌ Error al refrescar token:", refreshError);
         // Si el refresh falla, limpiar tokens pero no redirigir automáticamente
         // Dejar que cada componente maneje el error según su contexto
         await logout();

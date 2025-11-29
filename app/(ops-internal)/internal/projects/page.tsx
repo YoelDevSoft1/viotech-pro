@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, FolderKanban } from "lucide-react";
+import { ArrowLeft, FolderKanban, LayoutGrid } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import OrgSelector, { type Org } from "@/components/common/OrgSelector";
 import { fetchProjects, type Project } from "@/lib/projects";
 import { useOrg } from "@/lib/hooks/useOrg";
@@ -66,16 +67,18 @@ export default function InternalProjectsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {projects.map((p) => (
-              <Link
+              <div
                 key={p.id}
-                href={`/internal/projects/${p.id}`}
-                className="rounded-2xl border border-border/70 bg-background/80 p-4 space-y-2 hover:border-border transition-colors"
+                className="rounded-2xl border border-border/70 bg-background/80 p-4 space-y-3 hover:border-border transition-colors"
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <Link
+                    href={`/internal/projects/${p.id}`}
+                    className="flex items-center gap-2 text-sm font-medium text-foreground hover:underline"
+                  >
                     <FolderKanban className="w-4 h-4" />
                     {p.nombre}
-                  </div>
+                  </Link>
                   <span className="text-xs rounded-full border border-border px-2 py-1 capitalize text-muted-foreground">
                     {p.estado}
                   </span>
@@ -86,7 +89,20 @@ export default function InternalProjectsPage() {
                 <p className="text-sm text-muted-foreground line-clamp-2">
                   {p.descripcion || "Sin descripción."}
                 </p>
-              </Link>
+                <div className="flex items-center gap-2 pt-2">
+                  <Button asChild variant="outline" size="sm" className="flex-1">
+                    <Link href={`/internal/projects/${p.id}`}>
+                      Ver Detalle
+                    </Link>
+                  </Button>
+                  <Button asChild variant="default" size="sm" className="flex-1">
+                    <Link href={`/internal/projects/${p.id}/kanban`}>
+                      <LayoutGrid className="w-4 h-4 mr-2" />
+                      Kanban
+                    </Link>
+                  </Button>
+                </div>
+              </div>
             ))}
           </div>
         )}

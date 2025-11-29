@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, AlertCircle } from "lucide-react";
+import { ArrowLeft, AlertCircle, LayoutGrid } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { fetchProjectById, type Project } from "@/lib/projects";
 
 export default function InternalProjectDetail({ params }: { params: { id: string } }) {
@@ -33,7 +34,7 @@ export default function InternalProjectDetail({ params }: { params: { id: string
   return (
     <main className="min-h-screen bg-background px-6 py-10 md:py-12">
       <div className="max-w-5xl mx-auto space-y-6">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between">
           <Link
             href="/internal/projects"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
@@ -41,6 +42,14 @@ export default function InternalProjectDetail({ params }: { params: { id: string
             <ArrowLeft className="w-4 h-4" />
             Volver a proyectos
           </Link>
+          {project && (
+            <Button asChild variant="default" size="sm">
+              <Link href={`/internal/projects/${params.id}/kanban`}>
+                <LayoutGrid className="w-4 h-4 mr-2" />
+                Ver Kanban
+              </Link>
+            </Button>
+          )}
         </div>
 
         {error && (
