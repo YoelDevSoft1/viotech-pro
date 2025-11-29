@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Package, Calendar, Building2 } from "lucide-react";
-import OrgSelector, { type Org } from "@/components/OrgSelector";
+import OrgSelector, { type Org } from "@/components/common/OrgSelector";
 import { LoadingState, ErrorState, EmptyState } from "@/components/ui/state";
 import { useServices } from "@/lib/hooks/useServices";
 import { useOrg } from "@/lib/hooks/useOrg";

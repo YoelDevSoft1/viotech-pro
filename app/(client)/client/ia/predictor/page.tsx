@@ -1,6 +1,6 @@
 "use client";
 
-import TimelinePredictor from "@/components/TimelinePredictor";
+import TimelinePredictor from "@/components/common/TimelinePredictor";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 

@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, FolderKanban } from "lucide-react";
-import OrgSelector, { type Org } from "@/components/OrgSelector";
+import OrgSelector, { type Org } from "@/components/common/OrgSelector";
 import { fetchProjects, type Project } from "@/lib/projects";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { LoadingState, ErrorState, EmptyState } from "@/components/ui/state";

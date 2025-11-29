@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { ArrowLeft, Filter } from "lucide-react";
 
-import OrgSelector, { type Org } from "@/components/OrgSelector";
+import OrgSelector, { type Org } from "@/components/common/OrgSelector";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { useTickets } from "@/lib/hooks/useTickets";

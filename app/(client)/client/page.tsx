@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, Ticket, Package, CalendarDays } from "lucide-react";
-import OrgSelector from "@/components/OrgSelector";
+import OrgSelector from "@/components/common/OrgSelector";
 
 export default function ClientHome() {
   return (

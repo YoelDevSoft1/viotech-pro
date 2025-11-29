@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner"; // Componente Shadcn
 import "./globals.css";
 import { Providers } from "./providers";
-import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import ServiceWorkerRegister from "@/components/common/ServiceWorkerRegister";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

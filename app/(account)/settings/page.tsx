@@ -19,7 +19,7 @@ import { useMFAStatus, useMFADisable } from "@/lib/hooks/useMFA";
 import { apiClient } from "@/lib/apiClient";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import MFASetupModal from "@/components/MFASetupModal";
+import MFASetupModal from "@/components/auth/MFASetupModal";
 import { ActiveSessionsList } from "@/components/sessions/ActiveSessionsList";
 
 const passwordSchema = z.object({

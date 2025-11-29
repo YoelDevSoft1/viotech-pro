@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Shield, ShieldCheck, ShieldOff, ShieldQuestion, Search, Users as UsersIcon } from "lucide-react";
 import { buildApiUrl } from "@/lib/api";
 import { getAccessToken, isTokenExpired, refreshAccessToken } from "@/lib/auth";
-import OrgSelector, { type Org } from "@/components/OrgSelector";
+import OrgSelector, { type Org } from "@/components/common/OrgSelector";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { LoadingState, ErrorState, EmptyState } from "@/components/ui/state";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

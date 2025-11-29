@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import OrgSelector, { type Org } from "@/components/OrgSelector";
+import OrgSelector, { type Org } from "@/components/common/OrgSelector";
 import Link from "next/link";
 
 type MeResponse = {

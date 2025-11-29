@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import RoleGate from "@/components/RoleGate";
+import RoleGate from "@/components/common/RoleGate";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { HeaderContent } from "@/components/dashboard/header-content";
 import {

@@ -84,7 +84,6 @@ export default function MFASetupModal({ isOpen, onClose, onSuccess }: MFASetupMo
     setSecret("");
     setToken("");
     setBackupCodes([]);
-    setError(null);
     onClose();
   };
 

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, HeartPulse, RefreshCcw, Activity, CheckCircle2, XCircle } from "lucide-react";
 import { buildApiUrl } from "@/lib/api";
 import { getAccessToken, refreshAccessToken, isTokenExpired, logout } from "@/lib/auth";
-import OrgSelector, { type Org } from "@/components/OrgSelector";
+import OrgSelector, { type Org } from "@/components/common/OrgSelector";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

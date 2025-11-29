@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import AITicketAssistant from "@/components/AITicketAssistant";
+import AITicketAssistant from "@/components/common/AITicketAssistant";
 import { getAccessToken } from "@/lib/auth";
 import { useEffect, useState } from "react";
 

@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from "@/components/ui/card";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import CheckoutModal from "@/components/CheckoutModal"; // Mantenemos el legacy por ahora
+import CheckoutModal from "@/components/payments/CheckoutModal"; // Mantenemos el legacy por ahora
 
 // Tipos locales (o mover a @/lib/types/services.ts)
 type ServicePlan = {

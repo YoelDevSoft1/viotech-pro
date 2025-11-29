@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useOrg } from "@/lib/hooks/useOrg";
-export type { Org } from "@/components/OrgProvider";
-import type { Org } from "@/components/OrgProvider";
+export type { Org } from "@/components/common/OrgProvider";
+import type { Org } from "@/components/common/OrgProvider";
 
 type Props = {
   onChange?: (org: Org | null) => void;

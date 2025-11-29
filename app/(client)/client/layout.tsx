@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import RoleGate from "@/components/RoleGate";
+import RoleGate from "@/components/common/RoleGate";
 
 export const metadata = {
   title: "Cliente | VioTech",

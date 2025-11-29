@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Ticket, Users, FolderKanban, AlertTriangle, ShieldCheck, Radar } from "lucide-react";
-import OrgSelector from "@/components/OrgSelector";
+import OrgSelector from "@/components/common/OrgSelector";
 import { buildApiUrl } from "@/lib/api";
 import { getAccessToken, isTokenExpired, refreshAccessToken, logout } from "@/lib/auth";
 import { useRouter } from "next/navigation";

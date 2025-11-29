@@ -1,4 +1,4 @@
-import { useOrgContext } from "@/components/OrgProvider";
+import { useOrgContext } from "@/components/common/OrgProvider";
 
 export const useOrg = () => useOrgContext();
 export const useOrgSelector = () => useOrgContext();

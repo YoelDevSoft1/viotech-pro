@@ -13,7 +13,7 @@ import { useModelStatus } from "@/lib/hooks/useModelStatus";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { getAccessToken, refreshAccessToken, isTokenExpired, logout } from "@/lib/auth";
 import { buildApiUrl } from "@/lib/api";
-import OrgSelector, { type Org } from "@/components/OrgSelector";
+import OrgSelector, { type Org } from "@/components/common/OrgSelector";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
