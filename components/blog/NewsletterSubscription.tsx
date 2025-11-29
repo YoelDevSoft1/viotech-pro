@@ -1,38 +1,31 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { apiClient } from "@/lib/apiClient";
+import { useNewsletterSubscribe } from "@/lib/hooks/useBlog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Mail, Loader2, Check } from "lucide-react";
-import { toast } from "sonner";
 
-export function NewsletterSubscription() {
+interface NewsletterSubscriptionProps {
+  source?: string;
+}
+
+export function NewsletterSubscription({ source = "blog" }: NewsletterSubscriptionProps) {
   const [email, setEmail] = useState("");
+  const subscribe = useNewsletterSubscribe();
 
-  const { mutate: subscribe, isPending } = useMutation({
-    mutationFn: async (email: string) => {
-      const { data } = await apiClient.post("/blog/newsletter/subscribe", { email });
-      return data;
-    },
-    onSuccess: () => {
-      toast.success("¡Te has suscrito exitosamente!");
-      setEmail("");
-    },
-    onError: (error: any) => {
-      toast.error(error.message || "Error al suscribirse. Intenta nuevamente.");
-    },
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !email.includes("@")) {
-      toast.error("Por favor ingresa un email válido");
       return;
     }
-    subscribe(email);
+    try {
+      await subscribe.mutateAsync({ email, source });
+      setEmail("");
+    } catch (error) {
+      // Error ya manejado en el hook
+    }
   };
 
   return (
@@ -54,12 +47,12 @@ export function NewsletterSubscription() {
             placeholder="tu@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            disabled={isPending}
+            disabled={subscribe.isPending}
             className="flex-1 bg-background text-foreground"
             required
           />
           <Button type="submit" disabled={isPending} variant="secondary">
-            {isPending ? (
+            {subscribe.isPending ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 Suscribiendo...

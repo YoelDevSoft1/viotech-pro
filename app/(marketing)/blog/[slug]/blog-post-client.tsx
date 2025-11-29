@@ -19,7 +19,7 @@ interface BlogPostPageClientProps {
 
 export function BlogPostPageClient({ post, slug }: BlogPostPageClientProps) {
   const [copied, setCopied] = useState(false);
-  const { data: relatedPosts } = useRelatedPosts(post.id, post.category.id, 3);
+  const { data: relatedPosts } = useRelatedPosts(slug, 3);
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
   const shareText = post.title;

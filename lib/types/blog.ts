@@ -5,12 +5,11 @@ export interface BlogPost {
   slug: string;
   title: string;
   excerpt: string;
-  content: string;
+  content?: string; // Solo presente en detalle
   author: {
     id: string;
     name: string;
-    avatar?: string;
-    bio?: string;
+    avatar: string | null;
   };
   category: {
     id: string;
@@ -22,31 +21,36 @@ export interface BlogPost {
     name: string;
     slug: string;
   }>;
-  featuredImage?: string;
-  publishedAt: string;
-  updatedAt?: string;
-  readingTime?: number; // minutos
-  views?: number;
+  featuredImage: string | null;
+  publishedAt: string; // ISO date string
+  updatedAt?: string; // ISO date string
+  readingTime: number | null;
+  views: number;
   seo?: {
-    metaDescription?: string;
-    metaKeywords?: string[];
-    ogImage?: string;
+    metaDescription: string | null;
+    metaKeywords: string[];
+    ogImage: string | null;
   };
+  createdAt?: string; // ISO date string
 }
 
 export interface BlogCategory {
   id: string;
   name: string;
   slug: string;
-  description?: string;
-  postCount?: number;
+  description: string | null;
+  postCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface BlogTag {
   id: string;
   name: string;
   slug: string;
-  postCount?: number;
+  postCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface BlogFilters {
@@ -63,5 +67,42 @@ export interface BlogResponse {
   page: number;
   limit: number;
   totalPages: number;
+}
+
+export interface BlogPostsResponse {
+  success: boolean;
+  data: BlogResponse;
+}
+
+export interface BlogPostResponse {
+  success: boolean;
+  data: BlogPost;
+}
+
+export interface BlogCategoriesResponse {
+  success: boolean;
+  data: BlogCategory[];
+}
+
+export interface BlogTagsResponse {
+  success: boolean;
+  data: BlogTag[];
+}
+
+export interface NewsletterSubscribeResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    id: string;
+    email: string;
+    isActive: boolean;
+    subscribedAt: string;
+    source?: string | null;
+  };
+}
+
+export interface NewsletterUnsubscribeResponse {
+  success: boolean;
+  message: string;
 }
 
