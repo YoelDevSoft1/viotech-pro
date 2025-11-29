@@ -129,6 +129,7 @@ export interface UpdatePostData extends Partial<CreatePostData> {}
 export interface BlogComment {
   id: string;
   postId: string;
+  postSlug?: string; // Slug del post (útil para admin - navegación)
   userId: string | null;
   parentId: string | null;
   authorName: string;

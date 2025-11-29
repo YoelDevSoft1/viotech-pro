@@ -180,10 +180,93 @@ export function useApproveComment() {
     onSuccess: (response, variables) => {
       toast.success(response.message || "Comentario moderado");
       queryClient.invalidateQueries({ queryKey: ["blog-comments", variables.slug] });
+      queryClient.invalidateQueries({ queryKey: ["blog-comments-pending"] }); // Invalidar lista de pendientes
+      queryClient.invalidateQueries({ queryKey: ["blog-comments-admin"] }); // Invalidar lista admin
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.error || error?.message || "Error al moderar comentario");
     },
+  });
+}
+
+// Obtener TODOS los comentarios pendientes (Admin)
+export function useBlogCommentsPending() {
+  return useQuery({
+    queryKey: ["blog-comments-pending"],
+    queryFn: async () => {
+      try {
+        // El backend debería tener un endpoint GET /api/blog/comments/pending
+        const { data } = await apiClient.get("/blog/comments/pending");
+        const response = data as BlogCommentsResponse;
+        return response.data || [];
+      } catch (error: any) {
+        // Si el endpoint no existe (404) o hay error de conexión, retornar array vacío silenciosamente
+        // Esto permite que la UI funcione mientras el backend implementa el endpoint
+        if (error?.response?.status === 404 || error?.response?.status === 501) {
+          console.warn("⚠️ Endpoint /blog/comments/pending no implementado aún. Retornando array vacío.");
+          return [];
+        }
+        
+        // Para errores de conexión o timeout, también retornar array vacío
+        if (!error?.response || error?.code === 'ECONNABORTED' || error?.message?.includes('timeout')) {
+          console.warn("⚠️ Error de conexión al obtener comentarios pendientes. Retornando array vacío.");
+          return [];
+        }
+        
+        // Para otros errores, loguear pero retornar array vacío para no romper la UI
+        console.error("❌ Error fetching pending comments:", error);
+        return [];
+      }
+    },
+    staleTime: 1000 * 60 * 2, // 2 minutos
+    retry: false,
+    // No mostrar errores en la UI si el endpoint no existe
+    throwOnError: false,
+  });
+}
+
+// Obtener TODOS los comentarios (Admin - para moderación)
+export function useBlogCommentsAdmin(filters?: { approved?: boolean; postSlug?: string }) {
+  return useQuery({
+    queryKey: ["blog-comments-admin", filters],
+    queryFn: async () => {
+      try {
+        const params = new URLSearchParams();
+        if (filters?.approved !== undefined) {
+          params.append("approved", filters.approved.toString());
+        }
+        if (filters?.postSlug) {
+          params.append("postSlug", filters.postSlug);
+        }
+        
+        const url = `/blog/comments/admin?${params.toString()}`;
+        console.log("🔍 Fetching admin comments from:", url);
+        
+        const { data } = await apiClient.get(url);
+        const response = data as BlogCommentsResponse;
+        return response.data || [];
+      } catch (error: any) {
+        // Si el endpoint no existe (404) o hay error de conexión, retornar array vacío silenciosamente
+        if (error?.response?.status === 404 || error?.response?.status === 501) {
+          console.warn("⚠️ Endpoint /blog/comments/admin no implementado aún. Retornando array vacío.");
+          return [];
+        }
+        
+        // Para errores de conexión o timeout, también retornar array vacío
+        if (!error?.response || error?.code === 'ECONNABORTED' || error?.message?.includes('timeout')) {
+          console.warn("⚠️ Error de conexión al obtener comentarios admin. Retornando array vacío.");
+          return [];
+        }
+        
+        // Para otros errores, loguear pero retornar array vacío para no romper la UI
+        console.error("❌ Error fetching admin comments:", error);
+        return [];
+      }
+    },
+    staleTime: 1000 * 60 * 2, // 2 minutos
+    retry: false,
+    // No mostrar errores en la UI si el endpoint no existe
+    throwOnError: false,
   });
 }
 

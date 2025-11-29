@@ -15,7 +15,8 @@ import {
   HeartPulse,
   FolderKanban,
   Shield,
-  FileText
+  FileText,
+  MessageSquare
 } from "lucide-react";
 import {
   Sidebar,
@@ -104,6 +105,11 @@ const adminSidebarItems: Array<{
     title: "Blog",
     href: "/admin/blog",
     icon: FileText,
+  },
+  {
+    title: "Comentarios",
+    href: "/admin/blog/comments",
+    icon: MessageSquare,
   },
   {
     title: "Configuración",

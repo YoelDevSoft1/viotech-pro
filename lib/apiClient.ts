@@ -117,6 +117,21 @@ apiClient.interceptors.response.use(
       return Promise.reject(new Error(connectionMessage));
     }
 
+    // Endpoints que pueden fallar silenciosamente (no implementados aún o pueden retornar errores esperados)
+    const silentErrorEndpoints = [
+      '/auth/me',
+      '/blog/comments/pending',
+      '/blog/comments/admin',
+    ];
+    const isSilentError = originalRequest?.url && 
+      silentErrorEndpoints.some(endpoint => originalRequest.url?.includes(endpoint));
+    
+    // Si es un endpoint que puede fallar silenciosamente, no mostrar error genérico
+    if (isSilentError && (!error.response || error.response?.status === 404 || error.response?.status === 501)) {
+      // Devolver el error original para que el hook lo maneje silenciosamente
+      return Promise.reject(error);
+    }
+    
     // Si recibimos 401 (Token inválido/expirado) del backend
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       // Endpoints que pueden retornar 401 de forma esperada (no mostrar error al usuario)
