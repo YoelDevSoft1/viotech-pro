@@ -49,6 +49,12 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Si es FormData, no establecer Content-Type (axios lo hace automáticamente)
+    // Esto permite que axios establezca el boundary correcto para multipart/form-data
+    if (config.data instanceof FormData) {
+      delete config.headers["Content-Type"];
+    }
     
     // DEBUG: Ver URL final en consola
     // const fullUrl = `${config.baseURL || ""}${config.url}`;

@@ -1,12 +1,72 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Zap, Shield, BarChart3, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StructuredData } from "@/components/marketing/StructuredData";
+
+export const metadata: Metadata = {
+  title: "VioTech Pro | Consultoría TI y Desarrollo de Software Enterprise",
+  description: "Transformamos PyMEs colombianas con consultoría TI estratégica, desarrollo de software premium, infraestructura cloud segura y soporte 24/7. Acelera tu crecimiento digital.",
+  keywords: [
+    "consultoría TI",
+    "desarrollo de software",
+    "transformación digital",
+    "infraestructura cloud",
+    "soporte técnico 24/7",
+    "Colombia",
+    "PyME",
+    "enterprise",
+    "VioTech"
+  ],
+  metadataBase: new URL("https://viotech.com.co"),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "VioTech Pro | Consultoría TI y Desarrollo Enterprise",
+    description: "Transformamos PyMEs con tecnología premium. Consultoría estratégica, desarrollo de software, cloud y soporte 24/7.",
+    url: "https://viotech.com.co",
+    siteName: "VioTech Pro",
+    locale: "es_CO",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "VioTech Pro - Consultoría TI Enterprise",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "VioTech Pro | Consultoría TI Enterprise",
+    description: "Transformamos PyMEs con tecnología premium. Desarrollo, cloud y soporte 24/7.",
+    creator: "@viotech",
+    images: ["/og-image.jpg"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+};
 
 export default function MarketingPage() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <>
+      <StructuredData type="organization" />
+      <StructuredData type="website" />
+      <StructuredData type="service" />
+      <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
       <section className="relative py-20 md:py-32 overflow-hidden">
         {/* CORRECCIÓN: 'mx-auto' para centrar el contenido */}
@@ -23,14 +83,14 @@ export default function MarketingPage() {
             Ayudamos a empresas colombianas a escalar sin límites técnicos.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            <Link href="/services/catalog">
-              <Button size="lg" className="w-full sm:w-auto gap-2 text-base h-12 rounded-full px-8">
-                Ver Planes <ArrowRight className="w-4 h-4" />
+            <Link href="/contact">
+              <Button size="lg" className="w-full sm:w-auto gap-2 text-base h-12 rounded-full px-8 shadow-lg">
+                Agendar Consultoría Gratuita <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
-            <Link href="/contact">
+            <Link href="/services/catalog">
               <Button size="lg" variant="outline" className="w-full sm:w-auto text-base h-12 rounded-full px-8">
-                Agendar Consultoría
+                Ver Planes y Precios
               </Button>
             </Link>
           </div>
@@ -126,10 +186,16 @@ export default function MarketingPage() {
               <p className="text-primary-foreground/90 max-w-2xl mx-auto mb-8 text-lg">
                 Agenda una consultoría gratuita de 30 minutos y descubre cómo podemos acelerar tu crecimiento digital hoy mismo.
               </p>
-              <div className="flex justify-center gap-4 w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row justify-center gap-4 w-full sm:w-auto">
                 <Link href="/contact" className="w-full sm:w-auto">
-                  <Button size="lg" variant="secondary" className="font-semibold w-full sm:w-auto">
-                    Comenzar Ahora
+                  <Button size="lg" variant="secondary" className="font-semibold w-full sm:w-auto shadow-lg">
+                    Agendar Consultoría Gratuita
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/case-studies" className="w-full sm:w-auto">
+                  <Button size="lg" variant="outline" className="font-semibold w-full sm:w-auto border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10">
+                    Ver Casos de Éxito
                   </Button>
                 </Link>
               </div>
@@ -138,5 +204,6 @@ export default function MarketingPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

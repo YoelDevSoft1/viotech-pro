@@ -55,5 +55,6 @@ export function useCurrentUser() {
         return data?.data?.user || data?.user || null;
     },
     staleTime: Infinity, // El usuario no cambia en la sesión
+    retry: false, // No reintentar si falla (probablemente no autenticado)
   });
 }

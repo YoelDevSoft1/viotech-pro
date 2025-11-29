@@ -5,12 +5,12 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { User, Mail, Save, Loader2, Camera, CheckCircle2 } from "lucide-react";
+import { User, Mail, Save, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AvatarUploader } from "@/components/common/AvatarUploader";
 import { useCurrentUser } from "@/lib/hooks/useResources";
 import { apiClient } from "@/lib/apiClient";
 import { toast } from "sonner";
@@ -100,18 +100,13 @@ export default function ProfilePage() {
             <CardTitle className="text-lg">Foto de Perfil</CardTitle>
             <CardDescription>Tu foto de perfil visible para otros usuarios</CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col items-center space-y-4">
-            <Avatar className="h-32 w-32">
-              <AvatarImage src={user?.avatar} alt={user?.nombre} />
-              <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
-            </Avatar>
-            <Button variant="outline" size="sm" className="w-full" disabled>
-              <Camera className="mr-2 h-4 w-4" />
-              Cambiar foto
-            </Button>
-            <p className="text-xs text-muted-foreground text-center">
-              La funcionalidad de cambio de foto estará disponible próximamente
-            </p>
+          <CardContent>
+            <AvatarUploader
+              currentAvatar={user?.avatar}
+              userName={user?.nombre || "Usuario"}
+              initials={initials}
+              size="md"
+            />
           </CardContent>
         </Card>
 
