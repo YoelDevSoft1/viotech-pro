@@ -2,32 +2,53 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, AlertCircle, LayoutGrid, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fetchProjectById, type Project } from "@/lib/projects";
 import { ProjectTimeline } from "@/components/projects/ProjectTimeline";
 
-export default function InternalProjectDetail({ params }: { params: { id: string } }) {
+export default function InternalProjectDetail() {
   const router = useRouter();
+  const routeParams = useParams();
+  
+  // Obtener el ID del proyecto de manera segura
+  const projectId = Array.isArray(routeParams?.id)
+    ? routeParams?.id[0]
+    : typeof routeParams?.id === "string"
+      ? routeParams.id
+      : "";
+
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadProject = useCallback(async () => {
+    if (!projectId) {
+      setError("ID de proyecto inválido");
+      return;
+    }
+    
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchProjectById(params.id);
+      console.log("🔍 Cargando proyecto con ID:", projectId);
+      const data = await fetchProjectById(projectId);
+      console.log("✅ Proyecto cargado:", data);
+      if (!data) {
+        setError("No se encontró el proyecto");
+        return;
+      }
       setProject(data);
     } catch (err) {
+      console.error("❌ Error al cargar proyecto:", err);
       const msg = err instanceof Error ? err.message : "Error al cargar proyecto";
       setError(msg);
     } finally {
       setLoading(false);
     }
-  }, [params.id]);
+  }, [projectId]);
 
   useEffect(() => {
     loadProject();
@@ -44,9 +65,9 @@ export default function InternalProjectDetail({ params }: { params: { id: string
             <ArrowLeft className="w-4 h-4" />
             Volver a proyectos
           </Link>
-          {project && (
+          {project && projectId && (
             <Button asChild variant="default" size="sm">
-              <Link href={`/internal/projects/${params.id}/kanban`}>
+              <Link href={`/internal/projects/${projectId}/kanban`}>
                 <LayoutGrid className="w-4 h-4 mr-2" />
                 Ver Kanban
               </Link>
@@ -104,7 +125,13 @@ export default function InternalProjectDetail({ params }: { params: { id: string
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="timeline" className="mt-4">
-                <ProjectTimeline projectId={params.id} />
+                {projectId ? (
+                  <ProjectTimeline projectId={projectId} />
+                ) : (
+                  <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+                    ID de proyecto inválido
+                  </div>
+                )}
               </TabsContent>
               <TabsContent value="details" className="mt-4">
                 <div className="rounded-2xl border border-border/70 bg-background/80 p-6">

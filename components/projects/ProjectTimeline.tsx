@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import { formatDistanceToNow, format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
@@ -12,13 +12,26 @@ import {
   CheckCircle,
   Clock,
   AlertCircle,
+  Filter,
+  X,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useProjectTimeline } from "@/lib/hooks/useProjectTimeline";
-import type { TimelineEvent, TimelineFilters } from "@/lib/types/timeline";
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/apiClient";
+import type { TimelineEvent, TimelineFilters, TimelineEventType } from "@/lib/types/timeline";
 
 interface ProjectTimelineProps {
   projectId: string;
@@ -178,8 +191,61 @@ function TimelineEventItem({ event }: { event: TimelineEvent }) {
 }
 
 // Componente principal
-export function ProjectTimeline({ projectId, filters }: ProjectTimelineProps) {
+export function ProjectTimeline({ projectId, filters: externalFilters }: ProjectTimelineProps) {
+  const [showFilters, setShowFilters] = useState(false);
+  const [localFilters, setLocalFilters] = useState<TimelineFilters>({
+    eventTypes: [],
+    startDate: undefined,
+    endDate: undefined,
+    userId: undefined,
+  });
+
+  // Combinar filtros externos con filtros locales
+  const filters = useMemo(() => ({
+    ...externalFilters,
+    ...localFilters,
+  }), [externalFilters, localFilters]);
+
   const { data: events = [], isLoading, error } = useProjectTimeline(projectId, filters);
+
+  // Obtener usuarios para el filtro
+  const { data: users = [] } = useQuery({
+    queryKey: ["users", "timeline"],
+    queryFn: async () => {
+      const { data } = await apiClient.get("/users", { params: { limit: 100 } });
+      const raw = data?.data?.users || data?.users || data?.data || [];
+      return Array.isArray(raw) ? raw : [];
+    },
+  });
+
+  const eventTypeOptions: Array<{ value: TimelineEventType; label: string }> = [
+    { value: "ticket_created", label: "Ticket Creado" },
+    { value: "ticket_updated", label: "Ticket Actualizado" },
+    { value: "ticket_status_changed", label: "Cambio de Estado" },
+    { value: "ticket_assigned", label: "Ticket Asignado" },
+    { value: "ticket_commented", label: "Comentario" },
+    { value: "project_created", label: "Proyecto Creado" },
+    { value: "project_updated", label: "Proyecto Actualizado" },
+    { value: "milestone_reached", label: "Hito Alcanzado" },
+  ];
+
+  const hasActiveFilters = useMemo(() => {
+    return !!(
+      (localFilters.eventTypes && localFilters.eventTypes.length > 0) ||
+      localFilters.startDate ||
+      localFilters.endDate ||
+      localFilters.userId
+    );
+  }, [localFilters]);
+
+  const clearFilters = () => {
+    setLocalFilters({
+      eventTypes: [],
+      startDate: undefined,
+      endDate: undefined,
+      userId: undefined,
+    });
+  };
 
   // Agrupar eventos por fecha
   const eventsByDate = useMemo(() => {
@@ -256,12 +322,127 @@ export function ProjectTimeline({ projectId, filters }: ProjectTimelineProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Calendar className="w-5 h-5" />
-          Timeline del Proyecto
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="w-5 h-5" />
+            Timeline del Proyecto
+          </CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <Filter className="w-4 h-4 mr-2" />
+            Filtros
+            {hasActiveFilters && (
+              <Badge variant="secondary" className="ml-2">
+                {[
+                  localFilters.eventTypes?.length || 0,
+                  localFilters.startDate ? 1 : 0,
+                  localFilters.endDate ? 1 : 0,
+                  localFilters.userId ? 1 : 0,
+                ].reduce((a, b) => a + b, 0)}
+              </Badge>
+            )}
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
+        {/* Filtros */}
+        {showFilters && (
+          <div className="mb-6 p-4 border rounded-lg space-y-4 bg-muted/30">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs text-muted-foreground">Tipo de Evento</label>
+                <Select
+                  value={localFilters.eventTypes?.[0] || ""}
+                  onValueChange={(value) =>
+                    setLocalFilters({
+                      ...localFilters,
+                      eventTypes: value ? [value as TimelineEventType] : [],
+                    })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todos los tipos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Todos los tipos</SelectItem>
+                    {eventTypeOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs text-muted-foreground">Fecha Desde</label>
+                <Input
+                  type="date"
+                  value={localFilters.startDate || ""}
+                  onChange={(e) =>
+                    setLocalFilters({
+                      ...localFilters,
+                      startDate: e.target.value || undefined,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs text-muted-foreground">Fecha Hasta</label>
+                <Input
+                  type="date"
+                  value={localFilters.endDate || ""}
+                  onChange={(e) =>
+                    setLocalFilters({
+                      ...localFilters,
+                      endDate: e.target.value || undefined,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs text-muted-foreground">Usuario</label>
+                <Select
+                  value={localFilters.userId || ""}
+                  onValueChange={(value) =>
+                    setLocalFilters({
+                      ...localFilters,
+                      userId: value || undefined,
+                    })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todos los usuarios" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Todos los usuarios</SelectItem>
+                    {users.map((user: any) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.nombre || user.name || user.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {hasActiveFilters && (
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" onClick={clearFilters}>
+                  <X className="w-4 h-4 mr-2" />
+                  Limpiar filtros
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Timeline */}
         <div className="space-y-6">
           {sortedDates.map((dateKey) => {
             const date = new Date(dateKey);

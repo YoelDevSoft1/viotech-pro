@@ -58,13 +58,70 @@ export const DEFAULT_KANBAN_COLUMNS: KanbanColumn[] = [
   },
 ];
 
+// Mapeo de estados antiguos a nuevos (normalización)
+function normalizeStatus(status: string): string {
+  if (!status) return "NUEVO";
+  
+  const statusUpper = status.toUpperCase().trim();
+  
+  // Mapeo de estados antiguos a nuevos
+  const statusMap: Record<string, string> = {
+    "ABIERTO": "ABIERTO",
+    "ABIERTO": "ABIERTO", // Mantener ABIERTO como está
+    "EN_PROGRESO": "EN_PROGRESO",
+    "EN PROGRESO": "EN_PROGRESO",
+    "EN-PROGRESO": "EN_PROGRESO",
+    "EN_PROGRESO": "EN_PROGRESO",
+    "EN_ESPERA": "EN_ESPERA",
+    "EN ESPERA": "EN_ESPERA",
+    "EN-ESPERA": "EN_ESPERA",
+    "ESPERA": "EN_ESPERA",
+    "RESUELTO": "RESUELTO",
+    "CERRADO": "CERRADO",
+    "REABIERTO": "REABIERTO",
+    "RE-ABIERTO": "REABIERTO",
+    "NUEVO": "NUEVO",
+  };
+
+  // Si está en el mapeo, retornar el valor normalizado
+  if (statusMap[statusUpper]) {
+    return statusMap[statusUpper];
+  }
+
+  // Si no está en el mapeo, intentar mapear estados comunes
+  if (statusUpper.includes("NUEVO") || statusUpper === "NEW") {
+    return "NUEVO";
+  }
+  if (statusUpper.includes("ABIERTO") || statusUpper === "OPEN") {
+    return "ABIERTO";
+  }
+  if (statusUpper.includes("PROGRESO") || statusUpper.includes("PROGRESS")) {
+    return "EN_PROGRESO";
+  }
+  if (statusUpper.includes("ESPERA") || statusUpper.includes("WAIT") || statusUpper.includes("PENDING")) {
+    return "EN_ESPERA";
+  }
+  if (statusUpper.includes("RESUELTO") || statusUpper.includes("RESOLVED")) {
+    return "RESUELTO";
+  }
+  if (statusUpper.includes("CERRADO") || statusUpper.includes("CLOSED")) {
+    return "CERRADO";
+  }
+  if (statusUpper.includes("REABIERTO") || statusUpper.includes("REOPEN")) {
+    return "REABIERTO";
+  }
+
+  // Por defecto, retornar el estado en mayúsculas
+  return statusUpper;
+}
+
 // Convertir Ticket a KanbanTask
 function ticketToKanbanTask(ticket: Ticket): KanbanTask {
   return {
     id: ticket.id,
     title: ticket.titulo,
     description: ticket.descripcion,
-    status: ticket.estado,
+    status: normalizeStatus(ticket.estado), // Normalizar el estado
     priority: ticket.prioridad,
     asignadoA: ticket.asignadoA,
     asignadoNombre: ticket.usuario?.nombre || undefined,
@@ -94,7 +151,19 @@ export function useKanbanTasks(projectId: string, filters?: KanbanFilters) {
       const { data } = await apiClient.get("/tickets", { params });
       const tickets = (data?.data?.tickets || data?.data || []) as Ticket[];
       
+      // Log para depuración (temporal)
+      if (tickets.length > 0) {
+        console.log("📋 Tickets recibidos:", tickets.length);
+        console.log("📋 Estados encontrados:", [...new Set(tickets.map(t => t.estado))]);
+      }
+      
       let tasks = tickets.map(ticketToKanbanTask);
+      
+      // Log para depuración (temporal)
+      if (tasks.length > 0) {
+        console.log("✅ Tareas normalizadas:", tasks.length);
+        console.log("✅ Estados normalizados:", [...new Set(tasks.map(t => t.status))]);
+      }
 
       // Aplicar filtro de búsqueda en el cliente si existe
       if (filters?.search) {

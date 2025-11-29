@@ -59,23 +59,33 @@ export async function fetchProjectById(id: string): Promise<Project | null> {
     if (refreshed) token = refreshed;
     else throw new Error("Sesión expirada");
   }
-  const res = await fetch(buildApiUrl(`/projects/${id}`), {
+  const url = buildApiUrl(`/projects/${id}`);
+  const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
     cache: "no-store",
   });
   const payload = await res.json().catch(() => null);
+  
   if (!res.ok || !payload) {
     throw new Error(payload?.error || payload?.message || "No se pudo cargar el proyecto");
   }
-  const p = payload.data || payload;
-  return {
-    id: String(p.id),
-    nombre: p.nombre || p.name || "Sin nombre",
-    estado: p.estado || p.status || "desconocido",
-    tipo: p.tipo || p.type || "",
-    descripcion: p.descripcion || p.description || "",
-    organizationId: p.organizationId || p.organization_id || null,
-    createdAt: p.createdAt || p.created_at,
-    updatedAt: p.updated_at || p.updatedAt,
+  
+  // La respuesta tiene estructura: { success: true, data: { project: {...}, tickets: [...] } }
+  const data = payload.data || payload;
+  
+  // El proyecto puede estar en data.project o directamente en data
+  const p = data.project || data;
+  
+  const project: Project = {
+    id: String(p?.id || id),
+    nombre: p?.nombre || p?.name || "Sin nombre",
+    estado: p?.estado || p?.status || "desconocido",
+    tipo: p?.tipo || p?.type || "",
+    descripcion: p?.descripcion || p?.description || "",
+    organizationId: p?.organizationId || p?.organization_id || null,
+    createdAt: p?.createdAt || p?.created_at || undefined,
+    updatedAt: p?.updated_at || p?.updatedAt || undefined,
   };
+  
+  return project;
 }

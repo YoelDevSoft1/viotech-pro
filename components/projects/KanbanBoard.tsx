@@ -191,8 +191,27 @@ export function KanbanBoard({ projectId, filters }: KanbanBoardProps) {
   const tasksByColumn = useMemo(() => {
     const grouped: Record<string, KanbanTask[]> = {};
     columns.forEach((col) => {
-      grouped[col.id] = tasks.filter((task) => task.status === col.status);
+      const columnTasks = tasks.filter((task) => {
+        const matches = task.status === col.status;
+        if (!matches && tasks.length > 0) {
+          // Log temporal para depuración
+          console.log(`🔍 Comparando: "${task.status}" === "${col.status}" (${col.title})`);
+        }
+        return matches;
+      });
+      grouped[col.id] = columnTasks;
+      
+      // Log temporal para depuración
+      if (columnTasks.length > 0) {
+        console.log(`✅ Columna "${col.title}" (${col.status}): ${columnTasks.length} tareas`);
+      }
     });
+    
+    // Log temporal: mostrar todos los estados únicos de las tareas
+    const uniqueStatuses = [...new Set(tasks.map(t => t.status))];
+    console.log("📊 Estados únicos en tareas:", uniqueStatuses);
+    console.log("📊 Estados esperados en columnas:", columns.map(c => c.status));
+    
     return grouped;
   }, [tasks, columns]);
 
