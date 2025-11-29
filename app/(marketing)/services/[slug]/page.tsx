@@ -6,7 +6,7 @@ const services = {
   "desarrollo-software": {
     title: "Desarrollo de Software Enterprise",
     description: "Soluciones a medida con tecnologías modernas. Desde MVPs hasta plataformas empresariales robustas y escalables.",
-    icon: "Code2",
+    icon: "Code2" as const,
     features: [
       "Aplicaciones web y móviles",
       "APIs y microservicios",
@@ -23,7 +23,7 @@ const services = {
   "consultoria-ti": {
     title: "Consultoría TI Estratégica",
     description: "Estrategia tecnológica integral. Auditorías de infraestructura, optimización de procesos y transformación digital.",
-    icon: "Brain",
+    icon: "Brain" as const,
     features: [
       "Arquitectura de sistemas",
       "Migración a la nube",
@@ -40,7 +40,7 @@ const services = {
   "soporte-tecnico": {
     title: "Soporte Técnico 24/7",
     description: "Soporte técnico premium con SLA garantizado. Resolvemos incidencias antes de que las notes.",
-    icon: "Headphones",
+    icon: "Headphones" as const,
     features: [
       "Soporte 24/7/365",
       "SLA garantizado 99.9%",
