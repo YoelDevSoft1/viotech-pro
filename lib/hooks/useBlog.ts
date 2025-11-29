@@ -128,17 +128,53 @@ export function useBlogPostById(id: string) {
     queryKey: ["blog-post-by-id", id],
     queryFn: async () => {
       try {
-        // El backend debería tener un endpoint GET /api/blog/posts/by-id/:id
-        // Por ahora usamos el slug, pero necesitamos obtener el post primero
-        // Esto es temporal - el backend debería tener un endpoint por ID
-        const { data } = await apiClient.get(`/blog/posts/by-id/${id}`);
+        // Intentar usar el endpoint estándar GET /api/blog/posts/:id
+        // Si el backend no lo soporta, intentar obtener desde la lista de posts admin
+        const { data } = await apiClient.get(`/blog/posts/${id}`);
         const response = data as BlogPostResponse;
-        return response.data;
-      } catch (error: any) {
-        if (error?.response?.status === 404) {
-          throw new Error("Artículo no encontrado");
+        
+        // Si la respuesta tiene el formato esperado
+        if (response.data) {
+          return response.data;
         }
-        throw new Error("Error al cargar artículo");
+        
+        // Si el formato es diferente, intentar acceder directamente
+        if (response.success && (response as any).data) {
+          return (response as any).data;
+        }
+        
+        throw new Error("Formato de respuesta inesperado");
+      } catch (error: any) {
+        // Si el endpoint por ID no existe, intentar obtener desde la lista
+        if (error?.response?.status === 404) {
+          console.log("⚠️ Endpoint /blog/posts/:id no encontrado, intentando obtener desde lista...");
+          
+          try {
+            // Obtener todos los posts y filtrar por ID
+            const { data } = await apiClient.get(`/blog/posts?all=true&limit=1000`);
+            const result = data as BlogPostsResponse;
+            
+            if (result.data?.posts) {
+              const post = result.data.posts.find((p) => p.id === id);
+              if (post) {
+                // Necesitamos obtener el contenido completo, intentar por slug
+                if (post.slug) {
+                  const { data: fullPost } = await apiClient.get(`/blog/posts/${post.slug}`);
+                  const fullResponse = fullPost as BlogPostResponse;
+                  return fullResponse.data;
+                }
+              }
+            }
+            
+            throw new Error("Artículo no encontrado en la lista");
+          } catch (fallbackError: any) {
+            console.error("❌ Error al obtener post desde lista:", fallbackError);
+            throw new Error("Artículo no encontrado");
+          }
+        }
+        
+        console.error("❌ Error al obtener post por ID:", error);
+        throw new Error(error?.response?.data?.error || "Error al cargar artículo");
       }
     },
     staleTime: 1000 * 60 * 5, // 5 minutos

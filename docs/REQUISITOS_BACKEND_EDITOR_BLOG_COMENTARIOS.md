@@ -135,7 +135,73 @@ Content-Type: application/json
 
 ---
 
-#### **3. DELETE /api/blog/posts/:id** (Admin)
+#### **3. GET /api/blog/posts/:id** (Admin)
+
+**Descripción:** Obtener artículo individual por ID (para edición en admin)
+
+**Autenticación:** Requerida (rol: admin)
+
+**Path Parameters:**
+- `id` (UUID) - ID del artículo
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Operación exitosa",
+  "data": {
+    "id": "uuid",
+    "slug": "titulo-del-articulo",
+    "title": "Título del artículo",
+    "excerpt": "Resumen corto...",
+    "content": "<html>Contenido completo...</html>",
+    "author": {
+      "id": "uuid",
+      "name": "Admin User",
+      "avatar": "https://..."
+    },
+    "category": {
+      "id": "uuid",
+      "name": "Consultoría",
+      "slug": "consultoria"
+    },
+    "tags": [
+      {
+        "id": "uuid",
+        "name": "TI",
+        "slug": "ti"
+      }
+    ],
+    "featuredImage": "https://...",
+    "isPublished": false,  // ← Puede ser false (borrador)
+    "publishedAt": null,    // ← Puede ser null si es borrador
+    "createdAt": "2024-12-01T10:00:00.000Z",
+    "updatedAt": "2024-12-01T10:00:00.000Z",
+    "views": 0,
+    "seo": {
+      "metaDescription": "...",
+      "metaKeywords": ["keyword1", "keyword2"],
+      "ogImage": "https://..."
+    }
+  }
+}
+```
+
+**Validaciones:**
+- Verificar que el usuario tenga rol de admin
+- Retornar 404 si el post no existe
+- **IMPORTANTE:** Incluir posts borradores (no filtrar por `isPublished`)
+- Incluir relaciones: author, category, tags
+- Incluir contenido completo (`content`)
+
+**Notas:**
+- Este endpoint es diferente a `GET /api/blog/posts/:slug` (público)
+- El endpoint público solo retorna posts publicados
+- Este endpoint admin retorna cualquier post (publicado o borrador)
+
+---
+
+#### **4. DELETE /api/blog/posts/:id** (Admin)
 
 **Descripción:** Eliminar artículo (soft delete recomendado)
 
@@ -713,6 +779,7 @@ CREATE INDEX idx_blog_comment_likes_user ON blog_comment_likes(user_id);
 
 ### **Editor de Contenido**
 - [ ] POST /api/blog/posts (crear)
+- [ ] GET /api/blog/posts/:id (obtener por ID para admin)
 - [ ] PUT /api/blog/posts/:id (actualizar)
 - [ ] DELETE /api/blog/posts/:id (eliminar)
 - [ ] POST /api/blog/categories (crear categoría)
