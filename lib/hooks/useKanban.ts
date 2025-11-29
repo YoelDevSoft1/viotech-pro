@@ -5,6 +5,7 @@ import type { KanbanTask, KanbanColumn, KanbanFilters } from "@/lib/types/kanban
 import type { Ticket } from "./useTickets";
 
 // Columnas por defecto basadas en estados de tickets
+// Alineado con backend: NUEVO, ABIERTO, EN_PROGRESO, EN_ESPERA, RESUELTO, CERRADO, REABIERTO
 export const DEFAULT_KANBAN_COLUMNS: KanbanColumn[] = [
   {
     id: "nuevo",
@@ -12,6 +13,13 @@ export const DEFAULT_KANBAN_COLUMNS: KanbanColumn[] = [
     status: "NUEVO",
     color: "bg-blue-500",
     order: 0,
+  },
+  {
+    id: "abierto",
+    title: "Abierto",
+    status: "ABIERTO",
+    color: "bg-cyan-500",
+    order: 0.5,
   },
   {
     id: "en-progreso",
@@ -40,6 +48,13 @@ export const DEFAULT_KANBAN_COLUMNS: KanbanColumn[] = [
     status: "CERRADO",
     color: "bg-gray-500",
     order: 4,
+  },
+  {
+    id: "reabierto",
+    title: "Reabierto",
+    status: "REABIERTO",
+    color: "bg-purple-500",
+    order: 1.5,
   },
 ];
 

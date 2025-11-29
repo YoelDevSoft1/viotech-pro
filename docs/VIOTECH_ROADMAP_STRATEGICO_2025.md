@@ -312,7 +312,7 @@ app/(ops-admin)/
 - [x] Kanban board con drag & drop
 - [x] Múltiples columnas personalizables (basadas en estados de tickets)
 - [x] Filtros avanzados (asignado, prioridad, categoría, búsqueda)
-- [ ] Vista de timeline integrada
+- [x] Vista de timeline integrada
 - [ ] Notificaciones en tiempo real
 - [ ] Historial de cambios (audit log)
 
