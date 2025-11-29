@@ -39,7 +39,7 @@ const postSchema = z.object({
   categoryId: z.string().min(1, "Selecciona una categoría"),
   tagIds: z.array(z.string()).optional(),
   featuredImage: z.string().url("URL inválida").optional().or(z.literal("")),
-  isPublished: z.boolean().default(false),
+  isPublished: z.boolean(),
   publishedAt: z.string().optional(),
   seo: z.object({
     metaDescription: z.string().max(160, "Máximo 160 caracteres").optional(),
