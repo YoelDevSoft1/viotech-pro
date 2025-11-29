@@ -1,6 +1,19 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/apiClient";
-import type { BlogPost, BlogResponse, BlogFilters, BlogCategory, BlogTag } from "@/lib/types/blog";
+import { toast } from "sonner";
+import type {
+  BlogPost,
+  BlogResponse,
+  BlogFilters,
+  BlogCategory,
+  BlogTag,
+  BlogPostsResponse,
+  BlogPostResponse,
+  BlogCategoriesResponse,
+  BlogTagsResponse,
+  NewsletterSubscribeResponse,
+  NewsletterUnsubscribeResponse,
+} from "@/lib/types/blog";
 
 // Obtener lista de artículos
 export function useBlogPosts(filters?: BlogFilters) {
@@ -15,7 +28,8 @@ export function useBlogPosts(filters?: BlogFilters) {
       if (filters?.limit) params.append("limit", filters.limit.toString());
 
       const { data } = await apiClient.get(`/blog/posts?${params.toString()}`);
-      return (data?.data || data) as BlogResponse;
+      const response = data as BlogPostsResponse;
+      return response.data;
     },
     staleTime: 1000 * 60 * 5, // 5 minutos
   });
@@ -26,11 +40,20 @@ export function useBlogPost(slug: string) {
   return useQuery({
     queryKey: ["blog-post", slug],
     queryFn: async () => {
-      const { data } = await apiClient.get(`/blog/posts/${slug}`);
-      return (data?.data || data) as BlogPost;
+      try {
+        const { data } = await apiClient.get(`/blog/posts/${slug}`);
+        const response = data as BlogPostResponse;
+        return response.data;
+      } catch (error: any) {
+        if (error?.response?.status === 404) {
+          throw new Error("Artículo no encontrado");
+        }
+        throw new Error("Error al cargar artículo");
+      }
     },
     staleTime: 1000 * 60 * 10, // 10 minutos
     enabled: !!slug,
+    retry: false, // No reintentar si es 404
   });
 }
 
@@ -40,7 +63,8 @@ export function useBlogCategories() {
     queryKey: ["blog-categories"],
     queryFn: async () => {
       const { data } = await apiClient.get("/blog/categories");
-      return (data?.data || data || []) as BlogCategory[];
+      const response = data as BlogCategoriesResponse;
+      return response.data;
     },
     staleTime: 1000 * 60 * 30, // 30 minutos
   });
@@ -52,24 +76,73 @@ export function useBlogTags() {
     queryKey: ["blog-tags"],
     queryFn: async () => {
       const { data } = await apiClient.get("/blog/tags");
-      return (data?.data || data || []) as BlogTag[];
+      const response = data as BlogTagsResponse;
+      return response.data;
     },
     staleTime: 1000 * 60 * 30, // 30 minutos
   });
 }
 
 // Obtener artículos relacionados
-export function useRelatedPosts(postId: string, categoryId: string, limit: number = 3) {
+export function useRelatedPosts(slug: string, limit: number = 3) {
   return useQuery({
-    queryKey: ["related-posts", postId],
+    queryKey: ["related-posts", slug, limit],
     queryFn: async () => {
       const { data } = await apiClient.get(
-        `/blog/posts/${postId}/related?category=${categoryId}&limit=${limit}`
+        `/blog/posts/${slug}/related?limit=${limit}`
       );
       return (data?.data || data || []) as BlogPost[];
     },
     staleTime: 1000 * 60 * 10, // 10 minutos
-    enabled: !!postId && !!categoryId,
+    enabled: !!slug,
+  });
+}
+
+// Suscribir al newsletter
+export function useNewsletterSubscribe() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ email, source }: { email: string; source?: string }) => {
+      const { data } = await apiClient.post("/blog/newsletter/subscribe", {
+        email,
+        source,
+      });
+      return data as NewsletterSubscribeResponse;
+    },
+    onSuccess: (response) => {
+      toast.success(response.message || "Suscripción exitosa");
+      queryClient.invalidateQueries({ queryKey: ["newsletter"] });
+    },
+    onError: (error: any) => {
+      const message =
+        error?.response?.data?.error ||
+        error?.message ||
+        "Error al suscribirse";
+      toast.error(message);
+    },
+  });
+}
+
+// Cancelar suscripción al newsletter
+export function useNewsletterUnsubscribe() {
+  return useMutation({
+    mutationFn: async (email: string) => {
+      const { data } = await apiClient.post("/blog/newsletter/unsubscribe", {
+        email,
+      });
+      return data as NewsletterUnsubscribeResponse;
+    },
+    onSuccess: (response) => {
+      toast.success(response.message || "Suscripción cancelada");
+    },
+    onError: (error: any) => {
+      const message =
+        error?.response?.data?.error ||
+        error?.message ||
+        "Error al cancelar suscripción";
+      toast.error(message);
+    },
   });
 }
 
