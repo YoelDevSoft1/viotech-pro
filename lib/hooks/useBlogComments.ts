@@ -34,6 +34,15 @@ export function useBlogComments(
       } catch (error: any) {
         console.error("❌ Error fetching comments:", error);
         console.error("❌ Error response:", error?.response?.data);
+        console.error("❌ Error status:", error?.response?.status);
+        console.error("❌ Error message:", error?.message);
+        
+        // Si es 401 y es un endpoint público, puede ser un problema de configuración
+        if (error?.response?.status === 401) {
+          console.warn("⚠️ Endpoint de comentarios retornó 401 (no autorizado).");
+          console.warn("   Esto puede indicar que el backend está requiriendo autenticación");
+          console.warn("   cuando debería ser público. Verifica la configuración del backend.");
+        }
         
         // Si es 400, puede ser que el endpoint no esté implementado o tenga parámetros incorrectos
         if (error?.response?.status === 400) {
@@ -41,6 +50,12 @@ export function useBlogComments(
           console.warn("  1. Que el endpoint esté implementado en el backend");
           console.warn("  2. Que los parámetros sean correctos");
           console.warn("  3. Que el endpoint sea público (sin autenticación)");
+        }
+        
+        // Si es 404, el endpoint no existe
+        if (error?.response?.status === 404) {
+          console.warn("⚠️ Endpoint de comentarios no encontrado (404)");
+          console.warn("   El endpoint puede no estar implementado aún");
         }
         
         // Retornar array vacío en lugar de lanzar error para que la UI no se rompa

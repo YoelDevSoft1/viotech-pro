@@ -304,83 +304,111 @@ export function SiteHeader() {
                 <span className="sr-only">Menú</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+            <SheetContent side="right" className="w-[300px] sm:w-[400px] flex flex-col p-0">
               <SheetTitle className="sr-only">Menú de navegación</SheetTitle>
-              <div className="flex flex-col gap-4 mt-8">
+              
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto px-6 py-6">
+                {/* User Info (if authenticated) */}
+                {isAuthenticated && currentUser && (
+                  <div className="mb-6 pb-6 border-b">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={getUserAvatar()} alt={getUserName()} />
+                        <AvatarFallback>
+                          {getUserInitials()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm truncate">
+                          {getUserName()}
+                        </p>
+                        {currentUser?.email && (
+                          <p className="text-xs text-muted-foreground truncate">
+                            {currentUser.email}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Navigation Links */}
-                {routes.map((route) => (
-                  <Link
-                    key={route.href}
-                    href={route.href}
-                    className={cn(
-                      "text-lg font-medium transition-colors",
-                      pathname === route.href
-                        ? "text-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {route.label}
-                  </Link>
-                ))}
-                
-                <div className="h-px bg-border my-2" />
+                <nav className="space-y-1 mb-6">
+                  {routes.map((route) => (
+                    <Link
+                      key={route.href}
+                      href={route.href}
+                      className={cn(
+                        "block px-3 py-2 rounded-md text-base font-medium transition-colors",
+                        pathname === route.href
+                          ? "bg-primary/10 text-primary"
+                          : "text-foreground hover:bg-muted"
+                      )}
+                    >
+                      {route.label}
+                    </Link>
+                  ))}
+                </nav>
                 
                 {/* Services Section */}
-                <div className="space-y-2">
-                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                <div className="mb-6">
+                  <p className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Servicios
                   </p>
-                  {serviceRoutes.map((route) => (
-                    <Link
-                      key={route.href}
-                      href={route.href}
-                      className={cn(
-                        "block text-sm transition-colors",
-                        pathname === route.href
-                          ? "text-foreground font-medium"
-                          : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      {route.label}
-                    </Link>
-                  ))}
+                  <nav className="space-y-1">
+                    {serviceRoutes.map((route) => (
+                      <Link
+                        key={route.href}
+                        href={route.href}
+                        className={cn(
+                          "block px-3 py-2 rounded-md text-sm transition-colors",
+                          pathname === route.href
+                            ? "bg-primary/10 text-primary font-medium"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        )}
+                      >
+                        {route.label}
+                      </Link>
+                    ))}
+                  </nav>
                 </div>
-
-                <div className="h-px bg-border my-2" />
                 
                 {/* Industries Section */}
-                <div className="space-y-2">
-                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                <div className="mb-6">
+                  <p className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Industrias
                   </p>
-                  {industryRoutes.map((route) => (
-                    <Link
-                      key={route.href}
-                      href={route.href}
-                      className={cn(
-                        "block text-sm transition-colors",
-                        pathname === route.href
-                          ? "text-foreground font-medium"
-                          : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      {route.label}
-                    </Link>
-                  ))}
+                  <nav className="space-y-1">
+                    {industryRoutes.map((route) => (
+                      <Link
+                        key={route.href}
+                        href={route.href}
+                        className={cn(
+                          "block px-3 py-2 rounded-md text-sm transition-colors",
+                          pathname === route.href
+                            ? "bg-primary/10 text-primary font-medium"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        )}
+                      >
+                        {route.label}
+                      </Link>
+                    ))}
+                  </nav>
                 </div>
+              </div>
 
-                <div className="h-px bg-border my-2" />
-
-                {/* Auth Section Mobile */}
+              {/* Fixed Bottom Section - Auth Actions */}
+              <div className="border-t px-6 py-4 space-y-2 bg-muted/30">
                 {isAuthenticated ? (
                   <>
-                    <Link href="/client/dashboard">
+                    <Link href="/client/dashboard" className="block">
                       <Button variant="outline" className="w-full justify-start">
                         <Building2 className="mr-2 h-4 w-4" />
                         Portal Cliente
                       </Button>
                     </Link>
-                    <Link href="/client/profile">
+                    <Link href="/client/profile" className="block">
                       <Button variant="outline" className="w-full justify-start">
                         <User className="mr-2 h-4 w-4" />
                         Mi Perfil
@@ -397,13 +425,13 @@ export function SiteHeader() {
                   </>
                 ) : (
                   <>
-                    <Link href="/login">
-                      <Button variant="outline" className="w-full justify-start">
+                    <Link href="/login" className="block">
+                      <Button variant="outline" className="w-full">
                         Ingresar
                       </Button>
                     </Link>
-                    <Link href="/client/dashboard">
-                      <Button className="w-full justify-start">Portal Cliente</Button>
+                    <Link href="/client/dashboard" className="block">
+                      <Button className="w-full">Portal Cliente</Button>
                     </Link>
                   </>
                 )}

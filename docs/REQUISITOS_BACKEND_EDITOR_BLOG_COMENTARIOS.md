@@ -463,6 +463,7 @@ interface BlogComment {
   parentId: string | null;        // FK a blog_comments (para respuestas)
   authorName: string;             // Nombre del autor
   authorEmail: string | null;     // Email (opcional, para anónimos)
+  authorAvatar: string | null;   // Avatar del usuario (si está autenticado, null si es anónimo)
   content: string;                // Contenido del comentario
   isApproved: boolean;            // Moderación (default: false para anónimos)
   likes: number;                  // Contador de likes
@@ -496,6 +497,7 @@ interface BlogComment {
       "parentId": null,
       "authorName": "Juan Pérez",
       "authorEmail": null,
+      "authorAvatar": "https://storage.supabase.co/.../avatar.jpg", // Avatar del usuario (si está autenticado)
       "content": "Excelente artículo, muy útil.",
       "isApproved": true,
       "likes": 5,
@@ -545,16 +547,17 @@ interface BlogComment {
   "success": true,
   "message": "Comentario enviado. Está pendiente de moderación.",
   "data": {
-    "id": "uuid",
-    "postId": "uuid",
-    "userId": "uuid" | null,
-    "parentId": null,
-    "authorName": "Juan Pérez",
-    "authorEmail": "juan@example.com",
-    "content": "Contenido del comentario",
-    "isApproved": false,  // false si es anónimo, true si está autenticado
-    "likes": 0,
-    "createdAt": "2024-12-01T10:00:00.000Z"
+      "id": "uuid",
+      "postId": "uuid",
+      "userId": "uuid" | null,
+      "parentId": null,
+      "authorName": "Juan Pérez",
+      "authorEmail": "juan@example.com",
+      "authorAvatar": "https://storage.supabase.co/.../avatar.jpg" | null, // Avatar del usuario (si está autenticado)
+      "content": "Contenido del comentario",
+      "isApproved": false,  // false si es anónimo, true si está autenticado
+      "likes": 0,
+      "createdAt": "2024-12-01T10:00:00.000Z"
   }
 }
 ```

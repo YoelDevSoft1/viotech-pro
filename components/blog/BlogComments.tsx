@@ -136,11 +136,11 @@ export function BlogComments({ postSlug }: BlogCommentsProps) {
         <CardContent className="p-4">
           <div className="flex gap-3">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={undefined} />
+              <AvatarImage src={comment.authorAvatar || undefined} alt={comment.authorName} />
               <AvatarFallback>
                 {comment.authorName
                   .split(" ")
-                  .map((n) => n[0])
+                  .map((n: string) => n[0])
                   .join("")
                   .toUpperCase()
                   .slice(0, 2)}

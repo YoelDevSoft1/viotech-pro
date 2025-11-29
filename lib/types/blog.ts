@@ -133,6 +133,7 @@ export interface BlogComment {
   parentId: string | null;
   authorName: string;
   authorEmail: string | null;
+  authorAvatar: string | null; // Avatar del autor (si está autenticado)
   content: string;
   isApproved: boolean;
   likes: number;

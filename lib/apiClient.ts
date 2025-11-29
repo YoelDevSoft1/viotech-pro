@@ -40,10 +40,30 @@ const getValidToken = async (): Promise<string | null> => {
   return token;
 };
 
+// Lista de endpoints públicos que NO requieren autenticación
+const PUBLIC_ENDPOINTS = [
+  '/blog/posts', // Lista de posts
+  '/blog/posts/', // Post individual por slug (incluye comentarios)
+  '/blog/categories', // Categorías
+  '/blog/tags', // Tags
+  '/blog/newsletter/subscribe', // Newsletter
+];
+
+const isPublicEndpoint = (url: string | undefined): boolean => {
+  if (!url) return false;
+  return PUBLIC_ENDPOINTS.some(endpoint => url.includes(endpoint));
+};
+
 // Interceptor de REQUEST
 apiClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
+    // Si está marcado explícitamente como no autenticado, no agregar token
     if ((config as any).auth === false) return config;
+
+    // Si es un endpoint público, no agregar token
+    if (isPublicEndpoint(config.url)) {
+      return config;
+    }
 
     const token = await getValidToken();
     if (token) {
@@ -99,6 +119,22 @@ apiClient.interceptors.response.use(
 
     // Si recibimos 401 (Token inválido/expirado) del backend
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      // Si es un endpoint público, permitir el error 401 sin intentar refrescar
+      if (isPublicEndpoint(originalRequest.url)) {
+        // Para endpoints públicos, un 401 puede ser válido (no requiere autenticación)
+        // Pero si el backend retorna 401, puede ser un error de configuración
+        // Devolver el error original sin modificar el mensaje
+        const responseData = error.response?.data as any;
+        const publicError = new Error(
+          responseData?.error || 
+          responseData?.message || 
+          "El endpoint debería ser público pero requiere autenticación"
+        ) as any;
+        publicError.response = error.response;
+        publicError.isAxiosError = true;
+        return Promise.reject(publicError);
+      }
+
       originalRequest._retry = true;
 
       // Verificar si hay un token antes de intentar refrescar
