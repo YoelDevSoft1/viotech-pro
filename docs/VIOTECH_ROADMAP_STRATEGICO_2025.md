@@ -48,7 +48,7 @@
 - ✅ **robots.txt** optimizado
 - ✅ **Structured Data** (Schema.org)
 - ✅ **Open Graph** y **Twitter Cards**
-- ❌ **Blog/Content Marketing** para SEO
+- ✅ **Blog/Content Marketing** para SEO
 - ❌ **Case Studies** públicos con SEO
 - ❌ **Landing pages** específicas por servicio
 
@@ -287,12 +287,14 @@ app/(ops-admin)/
 
 #### **Sprint 1.3: Content Marketing (✅ COMPLETADO)**
 - [x] Sistema de blog con categorías y tags
-- [ ] Editor de contenido (Markdown o WYSIWYG) - Pendiente backend
-- [ ] Sistema de comentarios - Opcional para fase 2
 - [x] Newsletter subscription
 - [x] SEO para artículos (meta descriptions, keywords)
 - [x] Compartir en redes sociales
 - [x] Related articles
+- [x] Integración completa con backend
+- [x] Sitemap actualizado con ruta de blog
+- [ ] Editor de contenido (Markdown o WYSIWYG) - Backend/Admin (Fase 2 - No bloquea)
+- [ ] Sistema de comentarios - Opcional (Fase 2 - No bloquea)
 
 **Métricas de Éxito:**
 - Posición en Google para keywords objetivo

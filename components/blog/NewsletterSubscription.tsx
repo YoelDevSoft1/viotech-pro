@@ -51,7 +51,7 @@ export function NewsletterSubscription({ source = "blog" }: NewsletterSubscripti
             className="flex-1 bg-background text-foreground"
             required
           />
-          <Button type="submit" disabled={isPending} variant="secondary">
+          <Button type="submit" disabled={subscribe.isPending} variant="secondary">
             {subscribe.isPending ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
