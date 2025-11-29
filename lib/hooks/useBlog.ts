@@ -35,7 +35,7 @@ export function useBlogPosts(filters?: BlogFilters) {
   });
 }
 
-// Obtener artículo individual
+// Obtener artículo individual por slug
 export function useBlogPost(slug: string) {
   return useQuery({
     queryKey: ["blog-post", slug],
@@ -57,16 +57,88 @@ export function useBlogPost(slug: string) {
   });
 }
 
-// Obtener categorías
+// Obtener artículo individual por ID (para admin)
+export function useBlogPostById(id: string) {
+  return useQuery({
+    queryKey: ["blog-post-by-id", id],
+    queryFn: async () => {
+      try {
+        // El backend debería tener un endpoint GET /api/blog/posts/by-id/:id
+        // Por ahora usamos el slug, pero necesitamos obtener el post primero
+        // Esto es temporal - el backend debería tener un endpoint por ID
+        const { data } = await apiClient.get(`/blog/posts/by-id/${id}`);
+        const response = data as BlogPostResponse;
+        return response.data;
+      } catch (error: any) {
+        if (error?.response?.status === 404) {
+          throw new Error("Artículo no encontrado");
+        }
+        throw new Error("Error al cargar artículo");
+      }
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutos
+    enabled: !!id,
+    retry: false,
+  });
+}
+
+// Obtener categorías (público - solo con posts publicados)
 export function useBlogCategories() {
   return useQuery({
     queryKey: ["blog-categories"],
     queryFn: async () => {
-      const { data } = await apiClient.get("/blog/categories");
-      const response = data as BlogCategoriesResponse;
-      return response.data;
+      try {
+        const response = await apiClient.get("/blog/categories");
+        const result = response.data;
+        
+        if (!result || result.success === false) {
+          const errorMsg = result?.error || "Error al cargar categorías";
+          throw new Error(errorMsg);
+        }
+        
+        if (Array.isArray(result.data)) {
+          return result.data as BlogCategory[];
+        }
+        
+        return [];
+      } catch (error: any) {
+        console.error("❌ Error al obtener categorías:", error);
+        throw error;
+      }
     },
     staleTime: 1000 * 60 * 30, // 30 minutos
+    retry: 1,
+  });
+}
+
+// Obtener TODAS las categorías (admin - incluye las sin posts)
+export function useBlogCategoriesAdmin() {
+  return useQuery({
+    queryKey: ["blog-categories-admin"],
+    queryFn: async () => {
+      try {
+        // Usar parámetro ?all=true para obtener todas las categorías
+        const response = await apiClient.get("/blog/categories?all=true");
+        const result = response.data;
+        
+        if (!result || result.success === false) {
+          const errorMsg = result?.error || "Error al cargar categorías";
+          throw new Error(errorMsg);
+        }
+        
+        // Acceder a result.data para obtener el array de categorías
+        if (Array.isArray(result.data)) {
+          return result.data as BlogCategory[];
+        }
+        
+        return [];
+      } catch (error: any) {
+        console.error("❌ Error al obtener categorías (admin):", error);
+        throw error;
+      }
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutos para admin
+    retry: 1,
   });
 }
 
@@ -75,11 +147,32 @@ export function useBlogTags() {
   return useQuery({
     queryKey: ["blog-tags"],
     queryFn: async () => {
-      const { data } = await apiClient.get("/blog/tags");
-      const response = data as BlogTagsResponse;
-      return response.data;
+      try {
+        const response = await apiClient.get("/blog/tags");
+        const result = response.data;
+        
+        // El backend retorna: { success: true, data: [...] }
+        // apiClient.get() ya extrae response.data, entonces result = { success: true, data: [...] }
+        
+        if (!result.success) {
+          throw new Error(result.error || "Error al cargar tags");
+        }
+        
+        // Acceder a result.data para obtener el array de tags
+        if (Array.isArray(result.data)) {
+          return result.data as BlogTag[];
+        }
+        
+        // Si data no es un array, retornar array vacío
+        console.warn("⚠️ result.data no es un array:", result.data);
+        return [];
+      } catch (error: any) {
+        console.error("❌ Error al obtener tags:", error);
+        throw error;
+      }
     },
     staleTime: 1000 * 60 * 30, // 30 minutos
+    retry: 1, // Reintentar solo una vez
   });
 }
 

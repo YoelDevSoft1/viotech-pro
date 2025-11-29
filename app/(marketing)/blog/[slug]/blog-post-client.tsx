@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { NewsletterSubscription } from "@/components/blog/NewsletterSubscription";
+import { BlogComments } from "@/components/blog/BlogComments";
 import type { BlogPost } from "@/lib/types/blog";
 
 interface BlogPostPageClientProps {
@@ -252,6 +253,15 @@ export function BlogPostPageClient({ post, slug }: BlogPostPageClientProps) {
           </div>
         </section>
       )}
+
+      {/* Comments Section */}
+      <section className="py-12 bg-muted/30">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="max-w-4xl mx-auto">
+            <BlogComments postSlug={slug} />
+          </div>
+        </div>
+      </section>
 
       {/* Newsletter Section */}
       <section className="py-12 bg-background">

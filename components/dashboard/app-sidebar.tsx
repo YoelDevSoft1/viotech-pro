@@ -14,7 +14,8 @@ import {
   Settings,
   HeartPulse,
   FolderKanban,
-  Shield
+  Shield,
+  FileText
 } from "lucide-react";
 import {
   Sidebar,
@@ -98,6 +99,11 @@ const adminSidebarItems: Array<{
     title: "Health",
     href: "/admin/health",
     icon: HeartPulse,
+  },
+  {
+    title: "Blog",
+    href: "/admin/blog",
+    icon: FileText,
   },
   {
     title: "Configuración",

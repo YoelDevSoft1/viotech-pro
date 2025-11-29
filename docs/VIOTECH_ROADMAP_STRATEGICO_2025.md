@@ -293,8 +293,9 @@ app/(ops-admin)/
 - [x] Related articles
 - [x] Integración completa con backend
 - [x] Sitemap actualizado con ruta de blog
-- [ ] Editor de contenido (Markdown o WYSIWYG) - Backend/Admin (Fase 2 - No bloquea)
-- [ ] Sistema de comentarios - Opcional (Fase 2 - No bloquea)
+- [x] Editor de contenido (Admin) - Crear/Editar/Eliminar posts
+- [x] Sistema de comentarios - Comentar, editar, eliminar, likes, respuestas
+- [x] Panel admin de gestión de blog
 
 **Métricas de Éxito:**
 - Posición en Google para keywords objetivo

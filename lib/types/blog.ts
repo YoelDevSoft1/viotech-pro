@@ -106,3 +106,56 @@ export interface NewsletterUnsubscribeResponse {
   message: string;
 }
 
+// Editor de Contenido (Admin)
+export interface CreatePostData {
+  title: string;
+  excerpt: string;
+  content: string;
+  categoryId: string;
+  tagIds?: string[];
+  featuredImage?: string;
+  isPublished?: boolean;
+  publishedAt?: string;
+  seo?: {
+    metaDescription?: string;
+    metaKeywords?: string[];
+    ogImage?: string;
+  };
+}
+
+export interface UpdatePostData extends Partial<CreatePostData> {}
+
+// Sistema de Comentarios
+export interface BlogComment {
+  id: string;
+  postId: string;
+  userId: string | null;
+  parentId: string | null;
+  authorName: string;
+  authorEmail: string | null;
+  content: string;
+  isApproved: boolean;
+  likes: number;
+  createdAt: string;
+  updatedAt?: string;
+  deletedAt?: string | null;
+  replies?: BlogComment[];
+}
+
+export interface CreateCommentData {
+  content: string;
+  parentId?: string | null;
+  authorName?: string; // Requerido si no está autenticado
+  authorEmail?: string; // Opcional
+}
+
+export interface CommentLikeResponse {
+  likes: number;
+  liked: boolean;
+}
+
+export interface BlogCommentsResponse {
+  success: boolean;
+  data: BlogComment[];
+}
+
