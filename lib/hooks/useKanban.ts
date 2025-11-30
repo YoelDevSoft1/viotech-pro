@@ -66,12 +66,10 @@ function normalizeStatus(status: string): string {
   
   // Mapeo de estados antiguos a nuevos
   const statusMap: Record<string, string> = {
-    "ABIERTO": "ABIERTO",
     "ABIERTO": "ABIERTO", // Mantener ABIERTO como está
     "EN_PROGRESO": "EN_PROGRESO",
     "EN PROGRESO": "EN_PROGRESO",
     "EN-PROGRESO": "EN_PROGRESO",
-    "EN_PROGRESO": "EN_PROGRESO",
     "EN_ESPERA": "EN_ESPERA",
     "EN ESPERA": "EN_ESPERA",
     "EN-ESPERA": "EN_ESPERA",

@@ -272,6 +272,7 @@ El frontend respeta:
 
 - **Backend:** Detecta:
   - **Overallocation:** Horas asignadas > horas disponibles
+  - **Double Booking:** Misma tarea asignada a múltiples recursos en mismo horario
   - **Unavailable:** Tarea asignada en período no disponible
 - **Frontend:** Muestra conflictos con:
   - Iconos de alerta

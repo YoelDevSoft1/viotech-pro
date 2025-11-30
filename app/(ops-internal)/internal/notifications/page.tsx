@@ -36,7 +36,6 @@ function NotificationItem({ notification }: { notification: Notification }) {
     e.stopPropagation();
     deleteNotification.mutate(notification.id);
   };
-  const [isHovered, setIsHovered] = useState(false);
 
   return (
     <div

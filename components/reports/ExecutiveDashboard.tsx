@@ -20,6 +20,7 @@ import { es } from "date-fns/locale/es";
 import { KPICard } from "@/components/reports/KPICard";
 import { MetricsChart } from "@/components/reports/MetricsChart";
 import { HistoricalComparison } from "@/components/reports/HistoricalComparison";
+import { Predictions } from "@/components/reports/Predictions";
 import type { ReportFilters } from "@/lib/types/reports";
 import { cn } from "@/lib/utils";
 
