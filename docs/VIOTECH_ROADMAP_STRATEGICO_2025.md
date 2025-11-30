@@ -359,13 +359,13 @@ app/(ops-admin)/
 - [x] Documentación contextual (tooltips)
 - [x] Checklist de configuración
 
-#### **Sprint 3.2: Personalización Avanzada ()**
-- [ ] Dashboard personalizable (drag & drop widgets)
-- [ ] Temas y branding por organización
-- [ ] Preferencias de usuario persistentes
-- [ ] Vistas guardadas (filtros, columnas)
-- [ ] Shortcuts de teclado
-- [ ] Modo oscuro/claro
+#### **Sprint 3.2: Personalización Avanzada (✅ COMPLETADO)**
+- [x] Dashboard personalizable (drag & drop widgets)
+- [x] Temas y branding por organización
+- [x] Preferencias de usuario persistentes
+- [x] Vistas guardadas (filtros, columnas)
+- [x] Shortcuts de teclado
+- [x] Modo oscuro/claro
 
 #### **Sprint 3.3: Notificaciones en Tiempo Real ()**
 - [ ] WebSockets para notificaciones
