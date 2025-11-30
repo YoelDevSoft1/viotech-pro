@@ -1,0 +1,200 @@
+{
+  "common": {
+    "welcome": "Bienvenido",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "update": "Actualizar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "close": "Cerrar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "confirm": "Confirmar",
+    "yes": "Sí",
+    "no": "No",
+    "retry": "Reintentar",
+    "goBack": "Volver"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "projects": "Proyectos",
+    "tickets": "Tickets",
+    "resources": "Recursos",
+    "reports": "Reportes",
+    "settings": "Configuración",
+    "notifications": "Notificaciones",
+    "auditLog": "Audit Log",
+    "onboarding": "Onboarding"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "description": "Consultoría, entregables y soporte VIP centralizados",
+    "kpis": {
+      "activeProjects": "Proyectos Activos",
+      "openTickets": "Tickets Abiertos",
+      "resourceUtilization": "Utilización de Recursos",
+      "onTimeDelivery": "Entrega a Tiempo"
+    },
+    "error": {
+      "loadingFailed": "No pudimos cargar tu información",
+      "checkConnection": "Verifica tu conexión e intenta nuevamente"
+    }
+  },
+  "projects": {
+    "title": "Proyectos",
+    "create": "Crear Proyecto",
+    "edit": "Editar Proyecto",
+    "delete": "Eliminar Proyecto",
+    "status": "Estado",
+    "priority": "Prioridad",
+    "assignee": "Asignado a",
+    "dueDate": "Fecha de Vencimiento",
+    "goBackToInternal": "Volver al panel interno",
+    "byOrganization": "Proyectos por organización",
+    "filterDescription": "Filtra por organización para ver proyectos activos y su estado.",
+    "loading": "Cargando proyectos...",
+    "noProjects": "Sin proyectos",
+    "noProjectsMessage": "No hay proyectos para la organización seleccionada.",
+    "defaultType": "Proyecto",
+    "noDescription": "Sin descripción.",
+    "detail": "Detalle",
+    "kanban": "Kanban",
+    "gantt": "Gantt",
+    "error": {
+      "loadingFailed": "Error al cargar proyectos"
+    }
+  },
+  "tickets": {
+    "title": "Tickets",
+    "create": "Crear Ticket",
+    "edit": "Editar Ticket",
+    "delete": "Eliminar Ticket",
+    "statusLabel": "Estado",
+    "priorityLabel": "Prioridad",
+    "category": "Categoría",
+    "assignee": "Asignado a",
+    "createdAt": "Creado el",
+    "updatedAt": "Actualizado el",
+    "goBackToInternal": "Volver al panel interno",
+    "globalTickets": "Tickets globales",
+    "allTickets": "Todos los tickets",
+    "quickFilters": "Filtros rápidos",
+    "agentAdminDescription": "Como agente/admin puedes ver y gestionar tickets de todos los usuarios.",
+    "organization": "Organización",
+    "all": "Todos",
+    "user": "Usuario",
+    "loading": "Cargando tickets...",
+    "noTickets": "No hay tickets",
+    "noTicketsMessage": "No se encontraron tickets para esta organización o filtros.",
+    "viewDetail": "Ver detalle",
+    "status": {
+      "open": "Abierto",
+      "inProgress": "En progreso",
+      "resolved": "Resuelto"
+    },
+    "priority": {
+      "low": "Baja",
+      "medium": "Media",
+      "high": "Alta",
+      "critical": "Crítica"
+    },
+    "newTicket": "Nuevo Ticket",
+    "success": {
+      "created": "Ticket creado correctamente"
+    },
+    "error": {
+      "createFailed": "Error al crear ticket"
+    },
+    "form": {
+      "title": "Título",
+      "titlePlaceholder": "Ej: Error en facturación",
+      "description": "Descripción",
+      "type": "Tipo",
+      "project": "Proyecto",
+      "attachments": "Adjuntos",
+      "select": "Seleccionar...",
+      "filesSelected": "archivo(s) seleccionado(s)",
+      "typeOptions": {
+        "requirement": "Requerimiento",
+        "incident": "Incidente",
+        "inquiry": "Consulta"
+      }
+    },
+    "validation": {
+      "titleRequired": "El título es obligatorio"
+    }
+  },
+  "resources": {
+    "title": "Recursos",
+    "availability": "Disponibilidad",
+    "workload": "Carga de Trabajo",
+    "skills": "Skills",
+    "certifications": "Certificaciones",
+    "vacations": "Vacaciones"
+  },
+  "reports": {
+    "title": "Reportes",
+    "executive": "Dashboard Ejecutivo",
+    "automated": "Reportes Automáticos",
+    "export": "Exportar",
+    "pdf": "PDF",
+    "excel": "Excel"
+  },
+  "settings": {
+    "title": "Configuración",
+    "preferences": "Preferencias",
+    "profile": "Perfil",
+    "security": "Seguridad",
+    "notifications": "Notificaciones",
+    "customization": "Personalización"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "unread": "Sin leer",
+    "markAllRead": "Marcar todas como leídas",
+    "deleteAllRead": "Eliminar leídas",
+    "noNotifications": "No hay notificaciones"
+  },
+  "onboarding": {
+    "title": "Onboarding",
+    "checklist": "Checklist de Configuración",
+    "tours": "Tours Guiados",
+    "progress": "Progreso"
+  },
+  "customization": {
+    "title": "Personalización",
+    "preferences": "Preferencias",
+    "savedViews": "Vistas Guardadas",
+    "keyboardShortcuts": "Atajos de Teclado",
+    "branding": "Branding"
+  },
+  "ui": {
+    "quickCreate": "Quick Create",
+    "refresh": "Actualizar",
+    "noItemsAvailable": "No hay items disponibles"
+  },
+  "sidebar": {
+    "administration": "Administración",
+    "operations": "Operaciones",
+    "controlPanel": "Panel de Control",
+    "help": "Ayuda",
+    "technicalSupport": "Soporte Técnico",
+    "myTickets": "Mis Tickets",
+    "myServices": "Mis Servicios",
+    "artificialIntelligence": "Inteligencia Artificial",
+    "payments": "Pagos",
+    "users": "Usuarios",
+    "health": "Health",
+    "blog": "Blog",
+    "comments": "Comentarios",
+    "auditLog": "Audit Log"
+  }
+}
+

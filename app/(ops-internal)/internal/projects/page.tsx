@@ -9,6 +9,7 @@ import OrgSelector, { type Org } from "@/components/common/OrgSelector";
 import { fetchProjects, type Project } from "@/lib/projects";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { LoadingState, ErrorState, EmptyState } from "@/components/ui/state";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 export default function InternalProjectsPage() {
   const router = useRouter();
@@ -16,6 +17,8 @@ export default function InternalProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const tProjects = useTranslationsSafe("projects");
+  const tCommon = useTranslationsSafe("common");
 
   const loadProjects = useCallback(async () => {
     setLoading(true);
@@ -24,7 +27,7 @@ export default function InternalProjectsPage() {
       const data = await fetchProjects(orgId || undefined);
       setProjects(data);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error al cargar proyectos";
+      const msg = err instanceof Error ? err.message : tProjects("error.loadingFailed");
       setError(msg);
     } finally {
       setLoading(false);
@@ -44,15 +47,15 @@ export default function InternalProjectsPage() {
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="w-4 h-4" />
-            Volver al panel interno
+            {tProjects("goBackToInternal")}
           </Link>
         </div>
 
         <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Proyectos</p>
-          <h1 className="text-3xl font-medium text-foreground">Proyectos por organización</h1>
+          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">{tProjects("title")}</p>
+          <h1 className="text-3xl font-medium text-foreground">{tProjects("byOrganization")}</h1>
           <p className="text-sm text-muted-foreground">
-            Filtra por organización para ver proyectos activos y su estado.
+            {tProjects("filterDescription")}
           </p>
         </div>
 
@@ -61,9 +64,9 @@ export default function InternalProjectsPage() {
         {error && <ErrorState message={error} />}
 
         {loading ? (
-          <LoadingState title="Cargando proyectos..." />
+          <LoadingState title={tProjects("loading")} />
         ) : projects.length === 0 ? (
-          <EmptyState title="Sin proyectos" message="No hay proyectos para la organización seleccionada." />
+          <EmptyState title={tProjects("noProjects")} message={tProjects("noProjectsMessage")} />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {projects.map((p) => (
@@ -84,27 +87,27 @@ export default function InternalProjectsPage() {
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {p.tipo || "Proyecto"} · Org: {p.organizationId || "N/A"}
+                  {p.tipo || tProjects("defaultType")} · Org: {p.organizationId || "N/A"}
                 </p>
                 <p className="text-sm text-muted-foreground line-clamp-2">
-                  {p.descripcion || "Sin descripción."}
+                  {p.descripcion || tProjects("noDescription")}
                 </p>
                 <div className="flex items-center gap-2 pt-2">
                   <Button asChild variant="outline" size="sm" className="flex-1">
                     <Link href={`/internal/projects/${p.id}`}>
-                      Detalle
+                      {tProjects("detail")}
                     </Link>
                   </Button>
                   <Button asChild variant="outline" size="sm" className="flex-1">
                     <Link href={`/internal/projects/${p.id}/kanban`}>
                       <LayoutGrid className="w-4 h-4 mr-2" />
-                      Kanban
+                      {tProjects("kanban")}
                     </Link>
                   </Button>
                   <Button asChild variant="outline" size="sm" className="flex-1">
                     <Link href={`/internal/projects/${p.id}/gantt`}>
                       <Calendar className="w-4 h-4 mr-2" />
-                      Gantt
+                      {tProjects("gantt")}
                     </Link>
                   </Button>
                 </div>

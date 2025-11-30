@@ -6,6 +6,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { OrgProvider } from "@/components/common/OrgProvider";
 import { OnboardingProvider } from "@/components/onboarding/OnboardingProvider";
+// import { LocaleProvider } from "@/components/i18n/LocaleProvider"; // Temporalmente deshabilitado
 
 export function Providers({ children }: { children: React.ReactNode }) {
   // Inicializamos el cliente de React Query una sola vez por sesión
@@ -30,6 +31,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <OrgProvider>
           <OnboardingProvider>
             {children}
+            {/* <LocaleProvider>{children}</LocaleProvider> */}
           </OnboardingProvider>
         </OrgProvider>
       </NextThemesProvider>

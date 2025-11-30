@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 import { 
   LayoutDashboard, 
   Ticket, 
@@ -43,149 +44,21 @@ import { SidebarUser } from "@/components/dashboard/sidebar-user";
 import { getAccessToken } from "@/lib/auth";
 import { buildApiUrl } from "@/lib/api";
 
-// Items para clientes
-const clientSidebarItems = [
-  {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Mis Tickets",
-    href: "/client/tickets",
-    icon: Ticket,
-  },
-  {
-    title: "Mis Servicios",
-    href: "/services",
-    icon: Package,
-  },
-  {
-    title: "Inteligencia Artificial",
-    href: "/client/ia/asistente",
-    icon: BrainCircuit,
-    badge: "Beta"
-  },
-  {
-    title: "Pagos",
-    href: "/client/payments",
-    icon: CreditCard,
-  },
-];
-
-// Items para admin
-const adminSidebarItems: Array<{
+// Tipos para items del sidebar
+type SidebarItem = {
   title: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   badge?: string;
-}> = [
-  {
-    title: "Dashboard",
-    href: "/admin",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Tickets",
-    href: "/admin/tickets",
-    icon: Ticket,
-  },
-  {
-    title: "Usuarios",
-    href: "/admin/users",
-    icon: Users,
-  },
-  {
-    title: "Servicios",
-    href: "/admin/services",
-    icon: Package,
-  },
-  {
-    title: "Health",
-    href: "/admin/health",
-    icon: HeartPulse,
-  },
-  {
-    title: "Blog",
-    href: "/admin/blog",
-    icon: FileText,
-  },
-  {
-    title: "Comentarios",
-    href: "/admin/blog/comments",
-    icon: MessageSquare,
-  },
-  {
-    title: "Notificaciones",
-    href: "/admin/notifications",
-    icon: Bell,
-  },
-  {
-    title: "Audit Log",
-    href: "/admin/audit-log",
-    icon: History,
-  },
-  {
-    title: "Recursos",
-    href: "/admin/resources",
-    icon: UserCog,
-  },
-  {
-    title: "Reportes",
-    href: "/admin/reports",
-    icon: BarChart3,
-  },
-  {
-    title: "Configuración",
-    href: "/admin/settings",
-    icon: Settings,
-  },
-];
-
-// Items para interno/agente
-const internalSidebarItems: Array<{
-  title: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  badge?: string;
-}> = [
-  {
-    title: "Dashboard",
-    href: "/internal",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Tickets",
-    href: "/internal/tickets",
-    icon: Ticket,
-  },
-  {
-    title: "Proyectos",
-    href: "/internal/projects",
-    icon: FolderKanban,
-  },
-  {
-    title: "Notificaciones",
-    href: "/internal/notifications",
-    icon: Bell,
-  },
-  {
-    title: "Recursos",
-    href: "/internal/resources",
-    icon: UserCog,
-  },
-  {
-    title: "Reportes",
-    href: "/internal/reports",
-    icon: BarChart3,
-  },
-];
+};
 
 export function AppSidebar() {
   const pathname = usePathname();
   const { state, isMobile } = useSidebar();
   const isExpanded = state === "expanded" && !isMobile;
   const [userRole, setUserRole] = useState<string | null>(null);
+  
+  const t = useTranslationsSafe();
 
   // Obtener el rol del usuario
   useEffect(() => {
@@ -212,26 +85,152 @@ export function AppSidebar() {
     fetchUserRole();
   }, []);
 
+  // Funciones para obtener items (dentro del componente para tener acceso a t)
+  const getClientSidebarItems = (): SidebarItem[] => [
+    {
+      title: t("navigation.dashboard"),
+      href: "/dashboard",
+      icon: LayoutDashboard,
+    },
+    {
+      title: t("sidebar.myTickets"),
+      href: "/client/tickets",
+      icon: Ticket,
+    },
+    {
+      title: t("sidebar.myServices"),
+      href: "/services",
+      icon: Package,
+    },
+    {
+      title: t("sidebar.artificialIntelligence"),
+      href: "/client/ia/asistente",
+      icon: BrainCircuit,
+      badge: "Beta"
+    },
+    {
+      title: t("sidebar.payments"),
+      href: "/client/payments",
+      icon: CreditCard,
+    },
+  ];
+
+  const getAdminSidebarItems = (): SidebarItem[] => [
+    {
+      title: t("navigation.dashboard"),
+      href: "/admin",
+      icon: LayoutDashboard,
+    },
+    {
+      title: t("navigation.tickets"),
+      href: "/admin/tickets",
+      icon: Ticket,
+    },
+    {
+      title: t("sidebar.users"),
+      href: "/admin/users",
+      icon: Users,
+    },
+    {
+      title: t("navigation.projects"),
+      href: "/admin/services",
+      icon: Package,
+    },
+    {
+      title: t("sidebar.health"),
+      href: "/admin/health",
+      icon: HeartPulse,
+    },
+    {
+      title: t("sidebar.blog"),
+      href: "/admin/blog",
+      icon: FileText,
+    },
+    {
+      title: t("sidebar.comments"),
+      href: "/admin/blog/comments",
+      icon: MessageSquare,
+    },
+    {
+      title: t("navigation.notifications"),
+      href: "/admin/notifications",
+      icon: Bell,
+    },
+    {
+      title: t("sidebar.auditLog"),
+      href: "/admin/audit-log",
+      icon: History,
+    },
+    {
+      title: t("navigation.resources"),
+      href: "/admin/resources",
+      icon: UserCog,
+    },
+    {
+      title: t("navigation.reports"),
+      href: "/admin/reports",
+      icon: BarChart3,
+    },
+    {
+      title: t("navigation.settings"),
+      href: "/admin/settings",
+      icon: Settings,
+    },
+  ];
+
+  const getInternalSidebarItems = (): SidebarItem[] => [
+    {
+      title: t("navigation.dashboard"),
+      href: "/internal",
+      icon: LayoutDashboard,
+    },
+    {
+      title: t("navigation.tickets"),
+      href: "/internal/tickets",
+      icon: Ticket,
+    },
+    {
+      title: t("navigation.projects"),
+      href: "/internal/projects",
+      icon: FolderKanban,
+    },
+    {
+      title: t("navigation.notifications"),
+      href: "/internal/notifications",
+      icon: Bell,
+    },
+    {
+      title: t("navigation.resources"),
+      href: "/internal/resources",
+      icon: UserCog,
+    },
+    {
+      title: t("navigation.reports"),
+      href: "/internal/reports",
+      icon: BarChart3,
+    },
+  ];
+
   // Determinar qué items mostrar según la ruta Y el rol del usuario
-  const getSidebarItems = () => {
+  const getSidebarItems = (): SidebarItem[] => {
     // Si está en ruta de admin, mostrar items de admin
     if (pathname?.startsWith("/admin")) {
-      return adminSidebarItems;
+      return getAdminSidebarItems();
     }
     // Si está en ruta de interno, mostrar items de interno
     if (pathname?.startsWith("/internal")) {
-      return internalSidebarItems;
+      return getInternalSidebarItems();
     }
     // Si el usuario es admin pero está en otra ruta, mostrar items de admin
     if (userRole === "admin" || userRole === "superadmin" || userRole === "ops" || userRole === "support" || userRole === "soporte") {
-      return adminSidebarItems;
+      return getAdminSidebarItems();
     }
     // Si el usuario es agente pero está en otra ruta, mostrar items de interno
     if (userRole === "agente") {
-      return internalSidebarItems;
+      return getInternalSidebarItems();
     }
     // Para /dashboard y cualquier otra ruta de cliente
-    return clientSidebarItems;
+    return getClientSidebarItems();
   };
 
   const sidebarItems = getSidebarItems();
@@ -240,9 +239,9 @@ export function AppSidebar() {
 
   // Determinar el título del grupo principal
   const getMainGroupLabel = () => {
-    if (isAdmin) return "Administración";
-    if (isInternal) return "Operaciones";
-    return "Panel de Control";
+    if (isAdmin) return t("sidebar.administration");
+    if (isInternal) return t("sidebar.operations");
+    return t("sidebar.controlPanel");
   };
 
   return (
@@ -317,7 +316,7 @@ export function AppSidebar() {
                   });
                 })()
               ) : (
-                <div className="px-2 py-4 text-xs text-muted-foreground">No hay items disponibles</div>
+                <div className="px-2 py-4 text-xs text-muted-foreground">{t("ui.noItemsAvailable")}</div>
               )}
             </SidebarMenu>
           </SidebarGroupContent>
@@ -326,15 +325,15 @@ export function AppSidebar() {
         {!isAdmin && !isInternal && (
           <SidebarGroup className="mt-4">
             <SidebarGroupLabel className="px-2 text-xs font-medium text-sidebar-foreground/70 mb-1">
-              Ayuda
+              {t("sidebar.help")}
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild tooltip="Soporte Técnico">
+                  <SidebarMenuButton asChild tooltip={t("sidebar.technicalSupport")}>
                     <Link href="/contact" className="flex items-center gap-2.5 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0">
                       <LifeBuoy className="size-4 shrink-0" />
-                      <span className="group-data-[collapsible=icon]:hidden flex-1 text-left">Soporte Técnico</span>
+                      <span className="group-data-[collapsible=icon]:hidden flex-1 text-left">{t("sidebar.technicalSupport")}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

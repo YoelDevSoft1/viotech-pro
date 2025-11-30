@@ -14,6 +14,7 @@ import { apiClient } from "@/lib/apiClient";
 import { LoadingState, ErrorState, EmptyState } from "@/components/ui/state";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 type Ticket = {
   id: string;
@@ -30,6 +31,8 @@ export default function InternalTicketsPage() {
   const { orgId, setOrgId } = useOrg();
   const [filters, setFilters] = useState({ estado: "", prioridad: "" });
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const tTickets = useTranslationsSafe("tickets");
+  const tCommon = useTranslationsSafe("common");
 
   const { tickets, loading, error, refresh } = useTickets({
     estado: filters.estado || undefined,
@@ -70,53 +73,53 @@ export default function InternalTicketsPage() {
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="w-4 h-4" />
-            Volver al panel interno
+            {tTickets("goBackToInternal")}
           </Link>
         </div>
         <div className="flex flex-col gap-2">
           <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-            Tickets globales
+            {tTickets("globalTickets")}
           </p>
           <div className="flex items-center justify-between gap-3">
-            <h1 className="text-3xl font-medium text-foreground">Todos los tickets</h1>
+            <h1 className="text-3xl font-medium text-foreground">{tTickets("allTickets")}</h1>
             <div className="inline-flex items-center gap-2 text-xs text-muted-foreground">
               <Filter className="w-4 h-4" />
-              Filtros rápidos
+              {tTickets("quickFilters")}
             </div>
           </div>
           <p className="text-sm text-muted-foreground">
-            Como agente/admin puedes ver y gestionar tickets de todos los usuarios.
+            {tTickets("agentAdminDescription")}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <OrgSelector onChange={(org: Org | null) => setOrgId(org?.id || "")} label="Organización" />
+          <OrgSelector onChange={(org: Org | null) => setOrgId(org?.id || "")} label={tTickets("organization")} />
           <div className="space-y-2">
-            <label className="text-sm font-medium">Estado</label>
+            <label className="text-sm font-medium">{tTickets("statusLabel")}</label>
             <Select value={filters.estado || ""} onValueChange={(value) => setFilters((f) => ({ ...f, estado: value }))}>
               <SelectTrigger>
-                <SelectValue placeholder="Todos" />
+                <SelectValue placeholder={tTickets("all")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
-                <SelectItem value="abierto">Abierto</SelectItem>
-                <SelectItem value="en_progreso">En progreso</SelectItem>
-                <SelectItem value="resuelto">Resuelto</SelectItem>
+                <SelectItem value="all">{tTickets("all")}</SelectItem>
+                <SelectItem value="abierto">{tTickets("status.open")}</SelectItem>
+                <SelectItem value="en_progreso">{tTickets("status.inProgress")}</SelectItem>
+                <SelectItem value="resuelto">{tTickets("status.resolved")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">Prioridad</label>
+            <label className="text-sm font-medium">{tTickets("priorityLabel")}</label>
             <Select value={filters.prioridad || ""} onValueChange={(value) => setFilters((f) => ({ ...f, prioridad: value }))}>
               <SelectTrigger>
-                <SelectValue placeholder="Todas" />
+                <SelectValue placeholder={tTickets("all")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas</SelectItem>
-                <SelectItem value="baja">Baja</SelectItem>
-                <SelectItem value="media">Media</SelectItem>
-                <SelectItem value="alta">Alta</SelectItem>
-                <SelectItem value="critica">Crítica</SelectItem>
+                <SelectItem value="all">{tTickets("all")}</SelectItem>
+                <SelectItem value="baja">{tTickets("priority.low")}</SelectItem>
+                <SelectItem value="media">{tTickets("priority.medium")}</SelectItem>
+                <SelectItem value="alta">{tTickets("priority.high")}</SelectItem>
+                <SelectItem value="critica">{tTickets("priority.critical")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -125,68 +128,68 @@ export default function InternalTicketsPage() {
         {error && <ErrorState message={error} />}
 
         {loading ? (
-          <LoadingState title="Cargando tickets..." />
+          <LoadingState title={tTickets("loading")} />
         ) : tickets.length === 0 ? (
-          <EmptyState title="No hay tickets" message="No se encontraron tickets para esta organización o filtros." />
+          <EmptyState title={tTickets("noTickets")} message={tTickets("noTicketsMessage")} />
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="col-span-4">Ticket</TableHead>
-                <TableHead className="col-span-2">Estado</TableHead>
-                <TableHead className="col-span-2">Prioridad</TableHead>
-                <TableHead className="col-span-2">Usuario</TableHead>
-                <TableHead className="col-span-2">Creado</TableHead>
+                <TableHead className="col-span-4">{tTickets("title")}</TableHead>
+                <TableHead className="col-span-2">{tTickets("statusLabel")}</TableHead>
+                <TableHead className="col-span-2">{tTickets("priorityLabel")}</TableHead>
+                <TableHead className="col-span-2">{tTickets("user")}</TableHead>
+                <TableHead className="col-span-2">{tTickets("createdAt")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {tickets.map((t) => (
-                <TableRow key={t.id} className="items-center">
+              {tickets.map((ticket) => (
+                <TableRow key={ticket.id} className="items-center">
                   <TableCell className="col-span-4">
                     <div className="space-y-0.5">
-                      <p className="font-medium text-foreground">{t.titulo}</p>
-                      <p className="text-[11px] text-muted-foreground">ID: {t.id}</p>
-                      {t.descripcion && (
-                        <p className="text-xs text-muted-foreground line-clamp-1">{t.descripcion}</p>
+                      <p className="font-medium text-foreground">{ticket.titulo}</p>
+                      <p className="text-[11px] text-muted-foreground">ID: {ticket.id}</p>
+                      {ticket.descripcion && (
+                        <p className="text-xs text-muted-foreground line-clamp-1">{ticket.descripcion}</p>
                       )}
                     </div>
                   </TableCell>
                   <TableCell className="col-span-2">
                     <Select
-                      value={t.estado}
-                      onValueChange={(value) => updateTicket(t.id, { estado: value })}
+                      value={ticket.estado}
+                      onValueChange={(value) => updateTicket(ticket.id, { estado: value })}
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="abierto">Abierto</SelectItem>
-                        <SelectItem value="en_progreso">En progreso</SelectItem>
-                        <SelectItem value="resuelto">Resuelto</SelectItem>
+                        <SelectItem value="abierto">{tTickets("status.open")}</SelectItem>
+                        <SelectItem value="en_progreso">{tTickets("status.inProgress")}</SelectItem>
+                        <SelectItem value="resuelto">{tTickets("status.resolved")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </TableCell>
                   <TableCell className="col-span-2">
                     <Select
-                      value={t.prioridad}
-                      onValueChange={(value) => updateTicket(t.id, { prioridad: value })}
+                      value={ticket.prioridad}
+                      onValueChange={(value) => updateTicket(ticket.id, { prioridad: value })}
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="baja">Baja</SelectItem>
-                        <SelectItem value="media">Media</SelectItem>
-                        <SelectItem value="alta">Alta</SelectItem>
-                        <SelectItem value="critica">Crítica</SelectItem>
+                        <SelectItem value="baja">{tTickets("priority.low")}</SelectItem>
+                        <SelectItem value="media">{tTickets("priority.medium")}</SelectItem>
+                        <SelectItem value="alta">{tTickets("priority.high")}</SelectItem>
+                        <SelectItem value="critica">{tTickets("priority.critical")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </TableCell>
                   <TableCell className="col-span-2 text-sm text-muted-foreground">
-                    {t.usuario?.email ? `${t.usuario.nombre || "Sin nombre"} (${t.usuario.email})` : "N/D"}
+                    {ticket.usuario?.email ? `${ticket.usuario.nombre || "Sin nombre"} (${ticket.usuario.email})` : "N/D"}
                   </TableCell>
                   <TableCell className="col-span-2 text-sm text-muted-foreground">
-                    {new Date(t.createdAt).toLocaleDateString("es-CO", {
+                    {new Date(ticket.createdAt).toLocaleDateString("es-CO", {
                       day: "2-digit",
                       month: "short",
                     })}
@@ -195,10 +198,10 @@ export default function InternalTicketsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => router.push(`/internal/tickets/${t.id}`)}
-                      disabled={actionLoading === t.id}
+                      onClick={() => router.push(`/internal/tickets/${ticket.id}`)}
+                      disabled={actionLoading === ticket.id}
                     >
-                      Ver detalle
+                      {tTickets("viewDetail")}
                     </Button>
                   </TableCell>
                 </TableRow>

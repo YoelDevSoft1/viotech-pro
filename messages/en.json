@@ -1,0 +1,200 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update",
+    "search": "Search",
+    "filter": "Filter",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "retry": "Retry",
+    "goBack": "Go back"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "projects": "Projects",
+    "tickets": "Tickets",
+    "resources": "Resources",
+    "reports": "Reports",
+    "settings": "Settings",
+    "notifications": "Notifications",
+    "auditLog": "Audit Log",
+    "onboarding": "Onboarding"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "description": "Consulting, deliverables and VIP support centralized",
+    "kpis": {
+      "activeProjects": "Active Projects",
+      "openTickets": "Open Tickets",
+      "resourceUtilization": "Resource Utilization",
+      "onTimeDelivery": "On-Time Delivery"
+    },
+    "error": {
+      "loadingFailed": "We couldn't load your information",
+      "checkConnection": "Check your connection and try again"
+    }
+  },
+  "projects": {
+    "title": "Projects",
+    "create": "Create Project",
+    "edit": "Edit Project",
+    "delete": "Delete Project",
+    "status": "Status",
+    "priority": "Priority",
+    "assignee": "Assigned to",
+    "dueDate": "Due Date",
+    "goBackToInternal": "Back to internal panel",
+    "byOrganization": "Projects by organization",
+    "filterDescription": "Filter by organization to view active projects and their status.",
+    "loading": "Loading projects...",
+    "noProjects": "No projects",
+    "noProjectsMessage": "No projects for the selected organization.",
+    "defaultType": "Project",
+    "noDescription": "No description.",
+    "detail": "Detail",
+    "kanban": "Kanban",
+    "gantt": "Gantt",
+    "error": {
+      "loadingFailed": "Error loading projects"
+    }
+  },
+  "tickets": {
+    "title": "Tickets",
+    "create": "Create Ticket",
+    "edit": "Edit Ticket",
+    "delete": "Delete Ticket",
+    "status": "Status",
+    "priority": "Priority",
+    "category": "Category",
+    "assignee": "Assigned to",
+    "createdAt": "Created at",
+    "updatedAt": "Updated at",
+    "goBackToInternal": "Back to internal panel",
+    "globalTickets": "Global tickets",
+    "allTickets": "All tickets",
+    "quickFilters": "Quick filters",
+    "agentAdminDescription": "As agent/admin you can view and manage tickets from all users.",
+    "organization": "Organization",
+    "all": "All",
+    "user": "User",
+    "loading": "Loading tickets...",
+    "noTickets": "No tickets",
+    "noTicketsMessage": "No tickets found for this organization or filters.",
+    "viewDetail": "View detail",
+    "status": {
+      "open": "Open",
+      "inProgress": "In progress",
+      "resolved": "Resolved"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "newTicket": "New Ticket",
+    "success": {
+      "created": "Ticket created successfully"
+    },
+    "error": {
+      "createFailed": "Error creating ticket"
+    },
+    "form": {
+      "title": "Title",
+      "titlePlaceholder": "E.g.: Billing error",
+      "description": "Description",
+      "type": "Type",
+      "project": "Project",
+      "attachments": "Attachments",
+      "select": "Select...",
+      "filesSelected": "file(s) selected",
+      "typeOptions": {
+        "requirement": "Requirement",
+        "incident": "Incident",
+        "inquiry": "Inquiry"
+      }
+    },
+    "validation": {
+      "titleRequired": "Title is required"
+    }
+  },
+  "resources": {
+    "title": "Resources",
+    "availability": "Availability",
+    "workload": "Workload",
+    "skills": "Skills",
+    "certifications": "Certifications",
+    "vacations": "Vacations"
+  },
+  "reports": {
+    "title": "Reports",
+    "executive": "Executive Dashboard",
+    "automated": "Automated Reports",
+    "export": "Export",
+    "pdf": "PDF",
+    "excel": "Excel"
+  },
+  "settings": {
+    "title": "Settings",
+    "preferences": "Preferences",
+    "profile": "Profile",
+    "security": "Security",
+    "notifications": "Notifications",
+    "customization": "Customization"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "unread": "Unread",
+    "markAllRead": "Mark all as read",
+    "deleteAllRead": "Delete read",
+    "noNotifications": "No notifications"
+  },
+  "onboarding": {
+    "title": "Onboarding",
+    "checklist": "Configuration Checklist",
+    "tours": "Guided Tours",
+    "progress": "Progress"
+  },
+  "customization": {
+    "title": "Customization",
+    "preferences": "Preferences",
+    "savedViews": "Saved Views",
+    "keyboardShortcuts": "Keyboard Shortcuts",
+    "branding": "Branding"
+  },
+  "ui": {
+    "quickCreate": "Quick Create",
+    "refresh": "Refresh",
+    "noItemsAvailable": "No items available"
+  },
+  "sidebar": {
+    "administration": "Administration",
+    "operations": "Operations",
+    "controlPanel": "Control Panel",
+    "help": "Help",
+    "technicalSupport": "Technical Support",
+    "myTickets": "My Tickets",
+    "myServices": "My Services",
+    "artificialIntelligence": "Artificial Intelligence",
+    "payments": "Payments",
+    "users": "Users",
+    "health": "Health",
+    "blog": "Blog",
+    "comments": "Comments",
+    "auditLog": "Audit Log"
+  }
+}
+

@@ -15,11 +15,12 @@ import { apiClient } from "@/lib/apiClient";
 import { uploadTicketAttachment } from "@/lib/storage/uploadTicketAttachment";
 import { useOrganizations, useProjects } from "@/lib/hooks/useResources";
 import { ResourceSelector } from "@/components/resources/ResourceSelector";
-import { toast } from "sonner"; // O tu sistema de Toast
+import { toast } from "sonner";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
-// Esquema de validación
-const ticketSchema = z.object({
-  titulo: z.string().min(3, "El título es obligatorio"),
+// Esquema de validación - se actualizará dinámicamente con traducciones
+const getTicketSchema = (t: (key: string) => string) => z.object({
+  titulo: z.string().min(3, t("validation.titleRequired")),
   descripcion: z.string().optional(),
   prioridad: z.string(),
   impacto: z.string(),
@@ -41,9 +42,12 @@ interface Props {
 export function CreateTicketDialog({ open, onOpenChange, onSuccess }: Props) {
   const [files, setFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const tTickets = useTranslationsSafe("tickets");
+  const tCommon = useTranslationsSafe("common");
   
   // Hooks de datos
   const { data: orgs } = useOrganizations();
+  const ticketSchema = getTicketSchema(tTickets);
   const form = useForm<z.infer<typeof ticketSchema>>({
     resolver: zodResolver(ticketSchema),
     defaultValues: {
@@ -85,13 +89,13 @@ export function CreateTicketDialog({ open, onOpenChange, onSuccess }: Props) {
         }
       }
 
-      toast.success("Ticket creado correctamente");
+      toast.success(tTickets("success.created"));
       form.reset();
       setFiles([]);
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
-      toast.error(error.message || "Error al crear ticket");
+      toast.error(error.message || tTickets("error.createFailed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -101,15 +105,15 @@ export function CreateTicketDialog({ open, onOpenChange, onSuccess }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Nuevo Ticket</DialogTitle>
+          <DialogTitle>{tTickets("newTicket")}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField control={form.control} name="titulo" render={({ field }) => (
               <FormItem>
-                <FormLabel>Título</FormLabel>
-                <FormControl><Input placeholder="Ej: Error en facturación" {...field} /></FormControl>
+                <FormLabel>{tTickets("form.title")}</FormLabel>
+                <FormControl><Input placeholder={tTickets("form.titlePlaceholder")} {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -117,19 +121,19 @@ export function CreateTicketDialog({ open, onOpenChange, onSuccess }: Props) {
             <div className="grid grid-cols-2 gap-4">
                 <FormField control={form.control} name="categoria" render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Categoría</FormLabel>
+                        <FormLabel>{tTickets("category")}</FormLabel>
                         <FormControl><Input {...field} /></FormControl>
                     </FormItem>
                 )} />
                 <FormField control={form.control} name="tipo" render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Tipo</FormLabel>
+                        <FormLabel>{tTickets("form.type")}</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                             <SelectContent>
-                                <SelectItem value="requerimiento">Requerimiento</SelectItem>
-                                <SelectItem value="incidente">Incidente</SelectItem>
-                                <SelectItem value="consulta">Consulta</SelectItem>
+                                <SelectItem value="requerimiento">{tTickets("form.typeOptions.requirement")}</SelectItem>
+                                <SelectItem value="incidente">{tTickets("form.typeOptions.incident")}</SelectItem>
+                                <SelectItem value="consulta">{tTickets("form.typeOptions.inquiry")}</SelectItem>
                             </SelectContent>
                         </Select>
                     </FormItem>
@@ -139,14 +143,14 @@ export function CreateTicketDialog({ open, onOpenChange, onSuccess }: Props) {
             <div className="grid grid-cols-3 gap-4">
                 <FormField control={form.control} name="prioridad" render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Prioridad</FormLabel>
+                        <FormLabel>{tTickets("priorityLabel")}</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                             <SelectContent>
-                                <SelectItem value="baja">Baja</SelectItem>
-                                <SelectItem value="media">Media</SelectItem>
-                                <SelectItem value="alta">Alta</SelectItem>
-                                <SelectItem value="critica">Crítica</SelectItem>
+                                <SelectItem value="baja">{tTickets("priority.low")}</SelectItem>
+                                <SelectItem value="media">{tTickets("priority.medium")}</SelectItem>
+                                <SelectItem value="alta">{tTickets("priority.high")}</SelectItem>
+                                <SelectItem value="critica">{tTickets("priority.critical")}</SelectItem>
                             </SelectContent>
                         </Select>
                     </FormItem>
@@ -157,9 +161,9 @@ export function CreateTicketDialog({ open, onOpenChange, onSuccess }: Props) {
             <div className="grid grid-cols-2 gap-4">
                 <FormField control={form.control} name="organizationId" render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Organización</FormLabel>
+                        <FormLabel>{tTickets("organization")}</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl><SelectTrigger><SelectValue placeholder="Seleccionar..." /></SelectTrigger></FormControl>
+                            <FormControl><SelectTrigger><SelectValue placeholder={tTickets("form.select")} /></SelectTrigger></FormControl>
                             <SelectContent>
                                 {orgs?.map((o: any) => (
                                     <SelectItem key={o.id} value={o.id}>{o.nombre}</SelectItem>
@@ -170,9 +174,9 @@ export function CreateTicketDialog({ open, onOpenChange, onSuccess }: Props) {
                 )} />
                 <FormField control={form.control} name="projectId" render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Proyecto</FormLabel>
+                        <FormLabel>{tTickets("form.project")}</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!selectedOrg}>
-                            <FormControl><SelectTrigger><SelectValue placeholder="Seleccionar..." /></SelectTrigger></FormControl>
+                            <FormControl><SelectTrigger><SelectValue placeholder={tTickets("form.select")} /></SelectTrigger></FormControl>
                             <SelectContent>
                                 {projects?.map((p: any) => (
                                     <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>
@@ -185,7 +189,7 @@ export function CreateTicketDialog({ open, onOpenChange, onSuccess }: Props) {
 
             <FormField control={form.control} name="descripcion" render={({ field }) => (
                 <FormItem>
-                    <FormLabel>Descripción</FormLabel>
+                    <FormLabel>{tTickets("form.description")}</FormLabel>
                     <FormControl><Textarea rows={4} {...field} /></FormControl>
                 </FormItem>
             )} />
@@ -193,7 +197,7 @@ export function CreateTicketDialog({ open, onOpenChange, onSuccess }: Props) {
             {/* Asignación de recurso */}
             <FormField control={form.control} name="asignadoA" render={({ field }) => (
                 <FormItem>
-                    <FormLabel>Asignar a</FormLabel>
+                    <FormLabel>{tTickets("assignee")}</FormLabel>
                     <FormControl>
                         <ResourceSelector
                             value={field.value}
@@ -208,7 +212,7 @@ export function CreateTicketDialog({ open, onOpenChange, onSuccess }: Props) {
             )} />
 
             <div className="space-y-2">
-                <FormLabel>Adjuntos</FormLabel>
+                <FormLabel>{tTickets("form.attachments")}</FormLabel>
                 <div className="flex items-center gap-2 p-2 border rounded-md bg-muted/20">
                     <Paperclip className="w-4 h-4 text-muted-foreground" />
                     <Input 
@@ -218,14 +222,14 @@ export function CreateTicketDialog({ open, onOpenChange, onSuccess }: Props) {
                         onChange={(e) => setFiles(Array.from(e.target.files || []))} 
                     />
                 </div>
-                {files.length > 0 && <p className="text-xs text-muted-foreground">{files.length} archivo(s) seleccionado(s)</p>}
+                {files.length > 0 && <p className="text-xs text-muted-foreground">{files.length} {tTickets("form.filesSelected")}</p>}
             </div>
 
             <div className="flex justify-end gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{tCommon("cancel")}</Button>
                 <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Crear Ticket
+                    {tTickets("create")}
                 </Button>
             </div>
           </form>

@@ -10,9 +10,12 @@ import { RoadmapPanel } from "@/components/dashboard/RoadmapPanel";
 import { TicketsTrendChart } from "@/components/dashboard/tickets-trend-chart";
 import { SLAMetrics } from "@/components/dashboard/sla-metrics";
 import { Button } from "@/components/ui/button";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 export default function DashboardPage() {
   const { metrics, isLoading, isError, refetch } = useDashboard();
+  const t = useTranslationsSafe("dashboard");
+  const tCommon = useTranslationsSafe("common");
 
   // Solo esperamos a que useDashboard termine de cargar
   // useModelStatus se maneja independientemente en SecurityPanel
@@ -29,9 +32,9 @@ export default function DashboardPage() {
       <div className="flex flex-1 flex-col gap-4">
         <div className="flex flex-col items-center justify-center h-[50vh] space-y-4 text-center">
           <AlertCircle className="h-12 w-12 text-destructive" />
-          <h3 className="text-xl font-semibold">No pudimos cargar tu información</h3>
-          <p className="text-muted-foreground">Verifica tu conexión e intenta nuevamente.</p>
-          <Button onClick={() => refetch()} variant="outline">Reintentar</Button>
+          <h3 className="text-xl font-semibold">{t("error.loadingFailed")}</h3>
+          <p className="text-muted-foreground">{t("error.checkConnection")}</p>
+          <Button onClick={() => refetch()} variant="outline">{tCommon("retry")}</Button>
         </div>
       </div>
     );
@@ -41,9 +44,9 @@ export default function DashboardPage() {
     <div className="flex flex-1 flex-col gap-6 p-6">
       {/* Header del Dashboard */}
       <div className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
         <p className="text-muted-foreground">
-          Consultoría, entregables y soporte VIP centralizados
+          {t("description")}
         </p>
       </div>
 
