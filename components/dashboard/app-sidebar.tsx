@@ -18,7 +18,9 @@ import {
   FileText,
   MessageSquare,
   Bell,
-  History
+  History,
+  UserCog,
+  BarChart3
 } from "lucide-react";
 import {
   Sidebar,
@@ -124,6 +126,16 @@ const adminSidebarItems: Array<{
     icon: History,
   },
   {
+    title: "Recursos",
+    href: "/admin/resources",
+    icon: UserCog,
+  },
+  {
+    title: "Reportes",
+    href: "/admin/reports",
+    icon: BarChart3,
+  },
+  {
     title: "Configuración",
     href: "/admin/settings",
     icon: Settings,
@@ -156,6 +168,16 @@ const internalSidebarItems: Array<{
     title: "Notificaciones",
     href: "/internal/notifications",
     icon: Bell,
+  },
+  {
+    title: "Recursos",
+    href: "/internal/resources",
+    icon: UserCog,
+  },
+  {
+    title: "Reportes",
+    href: "/internal/reports",
+    icon: BarChart3,
   },
 ];
 

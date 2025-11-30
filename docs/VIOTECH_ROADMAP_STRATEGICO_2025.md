@@ -324,21 +324,21 @@ app/(ops-admin)/
 - [x] Exportación a PDF/Excel
 - [x] Vista crítica path
 
-#### **Sprint 2.3: Gestión de Recursos ()**
-- [ ] Calendario de recursos
-- [ ] Asignación de tareas
-- [ ] Carga de trabajo por recurso
-- [ ] Conflictos de asignación
-- [ ] Skills y certificaciones por recurso
-- [ ] Disponibilidad y vacaciones
+#### **Sprint 2.3: Gestión de Recursos (✅ COMPLETADO)**
+- [x] Calendario de recursos
+- [x] Asignación de tareas (integrado con tickets existentes)
+- [x] Carga de trabajo por recurso
+- [x] Conflictos de asignación (backend calcula, frontend muestra)
+- [x] Skills y certificaciones por recurso
+- [x] Disponibilidad y vacaciones
 
-#### **Sprint 2.4: Reportes Ejecutivos ()**
-- [ ] Dashboard ejecutivo con KPIs
-- [ ] Reportes automáticos (diarios, semanales, mensuales)
-- [ ] Exportación a PDF/Excel
-- [ ] Gráficos interactivos (Chart.js o Recharts)
-- [ ] Comparativas históricas
-- [ ] Predicciones con IA
+#### **Sprint 2.4: Reportes Ejecutivos (✅ COMPLETADO)**
+- [x] Dashboard ejecutivo con KPIs
+- [x] Reportes automáticos (diarios, semanales, mensuales)
+- [x] Exportación a PDF/Excel
+- [x] Gráficos interactivos (Recharts)
+- [x] Comparativas históricas
+- [x] Predicciones con IA
 
 **Métricas de Éxito:**
 - Tiempo promedio de entrega de proyectos

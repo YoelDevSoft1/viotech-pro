@@ -68,19 +68,59 @@ export default function AdminDashboardPage() {
 
     try {
       const [healthRes, usersRes] = await Promise.all([
-        fetch(buildApiUrl("/health"), { cache: "no-store" }),
-        fetch(buildApiUrl("/users"), { headers: { Authorization: `Bearer ${token}` }, cache: "no-store", credentials: "include" }),
+        fetch(buildApiUrl("/health"), { 
+          cache: "no-store",
+          headers: { Authorization: `Bearer ${token}` },
+          credentials: "include",
+        }).catch((err) => {
+          // Manejar errores de red
+          console.error("Error al conectar con /health:", err);
+          return { ok: false, status: 0, statusText: err.message || "Error de conexión" } as Response;
+        }),
+        fetch(buildApiUrl("/users"), { 
+          headers: { Authorization: `Bearer ${token}` }, 
+          cache: "no-store", 
+          credentials: "include" 
+        }),
       ]);
 
-      const healthPayload = await healthRes.json().catch(() => null);
-      if (healthRes.ok && healthPayload) {
-        const data = healthPayload?.data || healthPayload;
-        const st = (healthPayload?.status || data?.status || "").toString().toLowerCase();
-        setHealthStatus(["ok", "up", "ready", "healthy"].includes(st) ? "OK" : st || "N/D");
-        setHealthError(null);
+      // Manejar respuesta de health con mejor manejo de errores
+      if (healthRes.ok) {
+        try {
+          const healthPayload = await healthRes.json().catch(() => null);
+          if (healthPayload) {
+            const data = healthPayload?.data || healthPayload;
+            const st = (healthPayload?.status || data?.status || "").toString().toLowerCase();
+            setHealthStatus(["ok", "up", "ready", "healthy"].includes(st) ? "OK" : st || "N/D");
+            setHealthError(null);
+          } else {
+            // Si la respuesta es OK pero no tiene JSON, puede ser texto plano
+            const textResponse = await healthRes.text().catch(() => "");
+            if (textResponse && ["ok", "up", "ready", "healthy"].includes(textResponse.toLowerCase().trim())) {
+              setHealthStatus("OK");
+              setHealthError(null);
+            } else {
+              setHealthStatus("N/D");
+              setHealthError("Respuesta inválida");
+            }
+          }
+        } catch (parseError) {
+          setHealthStatus("N/D");
+          setHealthError(parseError instanceof Error ? parseError.message : "Error al parsear");
+        }
       } else {
+        // Manejar errores HTTP
+        const statusText = healthRes.statusText || `HTTP ${healthRes.status}`;
         setHealthStatus("N/D");
-        setHealthError("Error /health");
+        if (healthRes.status === 0) {
+          setHealthError("Sin conexión");
+        } else if (healthRes.status === 401 || healthRes.status === 403) {
+          setHealthError("No autorizado");
+        } else if (healthRes.status >= 500) {
+          setHealthError(`Error del servidor (${healthRes.status})`);
+        } else {
+          setHealthError(statusText);
+        }
       }
 
       const usersPayload = await usersRes.json().catch(() => null);

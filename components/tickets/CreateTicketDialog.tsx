@@ -14,6 +14,7 @@ import { Loader2, Paperclip } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 import { uploadTicketAttachment } from "@/lib/storage/uploadTicketAttachment";
 import { useOrganizations, useProjects } from "@/lib/hooks/useResources";
+import { ResourceSelector } from "@/components/resources/ResourceSelector";
 import { toast } from "sonner"; // O tu sistema de Toast
 
 // Esquema de validación
@@ -27,6 +28,7 @@ const ticketSchema = z.object({
   tipo: z.string(),
   organizationId: z.string().optional(),
   projectId: z.string().optional(),
+  asignadoA: z.string().optional(),
   slaObjetivo: z.string().optional(),
 });
 
@@ -185,6 +187,23 @@ export function CreateTicketDialog({ open, onOpenChange, onSuccess }: Props) {
                 <FormItem>
                     <FormLabel>Descripción</FormLabel>
                     <FormControl><Textarea rows={4} {...field} /></FormControl>
+                </FormItem>
+            )} />
+
+            {/* Asignación de recurso */}
+            <FormField control={form.control} name="asignadoA" render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Asignar a</FormLabel>
+                    <FormControl>
+                        <ResourceSelector
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            organizationId={selectedOrg}
+                            projectId={form.watch("projectId")}
+                            showWorkload={true}
+                        />
+                    </FormControl>
+                    <FormMessage />
                 </FormItem>
             )} />
 
