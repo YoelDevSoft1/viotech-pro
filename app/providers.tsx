@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { OrgProvider } from "@/components/common/OrgProvider";
+import { OnboardingProvider } from "@/components/onboarding/OnboardingProvider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   // Inicializamos el cliente de React Query una sola vez por sesión
@@ -27,7 +28,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         disableTransitionOnChange
       >
         <OrgProvider>
-          {children}
+          <OnboardingProvider>
+            {children}
+          </OnboardingProvider>
         </OrgProvider>
       </NextThemesProvider>
       
