@@ -136,16 +136,16 @@ export default function ProjectKanbanPage() {
                     <div className="space-y-2">
                       <label className="text-xs text-muted-foreground">Asignado a</label>
                       <Select
-                        value={filters.asignadoA || ""}
+                        value={filters.asignadoA || undefined}
                         onValueChange={(value) =>
-                          setFilters({ ...filters, asignadoA: value || undefined })
+                          setFilters({ ...filters, asignadoA: value === "all" ? undefined : value })
                         }
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Todos" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Todos</SelectItem>
+                          <SelectItem value="all">Todos</SelectItem>
                           {users.map((user: any) => (
                             <SelectItem key={user.id} value={user.id}>
                               {user.nombre || user.name || user.email}
@@ -158,16 +158,16 @@ export default function ProjectKanbanPage() {
                     <div className="space-y-2">
                       <label className="text-xs text-muted-foreground">Prioridad</label>
                       <Select
-                        value={filters.prioridad || ""}
+                        value={filters.prioridad || undefined}
                         onValueChange={(value) =>
-                          setFilters({ ...filters, prioridad: value || undefined })
+                          setFilters({ ...filters, prioridad: value === "all" ? undefined : value })
                         }
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Todas" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Todas</SelectItem>
+                          <SelectItem value="all">Todas</SelectItem>
                           <SelectItem value="P1">P1 - Crítica</SelectItem>
                           <SelectItem value="P2">P2 - Alta</SelectItem>
                           <SelectItem value="P3">P3 - Media</SelectItem>
@@ -179,16 +179,16 @@ export default function ProjectKanbanPage() {
                     <div className="space-y-2">
                       <label className="text-xs text-muted-foreground">Categoría</label>
                       <Select
-                        value={filters.categoria || ""}
+                        value={filters.categoria || undefined}
                         onValueChange={(value) =>
-                          setFilters({ ...filters, categoria: value || undefined })
+                          setFilters({ ...filters, categoria: value === "all" ? undefined : value })
                         }
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Todas" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Todas</SelectItem>
+                          <SelectItem value="all">Todas</SelectItem>
                           <SelectItem value="Técnico">Técnico</SelectItem>
                           <SelectItem value="Funcional">Funcional</SelectItem>
                           <SelectItem value="Consultoría">Consultoría</SelectItem>

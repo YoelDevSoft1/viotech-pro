@@ -355,11 +355,11 @@ export function ProjectTimeline({ projectId, filters: externalFilters }: Project
               <div className="space-y-2">
                 <label className="text-xs text-muted-foreground">Tipo de Evento</label>
                 <Select
-                  value={localFilters.eventTypes?.[0] || ""}
+                  value={localFilters.eventTypes?.[0] || undefined}
                   onValueChange={(value) =>
                     setLocalFilters({
                       ...localFilters,
-                      eventTypes: value ? [value as TimelineEventType] : [],
+                      eventTypes: value && value !== "all" ? [value as TimelineEventType] : [],
                     })
                   }
                 >
@@ -367,7 +367,7 @@ export function ProjectTimeline({ projectId, filters: externalFilters }: Project
                     <SelectValue placeholder="Todos los tipos" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todos los tipos</SelectItem>
+                    <SelectItem value="all">Todos los tipos</SelectItem>
                     {eventTypeOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
@@ -408,11 +408,11 @@ export function ProjectTimeline({ projectId, filters: externalFilters }: Project
               <div className="space-y-2">
                 <label className="text-xs text-muted-foreground">Usuario</label>
                 <Select
-                  value={localFilters.userId || ""}
+                  value={localFilters.userId || undefined}
                   onValueChange={(value) =>
                     setLocalFilters({
                       ...localFilters,
-                      userId: value || undefined,
+                      userId: value === "all" ? undefined : value,
                     })
                   }
                 >
@@ -420,7 +420,7 @@ export function ProjectTimeline({ projectId, filters: externalFilters }: Project
                     <SelectValue placeholder="Todos los usuarios" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todos los usuarios</SelectItem>
+                    <SelectItem value="all">Todos los usuarios</SelectItem>
                     {users.map((user: any) => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.nombre || user.name || user.email}
