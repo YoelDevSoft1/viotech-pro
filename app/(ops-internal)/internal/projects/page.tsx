@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, FolderKanban, LayoutGrid } from "lucide-react";
+import { ArrowLeft, FolderKanban, LayoutGrid, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import OrgSelector, { type Org } from "@/components/common/OrgSelector";
 import { fetchProjects, type Project } from "@/lib/projects";
@@ -92,13 +92,19 @@ export default function InternalProjectsPage() {
                 <div className="flex items-center gap-2 pt-2">
                   <Button asChild variant="outline" size="sm" className="flex-1">
                     <Link href={`/internal/projects/${p.id}`}>
-                      Ver Detalle
+                      Detalle
                     </Link>
                   </Button>
-                  <Button asChild variant="default" size="sm" className="flex-1">
+                  <Button asChild variant="outline" size="sm" className="flex-1">
                     <Link href={`/internal/projects/${p.id}/kanban`}>
                       <LayoutGrid className="w-4 h-4 mr-2" />
                       Kanban
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" size="sm" className="flex-1">
+                    <Link href={`/internal/projects/${p.id}/gantt`}>
+                      <Calendar className="w-4 h-4 mr-2" />
+                      Gantt
                     </Link>
                   </Button>
                 </div>

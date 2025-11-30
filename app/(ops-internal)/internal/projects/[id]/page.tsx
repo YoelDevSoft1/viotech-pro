@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, AlertCircle, LayoutGrid, Clock } from "lucide-react";
+import { ArrowLeft, AlertCircle, LayoutGrid, Clock, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fetchProjectById, type Project } from "@/lib/projects";
@@ -66,12 +66,20 @@ export default function InternalProjectDetail() {
             Volver a proyectos
           </Link>
           {project && projectId && (
-            <Button asChild variant="default" size="sm">
-              <Link href={`/internal/projects/${projectId}/kanban`}>
-                <LayoutGrid className="w-4 h-4 mr-2" />
-                Ver Kanban
-              </Link>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/internal/projects/${projectId}/kanban`}>
+                  <LayoutGrid className="w-4 h-4 mr-2" />
+                  Kanban
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/internal/projects/${projectId}/gantt`}>
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Gantt
+                </Link>
+              </Button>
+            </div>
           )}
         </div>
 

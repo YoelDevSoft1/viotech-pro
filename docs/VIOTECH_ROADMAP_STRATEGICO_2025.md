@@ -316,13 +316,13 @@ app/(ops-admin)/
 - [x] Notificaciones en tiempo real
 - [x] Historial de cambios (audit log)
 
-#### **Sprint 2.2: Gantt Charts Interactivos ()**
-- [ ] Integración con librería de Gantt (react-gantt-timeline)
-- [ ] Dependencias entre tareas
-- [ ] Milestones y hitos
-- [ ] Zoom y navegación temporal
-- [ ] Exportación a PDF/Excel
-- [ ] Vista crítica path
+#### **Sprint 2.2: Gantt Charts Interactivos (✅ COMPLETADO)**
+- [x] Integración con librería de Gantt (@rsagiev/gantt-task-react-19)
+- [x] Dependencias entre tareas
+- [x] Milestones y hitos
+- [x] Zoom y navegación temporal
+- [ ] Exportación a PDF/Excel (pendiente - requiere librerías adicionales)
+- [x] Vista crítica path
 
 #### **Sprint 2.3: Gestión de Recursos ()**
 - [ ] Calendario de recursos
