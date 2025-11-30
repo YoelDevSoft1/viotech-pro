@@ -298,3 +298,5 @@ Para ver los requisitos del backend, consulta:
 
 **Última actualización**: Noviembre 2025
 
+
+

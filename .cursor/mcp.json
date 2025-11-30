@@ -5,8 +5,9 @@
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
-        "C:\\Users\\Admin\\Documents\\SMD VITAL\\SMD VITAL\\viotech-pro",
-        "C:\\Users\\Admin\\Documents\\SMD VITAL\\SMD VITAL\\viotech-pro\\docs"
+        "C:\\Users\\Yoel\\Documents\\GitHub\\viotech-pro",
+        "C:\\Users\\Yoel\\Documents\\GitHub\\viotech-pro\\docs",
+        "C:\\Users\\Yoel\\Documents\\GitHub\\VioTech-main\\backend"
       ]
     },
     "secure-terminal": {

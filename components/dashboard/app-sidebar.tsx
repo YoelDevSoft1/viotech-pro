@@ -16,7 +16,9 @@ import {
   FolderKanban,
   Shield,
   FileText,
-  MessageSquare
+  MessageSquare,
+  Bell,
+  History
 } from "lucide-react";
 import {
   Sidebar,
@@ -112,6 +114,16 @@ const adminSidebarItems: Array<{
     icon: MessageSquare,
   },
   {
+    title: "Notificaciones",
+    href: "/admin/notifications",
+    icon: Bell,
+  },
+  {
+    title: "Audit Log",
+    href: "/admin/audit-log",
+    icon: History,
+  },
+  {
     title: "Configuración",
     href: "/admin/settings",
     icon: Settings,
@@ -139,6 +151,11 @@ const internalSidebarItems: Array<{
     title: "Proyectos",
     href: "/internal/projects",
     icon: FolderKanban,
+  },
+  {
+    title: "Notificaciones",
+    href: "/internal/notifications",
+    icon: Bell,
   },
 ];
 

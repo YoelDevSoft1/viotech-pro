@@ -394,3 +394,5 @@ Si tienes preguntas sobre estos requisitos o necesitas aclaraciones, por favor c
 
 **Nota**: Una vez implementados estos endpoints, el frontend estará listo para implementar la funcionalidad completa de cambio de foto de perfil.
 
+
+

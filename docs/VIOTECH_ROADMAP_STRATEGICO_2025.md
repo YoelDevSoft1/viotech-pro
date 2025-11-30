@@ -308,13 +308,13 @@ app/(ops-admin)/
 ### **FASE 2: Sistema de Proyectos Enterprise ()**
 **Objetivo:** Plataforma completa de gestión de proyectos
 
-#### **Sprint 2.1: Vista Kanban Avanzada (🔄 EN PROGRESO)**
+#### **Sprint 2.1: Vista Kanban Avanzada (✅ COMPLETADO)**
 - [x] Kanban board con drag & drop
 - [x] Múltiples columnas personalizables (basadas en estados de tickets)
 - [x] Filtros avanzados (asignado, prioridad, categoría, búsqueda)
 - [x] Vista de timeline integrada
-- [ ] Notificaciones en tiempo real
-- [ ] Historial de cambios (audit log)
+- [x] Notificaciones en tiempo real
+- [x] Historial de cambios (audit log)
 
 #### **Sprint 2.2: Gantt Charts Interactivos ()**
 - [ ] Integración con librería de Gantt (react-gantt-timeline)

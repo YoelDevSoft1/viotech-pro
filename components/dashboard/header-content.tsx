@@ -3,6 +3,7 @@
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Plus, RefreshCcw } from "lucide-react";
+import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 
 export function HeaderContent() {
   const { state, isMobile } = useSidebar();
@@ -13,6 +14,7 @@ export function HeaderContent() {
     <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-3 border-b bg-background px-4">
       {showTriggerInHeader && <SidebarTrigger className="-ml-1" />}
       <div className="flex flex-1 items-center justify-end gap-3">
+        <NotificationCenter />
         <Button variant="default" size="sm" className="gap-2">
           <Plus className="h-4 w-4" />
           <span>Quick Create</span>
