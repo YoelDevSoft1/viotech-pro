@@ -37,6 +37,9 @@ export function useGanttData(projectId: string) {
           assignedToName: task.assignedToName || task.assigned_to_name,
           description: task.description,
           projectId: task.projectId || task.project_id,
+          // Campos de ruta crítica del backend
+          isCritical: task.isCritical || false,
+          slack: task.slack || 0,
         })) as GanttTask[],
         milestones: (raw.milestones || []).map((milestone: any) => ({
           id: milestone.id,
@@ -47,6 +50,7 @@ export function useGanttData(projectId: string) {
           createdBy: milestone.createdBy || milestone.created_by,
           createdAt: milestone.createdAt || milestone.created_at,
         })) as GanttMilestone[],
+        criticalPath: raw.criticalPath || [],
       };
     },
     enabled: !!projectId,

@@ -16,6 +16,9 @@ export interface GanttTask {
   assignedToName?: string;
   description?: string;
   projectId?: string;
+  // Campos de ruta crítica (del backend)
+  isCritical?: boolean;
+  slack?: number; // Días de holgura
 }
 
 export interface GanttMilestone {
@@ -39,6 +42,7 @@ export interface GanttData {
   project: GanttProject;
   tasks: GanttTask[];
   milestones: GanttMilestone[];
+  criticalPath?: string[]; // IDs de tareas en la ruta crítica
 }
 
 export interface GanttFilters {

@@ -321,7 +321,7 @@ app/(ops-admin)/
 - [x] Dependencias entre tareas
 - [x] Milestones y hitos
 - [x] Zoom y navegación temporal
-- [ ] Exportación a PDF/Excel (pendiente - requiere librerías adicionales)
+- [x] Exportación a PDF/Excel
 - [x] Vista crítica path
 
 #### **Sprint 2.3: Gestión de Recursos ()**

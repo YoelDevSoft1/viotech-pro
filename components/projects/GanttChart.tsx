@@ -18,6 +18,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useGanttData, useUpdateGanttTask } from "@/lib/hooks/useGantt";
 import type { GanttTask, GanttMilestone } from "@/lib/types/gantt";
 import { cn } from "@/lib/utils";
+import { exportGanttToPDF, exportGanttToExcel } from "@/lib/utils/ganttExport";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface GanttChartProps {
   projectId: string;
@@ -100,44 +107,22 @@ export function GanttChart({ projectId }: GanttChartProps) {
     return taskList;
   }, [ganttData, showMilestones, showDependencies]);
 
-  // Calcular ruta crítica (simplificado)
+  // Usar ruta crítica del backend
   const criticalPathTasks = useMemo(() => {
     if (!showCriticalPath || !ganttData) return new Set<string>();
-
-    // Algoritmo simplificado: tareas con dependencias y sin holgura
-    const critical = new Set<string>();
-    const taskMap = new Map(tasks.map((t) => [t.id, t]));
-
-    // Encontrar la secuencia más larga
-    const findLongestPath = (taskId: string, visited: Set<string>): number => {
-      if (visited.has(taskId)) return 0;
-      visited.add(taskId);
-
-      const task = taskMap.get(taskId);
-      if (!task) return 0;
-
-      const duration = task.end.getTime() - task.start.getTime();
-      let maxDependency = 0;
-
-      if (task.dependencies) {
-        for (const depId of task.dependencies) {
-          maxDependency = Math.max(maxDependency, findLongestPath(depId, new Set(visited)));
-        }
-      }
-
-      return duration + maxDependency;
-    };
-
-    // Marcar tareas críticas
-    tasks.forEach((task) => {
-      const pathLength = findLongestPath(task.id, new Set());
-      if (pathLength > 0) {
-        critical.add(task.id);
-      }
-    });
-
-    return critical;
-  }, [tasks, showCriticalPath, ganttData]);
+    
+    // Usar criticalPath del backend si está disponible
+    if (ganttData.criticalPath && ganttData.criticalPath.length > 0) {
+      return new Set(ganttData.criticalPath);
+    }
+    
+    // Fallback: usar isCritical de cada tarea
+    return new Set(
+      ganttData.tasks
+        .filter((task) => task.isCritical)
+        .map((task) => task.id)
+    );
+  }, [showCriticalPath, ganttData]);
 
   // Aplicar colores de ruta crítica
   const tasksWithCriticalPath = useMemo(() => {
@@ -198,9 +183,14 @@ export function GanttChart({ projectId }: GanttChartProps) {
     }
   };
 
-  const handleExport = () => {
-    // TODO: Implementar exportación a PDF/Excel
-    alert("Exportación a PDF/Excel - Próximamente");
+  const handleExportPDF = () => {
+    if (!ganttData) return;
+    exportGanttToPDF(ganttData, ganttData.project.name);
+  };
+
+  const handleExportExcel = () => {
+    if (!ganttData) return;
+    exportGanttToExcel(ganttData, ganttData.project.name);
   };
 
   if (isLoading) {
@@ -235,10 +225,24 @@ export function GanttChart({ projectId }: GanttChartProps) {
             Gantt Chart - {ganttData.project.name}
           </CardTitle>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleExport}>
-              <Download className="h-4 w-4 mr-2" />
-              Exportar
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  Exportar
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleExportPDF}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Exportar a PDF
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportExcel}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Exportar a Excel
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </CardHeader>
