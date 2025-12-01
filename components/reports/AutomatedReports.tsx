@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Calendar, Plus, Trash2, Mail, FileText, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,24 +25,25 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAutomatedReports, useSaveAutomatedReport } from "@/lib/hooks/useReports";
-import { format } from "date-fns";
-import { es } from "date-fns/locale/es";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import type { AutomatedReport } from "@/lib/types/reports";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 
 interface AutomatedReportsProps {
   organizationId?: string;
 }
 
-const reportSchema = z.object({
-  name: z.string().min(1, "El nombre es requerido"),
+// Esquema de validación - se actualizará dinámicamente con traducciones
+const getReportSchema = (t: (key: string) => string) => z.object({
+  name: z.string().min(1, t("validation.nameRequired")),
   type: z.enum(["daily", "weekly", "monthly"]),
-  recipients: z.array(z.string()).min(1, "Al menos un destinatario es requerido"),
+  recipients: z.array(z.string()).min(1, t("validation.recipientsRequired")),
   format: z.enum(["pdf", "excel", "both"]),
   schedule: z.object({
-    time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Formato HH:mm"),
+    time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, t("validation.timeFormat")),
     timezone: z.string(),
     dayOfWeek: z.number().optional(),
     dayOfMonth: z.number().optional(),
@@ -50,27 +51,32 @@ const reportSchema = z.object({
   enabled: z.boolean(),
 });
 
-type ReportFormValues = z.infer<typeof reportSchema>;
-
-const dayLabels: Record<number, string> = {
-  0: "Domingo",
-  1: "Lunes",
-  2: "Martes",
-  3: "Miércoles",
-  4: "Jueves",
-  5: "Viernes",
-  6: "Sábado",
-};
+type ReportFormValues = z.infer<ReturnType<typeof getReportSchema>>;
 
 export function AutomatedReports({ organizationId }: AutomatedReportsProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingReport, setEditingReport] = useState<AutomatedReport | null>(null);
+  const tReports = useTranslationsSafe("reports");
+  const { formatDate } = useI18n();
 
   const { data: reports = [], isLoading } = useAutomatedReports(organizationId);
   const saveReport = useSaveAutomatedReport();
 
+  // Crear labels de días usando traducciones
+  const dayLabels = useMemo(() => {
+    return {
+      0: tReports("days.sunday"),
+      1: tReports("days.monday"),
+      2: tReports("days.tuesday"),
+      3: tReports("days.wednesday"),
+      4: tReports("days.thursday"),
+      5: tReports("days.friday"),
+      6: tReports("days.saturday"),
+    } as Record<number, string>;
+  }, [tReports]);
+
   const form = useForm<ReportFormValues>({
-    resolver: zodResolver(reportSchema),
+    resolver: zodResolver(getReportSchema(tReports)),
     defaultValues: {
       name: "",
       type: "weekly",
@@ -149,25 +155,25 @@ export function AutomatedReports({ organizationId }: AutomatedReportsProps) {
                 form.reset();
               }}>
                 <Plus className="h-4 w-4 mr-2" />
-                Crear Reporte Automático
+                {tReports("createAutomatedReport")}
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
-                  {editingReport ? "Editar Reporte Automático" : "Crear Reporte Automático"}
+                  {editingReport ? tReports("editAutomatedReport") : tReports("createAutomatedReport")}
                 </DialogTitle>
                 <DialogDescription>
-                  Configura un reporte que se generará y enviará automáticamente
+                  {tReports("automatedReportDescription")}
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="report-name">Nombre</Label>
+                  <Label htmlFor="report-name">{tReports("name")}</Label>
                   <Input
                     id="report-name"
                     {...form.register("name")}
-                    placeholder="Ej: Reporte Semanal Ejecutivo"
+                    placeholder={tReports("namePlaceholder")}
                   />
                   {form.formState.errors.name && (
                     <p className="text-xs text-red-600">{form.formState.errors.name.message}</p>
@@ -176,7 +182,7 @@ export function AutomatedReports({ organizationId }: AutomatedReportsProps) {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="report-type">Tipo</Label>
+                    <Label htmlFor="report-type">{tReports("type")}</Label>
                     <Select
                       value={form.watch("type")}
                       onValueChange={(value) => form.setValue("type", value as ReportFormValues["type"])}
@@ -185,15 +191,15 @@ export function AutomatedReports({ organizationId }: AutomatedReportsProps) {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="daily">Diario</SelectItem>
-                        <SelectItem value="weekly">Semanal</SelectItem>
-                        <SelectItem value="monthly">Mensual</SelectItem>
+                        <SelectItem value="daily">{tReports("daily")}</SelectItem>
+                        <SelectItem value="weekly">{tReports("weekly")}</SelectItem>
+                        <SelectItem value="monthly">{tReports("monthly")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="report-format">Formato</Label>
+                    <Label htmlFor="report-format">{tReports("format")}</Label>
                     <Select
                       value={form.watch("format")}
                       onValueChange={(value) => form.setValue("format", value as ReportFormValues["format"])}
@@ -290,10 +296,10 @@ export function AutomatedReports({ organizationId }: AutomatedReportsProps) {
                       form.reset();
                     }}
                   >
-                    Cancelar
+                    {tReports("cancel")}
                   </Button>
                   <Button type="submit" disabled={saveReport.isPending}>
-                    {editingReport ? "Actualizar" : "Crear"}
+                    {editingReport ? tReports("update") : tReports("create")}
                   </Button>
                 </div>
               </form>
@@ -304,7 +310,7 @@ export function AutomatedReports({ organizationId }: AutomatedReportsProps) {
       <CardContent>
         {reports.length === 0 ? (
           <div className="text-center text-muted-foreground py-8">
-            No hay reportes automáticos configurados
+            {tReports("noAutomatedReports")}
           </div>
         ) : (
           <div className="space-y-2">
@@ -318,32 +324,30 @@ export function AutomatedReports({ organizationId }: AutomatedReportsProps) {
                     <span className="font-medium">{report.name}</span>
                     <Badge variant="outline" className="text-xs capitalize">
                       {report.type === "daily"
-                        ? "Diario"
+                        ? tReports("daily")
                         : report.type === "weekly"
-                          ? "Semanal"
-                          : "Mensual"}
+                          ? tReports("weekly")
+                          : tReports("monthly")}
                     </Badge>
                     <Badge variant={report.enabled ? "default" : "secondary"} className="text-xs">
-                      {report.enabled ? "Activo" : "Inactivo"}
+                      {report.enabled ? tReports("active") : tReports("inactive")}
                     </Badge>
                   </div>
                   <div className="text-sm text-muted-foreground mt-1">
                     {report.type === "daily"
-                      ? `Diario a las ${report.schedule.time}`
+                      ? tReports("schedule.dailyAt").replace("{time}", report.schedule.time)
                       : report.type === "weekly"
-                        ? `${dayLabels[report.schedule.dayOfWeek || 1]} a las ${report.schedule.time}`
-                        : `Día ${report.schedule.dayOfMonth || 1} a las ${report.schedule.time}`}
+                        ? tReports("schedule.weeklyOn").replace("{day}", dayLabels[report.schedule.dayOfWeek || 1]).replace("{time}", report.schedule.time)
+                        : tReports("schedule.monthlyOn").replace("{day}", String(report.schedule.dayOfMonth || 1)).replace("{time}", report.schedule.time)}
                   </div>
                   {report.lastGenerated && (
                     <div className="text-xs text-muted-foreground mt-1">
-                      Última generación:{" "}
-                      {format(new Date(report.lastGenerated), "PPpp", { locale: es })}
+                      {tReports("lastGeneration")}: {formatDate(report.lastGenerated, "PPpp")}
                     </div>
                   )}
                   {report.nextGeneration && (
                     <div className="text-xs text-muted-foreground">
-                      Próxima generación:{" "}
-                      {format(new Date(report.nextGeneration), "PPpp", { locale: es })}
+                      {tReports("nextGeneration")}: {formatDate(report.nextGeneration, "PPpp")}
                     </div>
                   )}
                 </div>
@@ -353,7 +357,7 @@ export function AutomatedReports({ organizationId }: AutomatedReportsProps) {
                     size="sm"
                     onClick={() => handleEdit(report)}
                   >
-                    Editar
+                    {tReports("edit")}
                   </Button>
                 </div>
               </div>

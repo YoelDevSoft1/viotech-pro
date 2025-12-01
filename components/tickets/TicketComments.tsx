@@ -56,6 +56,7 @@ export function TicketComments({
   isSubmitting = false,
   className,
 }: TicketCommentsProps) {
+  const tTickets = useTranslationsSafe("tickets");
   const [message, setMessage] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
@@ -342,12 +343,12 @@ export function TicketComments({
               {submitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Enviando...
+                  {tTickets("sending")}
                 </>
               ) : (
                 <>
                   <Send className="h-4 w-4" />
-                  Enviar comentario
+                  {tTickets("addComment")}
                 </>
               )}
             </Button>

@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import { formatDistanceToNow, format } from "date-fns";
-import { es } from "date-fns/locale";
 import {
   Ticket,
   MessageSquare,
@@ -32,6 +31,8 @@ import { useProjectTimeline } from "@/lib/hooks/useProjectTimeline";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/apiClient";
 import type { TimelineEvent, TimelineFilters, TimelineEventType } from "@/lib/types/timeline";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 
 interface ProjectTimelineProps {
   projectId: string;
@@ -108,15 +109,17 @@ function getEventBadge(type: TimelineEvent["type"]) {
 
 // Componente de evento individual
 function TimelineEventItem({ event }: { event: TimelineEvent }) {
+  const tProjects = useTranslationsSafe("projects");
+  const { formatDate, formatRelativeTime } = useI18n();
   const date = new Date(event.timestamp);
   const isToday = date.toDateString() === new Date().toDateString();
   const isThisWeek = date.getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000;
 
   const timeLabel = isToday
-    ? "Hoy"
+    ? tProjects("today")
     : isThisWeek
-      ? formatDistanceToNow(date, { addSuffix: true, locale: es })
-      : format(date, "dd MMM yyyy", { locale: es });
+      ? formatRelativeTime(date)
+      : formatDate(date, "dd MMM yyyy");
 
   const getUserInitials = (name?: string) => {
     if (!name) return "U";
@@ -192,6 +195,8 @@ function TimelineEventItem({ event }: { event: TimelineEvent }) {
 
 // Componente principal
 export function ProjectTimeline({ projectId, filters: externalFilters }: ProjectTimelineProps) {
+  const tProjects = useTranslationsSafe("projects");
+  const { formatDate, formatRelativeTime, locale } = useI18n();
   const [showFilters, setShowFilters] = useState(false);
   const [localFilters, setLocalFilters] = useState<TimelineFilters>({
     eventTypes: [],
@@ -435,7 +440,7 @@ export function ProjectTimeline({ projectId, filters: externalFilters }: Project
               <div className="flex items-center gap-2">
                 <Button variant="ghost" size="sm" onClick={clearFilters}>
                   <X className="w-4 h-4 mr-2" />
-                  Limpiar filtros
+                  {tProjects("clearFilters")}
                 </Button>
               </div>
             )}
@@ -452,10 +457,10 @@ export function ProjectTimeline({ projectId, filters: externalFilters }: Project
               new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
 
             const dateLabel = isToday
-              ? "Hoy"
+              ? tProjects("today")
               : isYesterday
-                ? "Ayer"
-                : format(date, "EEEE, d 'de' MMMM", { locale: es });
+                ? tProjects("yesterday")
+                : formatDate(date, "EEEE, d 'de' MMMM");
 
             return (
               <div key={dateKey} className="space-y-4">

@@ -126,7 +126,10 @@
     "timeline": "Linha do tempo",
     "details": "Detalhes",
     "detailsComingSoon": "Informações detalhadas do projeto em breve...",
-    "notFound": "Projeto não encontrado."
+    "notFound": "Projeto não encontrado.",
+    "clearFilters": "Limpar filtros",
+    "today": "Hoje",
+    "yesterday": "Ontem"
   },
   "aiAssistant": {
     "welcomeMessage": "Sou seu assistente para redigir tickets claros. Descreva o problema e sugerirei título, prioridade e detalhes.",
@@ -451,7 +454,8 @@
       "reject": "Rejeitar",
       "rejectCommentConfirm": "Rejeitar comentário?",
       "rejectCommentDescription": "Esta ação marcará o comentário como rejeitado. O comentário não será visível publicamente.",
-      "errorNoPostSlug": "Erro: O comentário não tem informações do artigo. Por favor, entre em contato com o administrador."
+      "errorNoPostSlug": "Erro: O comentário não tem informações do artigo. Por favor, entre em contato com o administrador.",
+      "send": "Enviar"
     }
   },
   "resources": {
@@ -495,7 +499,45 @@
     "automated": "Relatórios Automáticos",
     "export": "Exportar",
     "pdf": "PDF",
-    "excel": "Excel"
+    "excel": "Excel",
+    "createAutomatedReport": "Criar Relatório Automático",
+    "editAutomatedReport": "Editar Relatório Automático",
+    "automatedReportDescription": "Configure um relatório que será gerado e enviado automaticamente",
+    "name": "Nome",
+    "namePlaceholder": "Ex: Relatório Semanal Executivo",
+    "type": "Tipo",
+    "format": "Formato",
+    "daily": "Diário",
+    "weekly": "Semanal",
+    "monthly": "Mensal",
+    "active": "Ativo",
+    "inactive": "Inativo",
+    "lastGeneration": "Última geração",
+    "nextGeneration": "Próxima geração",
+    "noAutomatedReports": "Não há relatórios automáticos configurados",
+    "cancel": "Cancelar",
+    "update": "Atualizar",
+    "create": "Criar",
+    "edit": "Editar",
+    "days": {
+      "sunday": "Domingo",
+      "monday": "Segunda",
+      "tuesday": "Terça",
+      "wednesday": "Quarta",
+      "thursday": "Quinta",
+      "friday": "Sexta",
+      "saturday": "Sábado"
+    },
+    "schedule": {
+      "dailyAt": "Diário às {time}",
+      "weeklyOn": "{day} às {time}",
+      "monthlyOn": "Dia {day} às {time}"
+    },
+    "validation": {
+      "nameRequired": "O nome é obrigatório",
+      "recipientsRequired": "Pelo menos um destinatário é obrigatório",
+      "timeFormat": "Formato HH:mm"
+    }
   },
   "settings": {
     "title": "Configurações",

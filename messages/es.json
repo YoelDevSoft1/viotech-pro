@@ -125,7 +125,10 @@
     "timeline": "Timeline",
     "details": "Detalles",
     "detailsComingSoon": "Información detallada del proyecto próximamente...",
-    "notFound": "No se encontró el proyecto."
+    "notFound": "No se encontró el proyecto.",
+    "clearFilters": "Limpiar filtros",
+    "today": "Hoy",
+    "yesterday": "Ayer"
   },
   "aiAssistant": {
     "welcomeMessage": "Soy tu asistente para redactar tickets claros. Describe el problema y sugeriré título, prioridad y detalles.",
@@ -497,7 +500,8 @@
       "reject": "Rechazar",
       "rejectCommentConfirm": "¿Rechazar comentario?",
       "rejectCommentDescription": "Esta acción marcará el comentario como rechazado. El comentario no será visible públicamente.",
-      "errorNoPostSlug": "Error: El comentario no tiene información del artículo. Por favor, contacta al administrador."
+      "errorNoPostSlug": "Error: El comentario no tiene información del artículo. Por favor, contacta al administrador.",
+      "send": "Enviar"
     }
   },
   "resources": {
@@ -541,7 +545,40 @@
     "automated": "Reportes Automáticos",
     "export": "Exportar",
     "pdf": "PDF",
-    "excel": "Excel"
+    "excel": "Excel",
+    "createAutomatedReport": "Crear Reporte Automático",
+    "editAutomatedReport": "Editar Reporte Automático",
+    "automatedReportDescription": "Configura un reporte que se generará y enviará automáticamente",
+    "name": "Nombre",
+    "namePlaceholder": "Ej: Reporte Semanal Ejecutivo",
+    "type": "Tipo",
+    "format": "Formato",
+    "daily": "Diario",
+    "weekly": "Semanal",
+    "monthly": "Mensual",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "lastGeneration": "Última generación",
+    "nextGeneration": "Próxima generación",
+    "noAutomatedReports": "No hay reportes automáticos configurados",
+    "cancel": "Cancelar",
+    "update": "Actualizar",
+    "create": "Crear",
+    "edit": "Editar",
+    "days": {
+      "sunday": "Domingo",
+      "monday": "Lunes",
+      "tuesday": "Martes",
+      "wednesday": "Miércoles",
+      "thursday": "Jueves",
+      "friday": "Viernes",
+      "saturday": "Sábado"
+    },
+    "schedule": {
+      "dailyAt": "Diario a las {time}",
+      "weeklyOn": "{day} a las {time}",
+      "monthlyOn": "Día {day} a las {time}"
+    }
   },
   "settings": {
     "title": "Configuración",

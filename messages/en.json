@@ -126,7 +126,10 @@
     "timeline": "Timeline",
     "details": "Details",
     "detailsComingSoon": "Detailed project information coming soon...",
-    "notFound": "Project not found."
+    "notFound": "Project not found.",
+    "clearFilters": "Clear filters",
+    "today": "Today",
+    "yesterday": "Yesterday"
   },
   "aiAssistant": {
     "welcomeMessage": "I'm your assistant for writing clear tickets. Describe the problem and I'll suggest title, priority and details.",
@@ -498,7 +501,8 @@
       "reject": "Reject",
       "rejectCommentConfirm": "Reject comment?",
       "rejectCommentDescription": "This action will mark the comment as rejected. The comment will not be publicly visible.",
-      "errorNoPostSlug": "Error: The comment does not have article information. Please contact the administrator."
+      "errorNoPostSlug": "Error: The comment does not have article information. Please contact the administrator.",
+      "send": "Send"
     }
   },
   "resources": {

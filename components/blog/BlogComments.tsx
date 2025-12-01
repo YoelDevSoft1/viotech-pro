@@ -11,6 +11,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Heart, Reply, Edit, Trash2, Send, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import type { BlogComment } from "@/lib/types/blog";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 
 interface BlogCommentsProps {
   postSlug: string;
@@ -23,6 +25,8 @@ export function BlogComments({ postSlug }: BlogCommentsProps) {
   const likeComment = useLikeComment();
   const updateComment = useUpdateComment();
   const deleteComment = useDeleteComment();
+  const tBlog = useTranslationsSafe("blog.comments");
+  const { formatRelativeTime } = useI18n();
 
   const [newComment, setNewComment] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
@@ -286,7 +290,7 @@ export function BlogComments({ postSlug }: BlogCommentsProps) {
                           ) : (
                             <Send className="h-4 w-4" />
                           )}
-                          Enviar
+                          {tBlog("comments.send")}
                         </Button>
                         <Button
                           type="button"
