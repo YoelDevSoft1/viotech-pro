@@ -163,10 +163,13 @@
     "noTickets": "No hay tickets",
     "noTicketsMessage": "No se encontraron tickets para esta organización o filtros.",
     "viewDetail": "Ver detalle",
+    "clearFilters": "Limpiar filtros",
+    "actions": "Acciones",
     "status": {
       "open": "Abierto",
       "inProgress": "En progreso",
-      "resolved": "Resuelto"
+      "resolved": "Resuelto",
+      "closed": "Cerrado"
     },
     "priority": {
       "low": "Baja",
@@ -202,6 +205,7 @@
     "goBackToTickets": "Volver a tickets",
     "noTitle": "Sin título",
     "noName": "Sin nombre",
+    "notAvailable": "N/D",
     "noDescription": "Sin descripción.",
     "slaTarget": "SLA objetivo",
     "comments": "Comentarios",

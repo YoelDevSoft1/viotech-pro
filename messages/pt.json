@@ -164,10 +164,13 @@
     "noTickets": "Sem tickets",
     "noTicketsMessage": "Nenhum ticket encontrado para esta organização ou filtros.",
     "viewDetail": "Ver detalhes",
+    "clearFilters": "Limpar filtros",
+    "actions": "Ações",
     "status": {
       "open": "Aberto",
       "inProgress": "Em progresso",
-      "resolved": "Resolvido"
+      "resolved": "Resolvido",
+      "closed": "Fechado"
     },
     "priority": {
       "low": "Baixa",
@@ -175,12 +178,65 @@
       "high": "Alta",
       "critical": "Crítica"
     },
+    "impact": {
+      "low": "Baixo",
+      "medium": "Médio",
+      "high": "Alto",
+      "critical": "Crítico"
+    },
+    "category": {
+      "technical": "Técnico",
+      "billing": "Faturamento",
+      "support": "Suporte",
+      "feature": "Solicitação de Funcionalidade",
+      "bug": "Bug"
+    },
     "newTicket": "Novo Ticket",
+    "admin": {
+      "title": "Gestão Avançada de Tickets",
+      "description": "Painel completo de administração com métricas, filtros avançados e ações em lote.",
+      "advancedFilters": "Filtros e Busca Avançada",
+      "searchPlaceholder": "Buscar por título, ID, descrição, usuário, categoria...",
+      "selectedTickets": "{count} ticket(s) selecionado(s)",
+      "changeStatus": "Alterar estado",
+      "changePriority": "Alterar prioridade",
+      "noTicketsFiltered": "Nenhum ticket encontrado que corresponda aos filtros.",
+      "ticketsCount": "Tickets ({count})",
+      "showing": "Mostrando {from} - {to} de {total} tickets",
+      "table": "Tabela",
+      "kanban": "Kanban"
+    },
+    "export": "Exportar",
+    "refresh": "Atualizar",
+    "stats": {
+      "total": "Total de Tickets",
+      "inSystem": "No sistema",
+      "open": "Abertos",
+      "ofTotal": "do total",
+      "critical": "Críticos",
+      "criticalPriority": "Prioridade crítica",
+      "resolutionRate": "Taxa de Resolução",
+      "resolved": "resolvidos"
+    },
     "success": {
-      "created": "Ticket criado com sucesso"
+      "created": "Ticket criado com sucesso",
+      "updated": "Ticket atualizado",
+      "bulkUpdated": "{count} tickets atualizados",
+      "exported": "Tickets exportados"
     },
     "error": {
-      "createFailed": "Erro ao criar ticket"
+      "createFailed": "Erro ao criar ticket",
+      "updateFailed": "Erro ao atualizar ticket",
+      "bulkUpdateFailed": "Erro ao atualizar tickets"
+    },
+    "export": {
+      "id": "ID",
+      "title": "Título",
+      "status": "Estado",
+      "priority": "Prioridade",
+      "user": "Usuário",
+      "organization": "Organização",
+      "createdAt": "Data de Criação"
     },
     "form": {
       "title": "Título",
@@ -203,6 +259,7 @@
     "goBackToTickets": "Voltar aos tickets",
     "noTitle": "Sem título",
     "noName": "Sem nome",
+    "notAvailable": "N/D",
     "noDescription": "Sem descrição.",
     "slaTarget": "Meta SLA",
     "comments": "Comentários",

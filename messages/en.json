@@ -164,6 +164,8 @@
     "noTickets": "No tickets",
     "noTicketsMessage": "No tickets found for this organization or filters.",
     "viewDetail": "View detail",
+    "clearFilters": "Clear filters",
+    "actions": "Actions",
     "status": {
       "open": "Open",
       "inProgress": "In progress",
@@ -176,11 +178,51 @@
       "critical": "Critical"
     },
     "newTicket": "New Ticket",
+    "admin": {
+      "title": "Advanced Ticket Management",
+      "description": "Complete administration panel with metrics, advanced filters and bulk actions.",
+      "advancedFilters": "Advanced Filters and Search",
+      "searchPlaceholder": "Search by title, ID, description, user, category...",
+      "selectedTickets": "{count} ticket(s) selected",
+      "changeStatus": "Change status",
+      "changePriority": "Change priority",
+      "noTicketsFiltered": "No tickets found matching the filters.",
+      "ticketsCount": "Tickets ({count})",
+      "showing": "Showing {from} - {to} of {total} tickets",
+      "table": "Table",
+      "kanban": "Kanban"
+    },
+    "export": "Export",
+    "refresh": "Refresh",
+    "stats": {
+      "total": "Total Tickets",
+      "inSystem": "In the system",
+      "open": "Open",
+      "ofTotal": "of total",
+      "critical": "Critical",
+      "criticalPriority": "Critical priority",
+      "resolutionRate": "Resolution Rate",
+      "resolved": "resolved"
+    },
     "success": {
-      "created": "Ticket created successfully"
+      "created": "Ticket created successfully",
+      "updated": "Ticket updated",
+      "bulkUpdated": "{count} tickets updated",
+      "exported": "Tickets exported"
     },
     "error": {
-      "createFailed": "Error creating ticket"
+      "createFailed": "Error creating ticket",
+      "updateFailed": "Error updating ticket",
+      "bulkUpdateFailed": "Error updating tickets"
+    },
+    "export": {
+      "id": "ID",
+      "title": "Title",
+      "status": "Status",
+      "priority": "Priority",
+      "user": "User",
+      "organization": "Organization",
+      "createdAt": "Creation Date"
     },
     "form": {
       "title": "Title",
@@ -203,6 +245,7 @@
     "goBackToTickets": "Back to tickets",
     "noTitle": "No title",
     "noName": "No name",
+    "notAvailable": "N/A",
     "noDescription": "No description.",
     "slaTarget": "SLA target",
     "comments": "Comments",

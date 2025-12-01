@@ -58,6 +58,8 @@ import { StatusBadge, PriorityBadge } from "@/components/tickets/TicketBadges";
 import { toast } from "sonner";
 import { TicketComments } from "@/components/tickets/TicketComments";
 import { useTicket } from "@/lib/hooks/useTicket";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 
 type Ticket = {
   id: string;
@@ -85,41 +87,12 @@ type Ticket = {
 type SortField = "createdAt" | "titulo" | "estado" | "prioridad" | "updatedAt";
 type SortOrder = "asc" | "desc";
 
-const estadoOptions = [
-  { value: "", label: "Todos" },
-  { value: "abierto", label: "Abierto" },
-  { value: "en_progreso", label: "En progreso" },
-  { value: "resuelto", label: "Resuelto" },
-  { value: "cerrado", label: "Cerrado" },
-];
-
-const prioridadOptions = [
-  { value: "", label: "Todas" },
-  { value: "baja", label: "Baja" },
-  { value: "media", label: "Media" },
-  { value: "alta", label: "Alta" },
-  { value: "critica", label: "Crítica" },
-];
-
-const impactoOptions = [
-  { value: "", label: "Todos" },
-  { value: "bajo", label: "Bajo" },
-  { value: "medio", label: "Medio" },
-  { value: "alto", label: "Alto" },
-  { value: "critico", label: "Crítico" },
-];
-
-const categoriaOptions = [
-  { value: "", label: "Todas" },
-  { value: "tecnico", label: "Técnico" },
-  { value: "facturacion", label: "Facturación" },
-  { value: "soporte", label: "Soporte" },
-  { value: "feature", label: "Feature Request" },
-  { value: "bug", label: "Bug" },
-];
+// Las opciones se crearán dinámicamente usando traducciones
 
 export default function AdminTicketsPage() {
   const router = useRouter();
+  const tTickets = useTranslationsSafe("tickets");
+  const { formatDate } = useI18n();
   const [filters, setFilters] = useState({
     estado: "",
     prioridad: "",
@@ -139,6 +112,40 @@ export default function AdminTicketsPage() {
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const { setOrgId, orgId } = useOrg();
+
+  // Crear opciones usando traducciones
+  const estadoOptions = useMemo(() => [
+    { value: "", label: tTickets("all") },
+    { value: "abierto", label: tTickets("status.open") },
+    { value: "en_progreso", label: tTickets("status.inProgress") },
+    { value: "resuelto", label: tTickets("status.resolved") },
+    { value: "cerrado", label: tTickets("status.closed") },
+  ], [tTickets]);
+
+  const prioridadOptions = useMemo(() => [
+    { value: "", label: tTickets("all") },
+    { value: "baja", label: tTickets("priority.low") },
+    { value: "media", label: tTickets("priority.medium") },
+    { value: "alta", label: tTickets("priority.high") },
+    { value: "critica", label: tTickets("priority.critical") },
+  ], [tTickets]);
+
+  const impactoOptions = useMemo(() => [
+    { value: "", label: tTickets("all") },
+    { value: "bajo", label: tTickets("impact.low") },
+    { value: "medio", label: tTickets("impact.medium") },
+    { value: "alto", label: tTickets("impact.high") },
+    { value: "critico", label: tTickets("impact.critical") },
+  ], [tTickets]);
+
+  const categoriaOptions = useMemo(() => [
+    { value: "", label: tTickets("all") },
+    { value: "tecnico", label: tTickets("category.technical") },
+    { value: "facturacion", label: tTickets("category.billing") },
+    { value: "soporte", label: tTickets("category.support") },
+    { value: "feature", label: tTickets("category.feature") },
+    { value: "bug", label: tTickets("category.bug") },
+  ], [tTickets]);
 
   const { tickets, loading, error, refresh, pagination } = useTickets({
     estado: filters.estado || undefined,
@@ -267,15 +274,15 @@ export default function AdminTicketsPage() {
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
-        throw new Error(data?.error || data?.message || "No se pudo actualizar el ticket");
+        throw new Error(data?.error || data?.message || tTickets("error.updateFailed"));
       }
-      toast.success("Ticket actualizado");
+      toast.success(tTickets("success.updated"));
       await refresh();
       if (selectedTicketId === ticketId) {
         await refreshSelectedTicket();
       }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : "Error al actualizar ticket";
+      const errorMsg = err instanceof Error ? err.message : tTickets("error.updateFailed");
       setActionError(errorMsg);
       toast.error(errorMsg);
     } finally {
@@ -291,10 +298,10 @@ export default function AdminTicketsPage() {
 
       const promises = ticketIds.map((id) => updateTicket(id, payload));
       await Promise.all(promises);
-      toast.success(`${ticketIds.length} tickets actualizados`);
+      toast.success(tTickets("success.bulkUpdated").replace("{count}", String(ticketIds.length)));
       setSelectedTickets(new Set());
     } catch (err) {
-      toast.error("Error al actualizar tickets");
+      toast.error(tTickets("error.bulkUpdateFailed"));
     } finally {
       setActionLoading(null);
     }
@@ -329,7 +336,7 @@ export default function AdminTicketsPage() {
 
   const exportTickets = () => {
     const csv = [
-      ["ID", "Título", "Estado", "Prioridad", "Usuario", "Organización", "Fecha Creación"].join(","),
+      [tTickets("export.id"), tTickets("export.title"), tTickets("export.status"), tTickets("export.priority"), tTickets("export.user"), tTickets("export.organization"), tTickets("export.createdAt")].join(","),
       ...filteredAndSortedTickets.map((t) =>
         [
           t.id,
@@ -350,7 +357,7 @@ export default function AdminTicketsPage() {
     a.download = `tickets-${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Tickets exportados");
+    toast.success(tTickets("success.exported"));
   };
 
   const openTicketDetail = (ticketId: string) => {
@@ -391,68 +398,68 @@ export default function AdminTicketsPage() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
               <MessageSquare className="h-8 w-8" />
-              Gestión Avanzada de Tickets
+              {tTickets("admin.title")}
             </h1>
             <p className="text-muted-foreground mt-1">
-              Panel completo de administración con métricas, filtros avanzados y acciones en lote.
+              {tTickets("admin.description")}
             </p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={exportTickets} disabled={filteredAndSortedTickets.length === 0}>
               <Download className="h-4 w-4 mr-2" />
-              Exportar
+              {tTickets("export")}
             </Button>
             <Button variant="outline" size="sm" onClick={() => refresh()} disabled={loading}>
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-              Actualizar
+              {tTickets("refresh")}
             </Button>
           </div>
         </div>
-        <OrgSelector onChange={(org: Org | null) => setOrgId(org?.id || "")} label="Organización" />
+        <OrgSelector onChange={(org: Org | null) => setOrgId(org?.id || "")} label={tTickets("organization")} />
       </div>
 
       {/* Estadísticas */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Tickets</CardTitle>
+            <CardTitle className="text-sm font-medium">{tTickets("stats.total")}</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">En el sistema</p>
+            <p className="text-xs text-muted-foreground">{tTickets("stats.inSystem")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Abiertos</CardTitle>
+            <CardTitle className="text-sm font-medium">{tTickets("stats.open")}</CardTitle>
             <AlertTriangle className="h-4 w-4 text-amber-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.abiertos}</div>
             <p className="text-xs text-muted-foreground">
-              {stats.total > 0 ? Math.round((stats.abiertos / stats.total) * 100) : 0}% del total
+              {stats.total > 0 ? Math.round((stats.abiertos / stats.total) * 100) : 0}% {tTickets("stats.ofTotal")}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Críticos</CardTitle>
+            <CardTitle className="text-sm font-medium">{tTickets("stats.critical")}</CardTitle>
             <TrendingUp className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.criticos}</div>
-            <p className="text-xs text-muted-foreground">Prioridad crítica</p>
+            <p className="text-xs text-muted-foreground">{tTickets("stats.criticalPriority")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tasa Resolución</CardTitle>
+            <CardTitle className="text-sm font-medium">{tTickets("stats.resolutionRate")}</CardTitle>
             <CheckCircle2 className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.tasaResolucion}%</div>
-            <p className="text-xs text-muted-foreground">{stats.resueltos} resueltos</p>
+            <p className="text-xs text-muted-foreground">{stats.resueltos} {tTickets("stats.resolved")}</p>
           </CardContent>
         </Card>
         </div>
@@ -463,12 +470,12 @@ export default function AdminTicketsPage() {
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Filter className="h-5 w-5" />
-              Filtros y Búsqueda Avanzada
+              {tTickets("admin.advancedFilters")}
             </CardTitle>
             {hasActiveFilters && (
               <Button variant="ghost" size="sm" onClick={clearFilters}>
                 <X className="h-4 w-4 mr-2" />
-                Limpiar filtros
+                {tTickets("clearFilters")}
               </Button>
             )}
           </div>
@@ -478,7 +485,7 @@ export default function AdminTicketsPage() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar por título, ID, descripción, usuario, categoría..."
+                placeholder={tTickets("admin.searchPlaceholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9"
@@ -486,10 +493,10 @@ export default function AdminTicketsPage() {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Estado</label>
+                <label className="text-sm font-medium">{tTickets("statusLabel")}</label>
                 <Select value={filters.estado || undefined} onValueChange={onFilterChange("estado")}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Todos" />
+                    <SelectValue placeholder={tTickets("all")} />
                   </SelectTrigger>
                   <SelectContent>
                     {estadoOptions
@@ -503,10 +510,10 @@ export default function AdminTicketsPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Prioridad</label>
+                <label className="text-sm font-medium">{tTickets("priorityLabel")}</label>
                 <Select value={filters.prioridad || undefined} onValueChange={onFilterChange("prioridad")}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Todas" />
+                    <SelectValue placeholder={tTickets("all")} />
                   </SelectTrigger>
                   <SelectContent>
                     {prioridadOptions
@@ -520,10 +527,10 @@ export default function AdminTicketsPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Impacto</label>
+                <label className="text-sm font-medium">{tTickets("impact")}</label>
                 <Select value={filters.impacto || undefined} onValueChange={onFilterChange("impacto")}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Todos" />
+                    <SelectValue placeholder={tTickets("all")} />
                   </SelectTrigger>
                   <SelectContent>
                     {impactoOptions
@@ -537,10 +544,10 @@ export default function AdminTicketsPage() {
           </Select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Categoría</label>
+                <label className="text-sm font-medium">{tTickets("category")}</label>
                 <Select value={filters.categoria || undefined} onValueChange={onFilterChange("categoria")}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Todas" />
+                    <SelectValue placeholder={tTickets("all")} />
                   </SelectTrigger>
                   <SelectContent>
                     {categoriaOptions
@@ -554,25 +561,25 @@ export default function AdminTicketsPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Asignado</label>
+                <label className="text-sm font-medium">{tTickets("assignee")}</label>
                 <Select value={filters.asignadoA || undefined} onValueChange={onFilterChange("asignadoA")}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Todos" />
+                    <SelectValue placeholder={tTickets("all")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unassigned">Sin asignar</SelectItem>
-                    <SelectItem value="assigned">Asignados</SelectItem>
+                    <SelectItem value="unassigned">{tTickets("unassigned")}</SelectItem>
+                    <SelectItem value="assigned">{tTickets("assigned")}</SelectItem>
                   </SelectContent>
           </Select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Proyecto</label>
+                <label className="text-sm font-medium">{tTickets("project")}</label>
                 <Select value={filters.projectId || undefined} onValueChange={onFilterChange("projectId")}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Todos" />
+                    <SelectValue placeholder={tTickets("all")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Sin proyecto</SelectItem>
+                    <SelectItem value="none">{tTickets("noProject")}</SelectItem>
                   </SelectContent>
           </Select>
               </div>
@@ -597,7 +604,7 @@ export default function AdminTicketsPage() {
               <div className="flex items-center gap-2">
                 <CheckSquare className="h-5 w-5 text-primary" />
                 <span className="font-medium">
-                  {selectedTickets.size} ticket(s) seleccionado(s)
+                  {tTickets("admin.selectedTickets").replace("{count}", String(selectedTickets.size))}
                     </span>
                   </div>
               <div className="flex items-center gap-2">
@@ -609,7 +616,7 @@ export default function AdminTicketsPage() {
                   }}
                 >
                   <SelectTrigger className="w-[150px]">
-                    <SelectValue placeholder="Cambiar estado" />
+                    <SelectValue placeholder={tTickets("admin.changeStatus")} />
                   </SelectTrigger>
                   <SelectContent>
                     {estadoOptions
@@ -629,7 +636,7 @@ export default function AdminTicketsPage() {
                   }}
                 >
                   <SelectTrigger className="w-[150px]">
-                    <SelectValue placeholder="Cambiar prioridad" />
+                    <SelectValue placeholder={tTickets("admin.changePriority")} />
                   </SelectTrigger>
                   <SelectContent>
                     {prioridadOptions
@@ -665,11 +672,11 @@ export default function AdminTicketsPage() {
         <Card>
           <CardContent className="pt-6">
             <EmptyState
-              title="No hay tickets"
+              title={tTickets("noTickets")}
               message={
                 search || hasActiveFilters
-                  ? "No se encontraron tickets que coincidan con los filtros."
-                  : "No hay tickets disponibles."
+                  ? tTickets("admin.noTicketsFiltered")
+                  : tTickets("noTicketsMessage")
               }
             />
           </CardContent>
@@ -679,12 +686,11 @@ export default function AdminTicketsPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Tickets ({filteredAndSortedTickets.length})</CardTitle>
+                <CardTitle>{tTickets("admin.ticketsCount").replace("{count}", String(filteredAndSortedTickets.length))}</CardTitle>
                 <CardDescription>
                   {pagination.total > 0 && (
                     <>
-                      Mostrando {((currentPage - 1) * pagination.limit) + 1} -{" "}
-                      {Math.min(currentPage * pagination.limit, pagination.total)} de {pagination.total} tickets
+                      {tTickets("admin.showing").replace("{from}", String(((currentPage - 1) * pagination.limit) + 1)).replace("{to}", String(Math.min(currentPage * pagination.limit, pagination.total))).replace("{total}", String(pagination.total))}
                     </>
                   )}
                 </CardDescription>
@@ -692,8 +698,8 @@ export default function AdminTicketsPage() {
               <div className="flex items-center gap-2">
                 <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "table" | "kanban")}>
                   <TabsList>
-                    <TabsTrigger value="table">Tabla</TabsTrigger>
-                    <TabsTrigger value="kanban" disabled>Kanban</TabsTrigger>
+                    <TabsTrigger value="table">{tTickets("admin.table")}</TabsTrigger>
+                    <TabsTrigger value="kanban" disabled>{tTickets("admin.kanban")}</TabsTrigger>
                   </TabsList>
                 </Tabs>
               </div>
@@ -717,7 +723,7 @@ export default function AdminTicketsPage() {
                         className="h-8 -ml-2"
                         onClick={() => handleSort("titulo")}
                       >
-                        Ticket
+                        {tTickets("title")}
                         <ArrowUpDown className="ml-2 h-3 w-3" />
                       </Button>
                     </TableHead>
@@ -728,7 +734,7 @@ export default function AdminTicketsPage() {
                         className="h-8 -ml-2"
                         onClick={() => handleSort("estado")}
                       >
-                        Estado
+                        {tTickets("statusLabel")}
                         <ArrowUpDown className="ml-2 h-3 w-3" />
                       </Button>
                     </TableHead>
@@ -739,12 +745,12 @@ export default function AdminTicketsPage() {
                         className="h-8 -ml-2"
                         onClick={() => handleSort("prioridad")}
                       >
-                        Prioridad
+                        {tTickets("priorityLabel")}
                         <ArrowUpDown className="ml-2 h-3 w-3" />
                       </Button>
                     </TableHead>
-                    <TableHead>Usuario</TableHead>
-                    <TableHead>Organización</TableHead>
+                    <TableHead>{tTickets("user")}</TableHead>
+                    <TableHead>{tTickets("organization")}</TableHead>
                     <TableHead>
                       <Button
                         variant="ghost"
@@ -752,11 +758,11 @@ export default function AdminTicketsPage() {
                         className="h-8 -ml-2"
                         onClick={() => handleSort("createdAt")}
                       >
-                        Fecha
+                        {tTickets("createdAt")}
                         <ArrowUpDown className="ml-2 h-3 w-3" />
                       </Button>
                     </TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
+                    <TableHead className="text-right">{tTickets("actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -780,7 +786,7 @@ export default function AdminTicketsPage() {
                             <p className="font-medium leading-tight">{t.titulo}</p>
                             {t.prioridad === "critica" && (
                               <Badge variant="destructive" className="text-xs">
-                                Crítico
+                                {tTickets("priority.critical")}
                               </Badge>
                             )}
                           </div>

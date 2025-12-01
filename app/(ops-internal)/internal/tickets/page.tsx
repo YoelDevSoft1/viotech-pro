@@ -15,6 +15,7 @@ import { LoadingState, ErrorState, EmptyState } from "@/components/ui/state";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 
 type Ticket = {
   id: string;
@@ -33,6 +34,7 @@ export default function InternalTicketsPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const tTickets = useTranslationsSafe("tickets");
   const tCommon = useTranslationsSafe("common");
+  const { formatDate } = useI18n();
 
   const { tickets, loading, error, refresh } = useTickets({
     estado: filters.estado || undefined,
@@ -186,13 +188,10 @@ export default function InternalTicketsPage() {
                     </Select>
                   </TableCell>
                   <TableCell className="col-span-2 text-sm text-muted-foreground">
-                    {ticket.usuario?.email ? `${ticket.usuario.nombre || "Sin nombre"} (${ticket.usuario.email})` : "N/D"}
+                    {ticket.usuario?.email ? `${ticket.usuario.nombre || tTickets("noName")} (${ticket.usuario.email})` : tTickets("notAvailable")}
                   </TableCell>
                   <TableCell className="col-span-2 text-sm text-muted-foreground">
-                    {new Date(ticket.createdAt).toLocaleDateString("es-CO", {
-                      day: "2-digit",
-                      month: "short",
-                    })}
+                    {formatDate(ticket.createdAt, "dd MMM")}
                   </TableCell>
                   <TableCell className="col-span-2">
                     <Button
