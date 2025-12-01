@@ -13,10 +13,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LoadingState, ErrorState } from "@/components/ui/state";
 import { TicketComments } from "@/components/tickets/TicketComments";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 
 export default function ClientTicketDetail({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { ticket, isLoading, isError, error, refresh, addComment, isCommenting } = useTicket(params.id);
+  const tClientTicket = useTranslationsSafe("client.tickets.ticketDetail");
+  const { formatDate } = useI18n();
 
   // Guard de autenticación rápido (token en storage)
   useEffect(() => {
@@ -29,7 +33,7 @@ export default function ClientTicketDetail({ params }: { params: { id: string } 
   if (isLoading) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <LoadingState title="Cargando ticket..." />
+        <LoadingState title={tClientTicket("loading")} />
       </div>
     );
   }
@@ -38,11 +42,11 @@ export default function ClientTicketDetail({ params }: { params: { id: string } 
     return (
       <div className="flex flex-1 items-center justify-center">
         <ErrorState
-          title="No pudimos cargar el ticket"
-          message={error || "Reintenta más tarde."}
+          title={tClientTicket("errorTitle")}
+          message={error || tClientTicket("errorMessage")}
         >
           <Button onClick={() => refresh()} variant="outline" className="mt-2">
-            Reintentar
+            {tClientTicket("retry")}
           </Button>
         </ErrorState>
       </div>
@@ -57,7 +61,7 @@ export default function ClientTicketDetail({ params }: { params: { id: string } 
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="w-4 h-4" />
-          Volver a mis tickets
+          {tClientTicket("backToTickets")}
         </Link>
       </div>
 
@@ -66,7 +70,7 @@ export default function ClientTicketDetail({ params }: { params: { id: string } 
         description={`Ticket #${ticket.id.slice(0, 8)}`}
         actions={
           <Button variant="ghost" size="sm" onClick={() => refresh()}>
-            Refrescar
+            {tClientTicket("refresh")}
           </Button>
         }
       />
@@ -77,17 +81,17 @@ export default function ClientTicketDetail({ params }: { params: { id: string } 
             <CardHeader className="space-y-1">
               <CardTitle className="flex items-center gap-2">
                 <BadgeCheck className="h-5 w-5 text-primary" />
-                Resumen
+                {tClientTicket("summary")}
               </CardTitle>
-              <CardDescription>Estado, prioridad y SLA de tu ticket.</CardDescription>
+              <CardDescription>{tClientTicket("summaryDescription")}</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Estado</p>
+                <p className="text-xs text-muted-foreground">{tClientTicket("status")}</p>
                 <Badge className="capitalize w-fit">{ticket.estado}</Badge>
               </div>
               <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Prioridad</p>
+                <p className="text-xs text-muted-foreground">{tClientTicket("priority")}</p>
                 <Badge variant="secondary" className="capitalize w-fit">
                   {ticket.prioridad}
                 </Badge>
@@ -96,14 +100,9 @@ export default function ClientTicketDetail({ params }: { params: { id: string } 
                 <div className="space-y-1 flex items-center gap-2">
                   <Clock3 className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <p className="text-xs text-muted-foreground">SLA objetivo</p>
+                    <p className="text-xs text-muted-foreground">{tClientTicket("slaTarget")}</p>
                     <p className="text-sm">
-                      {new Date(ticket.slaObjetivo).toLocaleString("es-CO", {
-                        day: "2-digit",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {formatDate(ticket.slaObjetivo, "PPp")}
                     </p>
                   </div>
                 </div>
@@ -112,7 +111,7 @@ export default function ClientTicketDetail({ params }: { params: { id: string } 
                 <div className="space-y-1 flex items-center gap-2">
                   <Flame className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Impacto</p>
+                    <p className="text-xs text-muted-foreground">{tClientTicket("impact")}</p>
                     <p className="text-sm capitalize">{ticket.impacto}</p>
                   </div>
                 </div>
@@ -121,7 +120,7 @@ export default function ClientTicketDetail({ params }: { params: { id: string } 
                 <div className="space-y-1 flex items-center gap-2">
                   <Tags className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Categoría</p>
+                    <p className="text-xs text-muted-foreground">{tClientTicket("category")}</p>
                     <p className="text-sm capitalize">{ticket.categoria}</p>
                   </div>
                 </div>
@@ -131,12 +130,12 @@ export default function ClientTicketDetail({ params }: { params: { id: string } 
 
           <Card>
             <CardHeader>
-              <CardTitle>Descripción</CardTitle>
-              <CardDescription>Detalle del problema o solicitud.</CardDescription>
+              <CardTitle>{tClientTicket("description")}</CardTitle>
+              <CardDescription>{tClientTicket("descriptionDetail")}</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-foreground whitespace-pre-wrap">
-                {ticket.descripcion || "Sin descripción."}
+                {ticket.descripcion || tClientTicket("noDescription")}
               </p>
             </CardContent>
           </Card>
@@ -154,39 +153,33 @@ export default function ClientTicketDetail({ params }: { params: { id: string } 
         <div className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Metadatos</CardTitle>
+              <CardTitle>{tClientTicket("metadata")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm text-muted-foreground">
               <div className="flex justify-between">
-                <span>Creado</span>
+                <span>{tClientTicket("created")}</span>
                 <span>
-                  {new Date(ticket.createdAt).toLocaleString("es-CO", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {formatDate(ticket.createdAt, "PPpp")}
                 </span>
               </div>
               {ticket.usuario?.email && (
                 <div className="flex justify-between">
-                  <span>Reportado por</span>
+                  <span>{tClientTicket("reportedBy")}</span>
                   <span className="text-right">
-                    {ticket.usuario.nombre || "Usuario"} <br />
+                    {ticket.usuario.nombre || tClientTicket("user")} <br />
                     <span className="text-xs">{ticket.usuario.email}</span>
                   </span>
                 </div>
               )}
               {ticket.projectId && (
                 <div className="flex justify-between">
-                  <span>Proyecto</span>
+                  <span>{tClientTicket("project")}</span>
                   <span className="text-right">{ticket.projectId}</span>
                 </div>
               )}
               {ticket.organizationId && (
                 <div className="flex justify-between">
-                  <span>Organización</span>
+                  <span>{tClientTicket("organization")}</span>
                   <span className="text-right">{ticket.organizationId}</span>
                 </div>
               )}
@@ -196,8 +189,8 @@ export default function ClientTicketDetail({ params }: { params: { id: string } 
           <div className="rounded-xl border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 flex items-start gap-2">
             <AlertCircle className="h-4 w-4 mt-0.5" />
             <div>
-              <p className="font-medium">Recuerda</p>
-              <p>Responde con la mayor información posible y adjunta evidencias para acelerar la resolución.</p>
+              <p className="font-medium">{tClientTicket("remember")}</p>
+              <p>{tClientTicket("rememberMessage")}</p>
             </div>
           </div>
         </div>

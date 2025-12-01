@@ -15,17 +15,21 @@ import { useCurrentUser } from "@/lib/hooks/useResources";
 import { apiClient } from "@/lib/apiClient";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-const profileSchema = z.object({
-  nombre: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
-  email: z.string().email("Ingresa un correo válido"),
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+
+const getProfileSchema = (t: (key: string) => string) => z.object({
+  nombre: z.string().min(2, t("validation.nameMin")),
+  email: z.string().email(t("validation.emailInvalid")),
 });
 
-type ProfileFormValues = z.infer<typeof profileSchema>;
+type ProfileFormValues = z.infer<ReturnType<typeof getProfileSchema>>;
 
 export default function ProfilePage() {
   const { data: user, isLoading, refetch } = useCurrentUser();
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState(false);
+  const tProfile = useTranslationsSafe("profile");
+  const profileSchema = getProfileSchema(tProfile);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -44,12 +48,12 @@ export default function ProfilePage() {
     setSuccess(false);
     try {
       await apiClient.put("/auth/me", values);
-      toast.success("Perfil actualizado correctamente");
+      toast.success(tProfile("success.updated"));
       setSuccess(true);
       refetch();
       setTimeout(() => setSuccess(false), 3000);
     } catch (error: any) {
-      toast.error(error.message || "Error al actualizar el perfil");
+      toast.error(error.message || tProfile("error.updateFailed"));
     } finally {
       setIsSaving(false);
     }
@@ -76,9 +80,9 @@ export default function ProfilePage() {
       {/* Header */}
       <div className="space-y-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Mi Perfil</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{tProfile("title")}</h1>
           <p className="text-muted-foreground">
-            Gestiona tu información personal y preferencias de cuenta.
+            {tProfile("description")}
           </p>
         </div>
       </div>
@@ -88,7 +92,7 @@ export default function ProfilePage() {
         <Alert className="border-green-500 bg-green-50 dark:bg-green-950">
           <CheckCircle2 className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-800 dark:text-green-200">
-            Tu perfil se ha actualizado correctamente.
+            {tProfile("profileUpdated")}
           </AlertDescription>
         </Alert>
       )}
@@ -97,13 +101,13 @@ export default function ProfilePage() {
         {/* Avatar Section */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Foto de Perfil</CardTitle>
-            <CardDescription>Tu foto de perfil visible para otros usuarios</CardDescription>
+            <CardTitle className="text-lg">{tProfile("profilePhoto")}</CardTitle>
+            <CardDescription>{tProfile("profilePhotoDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             <AvatarUploader
               currentAvatar={user?.avatar}
-              userName={user?.nombre || "Usuario"}
+              userName={user?.nombre || tProfile("user")}
               initials={initials}
               size="md"
             />
@@ -113,9 +117,9 @@ export default function ProfilePage() {
         {/* Profile Form */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-lg">Información Personal</CardTitle>
+            <CardTitle className="text-lg">{tProfile("personalInfo")}</CardTitle>
             <CardDescription>
-              Actualiza tu información personal. Estos datos serán visibles en tu perfil.
+              {tProfile("personalInfoDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -128,13 +132,13 @@ export default function ProfilePage() {
                     <FormItem>
                       <FormLabel className="flex items-center gap-2">
                         <User className="h-4 w-4" />
-                        Nombre Completo
+                        {tProfile("fullName")}
                       </FormLabel>
                       <FormControl>
-                        <Input placeholder="Juan Pérez" {...field} />
+                        <Input placeholder={tProfile("fullNamePlaceholder")} {...field} />
                       </FormControl>
                       <FormDescription>
-                        Este es tu nombre completo que se mostrará en tu perfil.
+                        {tProfile("fullNameDescription")}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -148,13 +152,13 @@ export default function ProfilePage() {
                     <FormItem>
                       <FormLabel className="flex items-center gap-2">
                         <Mail className="h-4 w-4" />
-                        Correo Electrónico
+                        {tProfile("email")}
                       </FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="nombre@empresa.com" {...field} />
+                        <Input type="email" placeholder={tProfile("emailPlaceholder")} {...field} />
                       </FormControl>
                       <FormDescription>
-                        Tu dirección de correo electrónico para notificaciones y acceso.
+                        {tProfile("emailDescription")}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -166,12 +170,12 @@ export default function ProfilePage() {
                     {isSaving ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Guardando...
+                        {tProfile("saving")}
                       </>
                     ) : (
                       <>
                         <Save className="mr-2 h-4 w-4" />
-                        Guardar Cambios
+                        {tProfile("saveChanges")}
                       </>
                     )}
                   </Button>
@@ -185,20 +189,20 @@ export default function ProfilePage() {
       {/* Account Info */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Información de Cuenta</CardTitle>
-          <CardDescription>Detalles de tu cuenta que no se pueden modificar</CardDescription>
+          <CardTitle className="text-lg">{tProfile("accountInfo")}</CardTitle>
+          <CardDescription>{tProfile("accountInfoDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                ID de Usuario
+                {tProfile("userId")}
               </p>
               <p className="text-sm font-mono text-foreground break-all">{user?.id || "—"}</p>
             </div>
             <div className="space-y-1">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Rol
+                {tProfile("role")}
               </p>
               <p className="text-sm font-medium text-foreground capitalize">{user?.rol || "—"}</p>
             </div>

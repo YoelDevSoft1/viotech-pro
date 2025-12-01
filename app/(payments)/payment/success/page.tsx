@@ -13,12 +13,14 @@ import Link from "next/link";
 import { buildApiUrl } from "@/lib/api";
 import { getAccessToken } from "@/lib/auth";
 import { fetchUserServices } from "@/lib/services";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [serviceActivated, setServiceActivated] = useState(false);
+  const tPayment = useTranslationsSafe("payment.success");
 
   const reference = searchParams.get("reference");
   const transactionId = searchParams.get("transaction_id");
@@ -77,10 +79,10 @@ function SuccessContent() {
           {/* Title */}
           <div>
             <h1 className="text-3xl font-medium text-foreground mb-2">
-              ¡Pago Exitoso!
+              {tPayment("title")}
             </h1>
             <p className="text-muted-foreground">
-              Tu pago ha sido procesado correctamente
+              {tPayment("description")}
             </p>
           </div>
 
@@ -88,13 +90,13 @@ function SuccessContent() {
           {reference && (
             <div className="rounded-2xl border border-border/70 bg-muted/20 p-6 space-y-2">
               <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                Referencia de Transacción
+                {tPayment("transactionReference")}
               </p>
               <p className="text-sm font-mono text-foreground">{reference}</p>
               {transactionId && (
                 <>
                   <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mt-4">
-                    ID de Transacción
+                    {tPayment("transactionId")}
                   </p>
                   <p className="text-sm font-mono text-foreground">
                     {transactionId}
@@ -108,18 +110,17 @@ function SuccessContent() {
           {loading ? (
             <div className="flex items-center justify-center gap-2 text-muted-foreground">
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span className="text-sm">Verificando activación del servicio...</span>
+              <span className="text-sm">{tPayment("verifying")}</span>
             </div>
           ) : serviceActivated ? (
             <div className="rounded-2xl border border-green-500/20 bg-green-500/5 p-6 flex items-center gap-3">
               <CheckCircle2 className="w-6 h-6 text-green-500 flex-shrink-0" />
               <div className="text-left">
                 <p className="text-sm font-medium text-green-500">
-                  Servicio Activado
+                  {tPayment("serviceActivated")}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Tu servicio ha sido activado exitosamente y ya está disponible
-                  en tu cuenta.
+                  {tPayment("serviceActivatedDescription")}
                 </p>
               </div>
             </div>
@@ -128,11 +129,10 @@ function SuccessContent() {
               <AlertCircle className="w-6 h-6 text-yellow-500 flex-shrink-0" />
               <div className="text-left">
                 <p className="text-sm font-medium text-yellow-500">
-                  Procesando Activación
+                  {tPayment("processingActivation")}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Tu pago fue exitoso. El servicio se activará en los próximos
-                  minutos. Recibirás un correo de confirmación cuando esté listo.
+                  {tPayment("processingActivationDescription")}
                 </p>
               </div>
             </div>
@@ -145,13 +145,13 @@ function SuccessContent() {
               className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background hover:scale-105 transition-transform"
             >
               <Package className="w-4 h-4" />
-              Ver Mis Servicios
+              {tPayment("viewMyServices")}
             </Link>
             <Link
               href="/dashboard"
               className="flex-1 inline-flex items-center justify-center gap-2 rounded-full border border-border px-6 py-3 text-sm font-medium text-foreground hover:bg-muted/30 transition-colors"
             >
-              Ir al Dashboard
+              {tPayment("goToDashboard")}
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -159,8 +159,7 @@ function SuccessContent() {
           {/* Info */}
           <div className="pt-4 border-t border-border/50">
             <p className="text-xs text-muted-foreground">
-              Recibirás un correo electrónico con los detalles de tu compra y
-              las instrucciones para acceder a tu servicio.
+              {tPayment("emailInfo")}
             </p>
           </div>
         </div>
@@ -169,20 +168,24 @@ function SuccessContent() {
   );
 }
 
+function LoadingFallback() {
+  const tPayment = useTranslationsSafe("payment.success");
+  
+  return (
+    <main className="min-h-screen bg-background px-6 py-24">
+      <div className="max-w-2xl mx-auto">
+        <div className="flex items-center justify-center gap-2 text-muted-foreground">
+          <Loader2 className="w-5 h-5 animate-spin" />
+          <span>{tPayment("loading")}</span>
+        </div>
+      </div>
+    </main>
+  );
+}
+
 export default function PaymentSuccessPage() {
   return (
-    <Suspense
-      fallback={
-        <main className="min-h-screen bg-background px-6 py-24">
-          <div className="max-w-2xl mx-auto">
-            <div className="flex items-center justify-center gap-2 text-muted-foreground">
-              <Loader2 className="w-5 h-5 animate-spin" />
-              Cargando...
-            </div>
-          </div>
-        </main>
-      }
-    >
+    <Suspense fallback={<LoadingFallback />}>
       <SuccessContent />
     </Suspense>
   );

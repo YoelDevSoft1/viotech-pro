@@ -11,6 +11,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import OrgSelector, { type Org } from "@/components/common/OrgSelector";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 import Link from "next/link";
 
 type MeResponse = {
@@ -52,6 +54,8 @@ export default function AdminSettingsPage() {
   const [users, setUsers] = useState<SimpleUser[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersError, setUsersError] = useState<string | null>(null);
+  const tSettings = useTranslationsSafe("admin.settings");
+  const { formatDate } = useI18n();
 
   const loadProfile = async () => {
     setLoading(true);
@@ -63,7 +67,7 @@ export default function AdminSettingsPage() {
       if (refreshed) token = refreshed;
       else {
         await logout();
-        setError("Sesión expirada. Vuelve a iniciar sesión.");
+        setError(tSettings("errors.sessionExpired"));
         setLoading(false);
         return;
       }
@@ -75,7 +79,7 @@ export default function AdminSettingsPage() {
         credentials: "include",
       });
       const payload = await res.json().catch(() => null);
-      if (!res.ok || !payload) throw new Error(payload?.error || payload?.message || "No se pudo cargar el perfil");
+      if (!res.ok || !payload) throw new Error(payload?.error || payload?.message || tSettings("errors.couldNotLoadProfile"));
       const data =
         (payload.data && (payload.data.user || payload.data)) ||
         payload.user ||
@@ -83,7 +87,7 @@ export default function AdminSettingsPage() {
       setMe(data);
       setOrgFromProfile(data.organizationId || data.organization_id || null);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error al cargar perfil";
+      const msg = err instanceof Error ? err.message : tSettings("errors.loadProfileError");
       setError(msg);
       setMe(null);
     } finally {
@@ -99,7 +103,7 @@ export default function AdminSettingsPage() {
       if (refreshed) token = refreshed;
       else {
         await logout();
-        setMfaError("Sesión expirada. Vuelve a iniciar sesión.");
+        setMfaError(tSettings("errors.sessionExpired"));
         return;
       }
     }
@@ -110,7 +114,7 @@ export default function AdminSettingsPage() {
         credentials: "include",
       });
       const payload = await res.json().catch(() => null);
-      if (!res.ok || !payload) throw new Error(payload?.error || payload?.message || "No se pudo cargar MFA");
+      if (!res.ok || !payload) throw new Error(payload?.error || payload?.message || tSettings("errors.couldNotLoadMFA"));
       const data = payload.data || payload;
       setMfa({
         enabled: Boolean(data.enabled ?? data.mfaEnabled),
@@ -118,7 +122,7 @@ export default function AdminSettingsPage() {
         lastVerifiedAt: data.lastVerifiedAt || data.last_verified_at || null,
       });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error al cargar MFA";
+      const msg = err instanceof Error ? err.message : tSettings("errors.loadMFAError");
       setMfaError(msg);
       setMfa(null);
     }
@@ -139,7 +143,7 @@ export default function AdminSettingsPage() {
       if (refreshed) token = refreshed;
       else {
         await logout();
-        setUsersError("Sesión expirada. Vuelve a iniciar sesión.");
+        setUsersError(tSettings("errors.sessionExpired"));
         setUsersLoading(false);
         return;
       }
@@ -151,11 +155,11 @@ export default function AdminSettingsPage() {
         credentials: "include",
       });
       const payload = await res.json().catch(() => null);
-      if (!res.ok || !payload) throw new Error(payload?.error || payload?.message || "No se pudieron cargar usuarios");
+      if (!res.ok || !payload) throw new Error(payload?.error || payload?.message || tSettings("errors.couldNotLoadUsers"));
       const arr = payload.data?.users || payload.users || payload.data || [];
       setUsers(Array.isArray(arr) ? arr : []);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error al cargar usuarios";
+      const msg = err instanceof Error ? err.message : tSettings("errors.loadUsersError");
       setUsersError(msg);
       setUsers([]);
     } finally {
@@ -169,14 +173,14 @@ export default function AdminSettingsPage() {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Configuración</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{tSettings("title")}</h1>
             <p className="text-muted-foreground">
-              Gestiona tu perfil, seguridad y organización.
+              {tSettings("description")}
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={loadProfile} disabled={loading}>
             <RefreshCcw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-            Refrescar
+            {tSettings("refresh")}
           </Button>
         </div>
       </div>
@@ -195,9 +199,9 @@ export default function AdminSettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
-              Información de Cuenta
+              {tSettings("accountInfo")}
             </CardTitle>
-            <CardDescription>Datos de tu perfil de usuario</CardDescription>
+            <CardDescription>{tSettings("accountInfoDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -209,40 +213,40 @@ export default function AdminSettingsPage() {
             ) : (
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">ID de Cuenta</p>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{tSettings("accountId")}</p>
                   <p className="text-sm font-mono text-foreground break-all">{me?.id || "—"}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Nombre</p>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{tSettings("name")}</p>
                   <p className="text-sm font-medium text-foreground">{me?.nombre || "—"}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Correo</p>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{tSettings("email")}</p>
                   <div className="flex items-center gap-2">
                     <Mail className="h-3 w-3 text-muted-foreground" />
                     <p className="text-sm text-foreground">{me?.email || "—"}</p>
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Rol</p>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{tSettings("role")}</p>
                   <Badge variant="outline" className="capitalize">
                     {me?.rol || "—"}
                   </Badge>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Tier</p>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{tSettings("tier")}</p>
                   <Badge variant="secondary" className="capitalize">
                     {me?.tier || "—"}
                   </Badge>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Estado</p>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{tSettings("status")}</p>
                   <Badge variant={me?.estado === "activo" ? "default" : "secondary"} className="capitalize">
                     {me?.estado || "—"}
                   </Badge>
                 </div>
                 <div className="space-y-1 col-span-2">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Organización Asignada</p>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{tSettings("assignedOrganization")}</p>
                   <div className="flex items-center gap-2">
                     <Building2 className="h-3 w-3 text-muted-foreground" />
                     <p className="text-sm font-mono text-foreground break-all">
@@ -259,9 +263,9 @@ export default function AdminSettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Lock className="h-5 w-5" />
-              Seguridad (MFA)
+              {tSettings("securityMFA")}
             </CardTitle>
-            <CardDescription>Autenticación de dos factores</CardDescription>
+            <CardDescription>{tSettings("securityMFADescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {mfaError && (
@@ -272,9 +276,9 @@ export default function AdminSettingsPage() {
             )}
             <div className="flex items-center justify-between rounded-lg border bg-muted/50 p-4">
               <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Estado MFA</p>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{tSettings("mfaStatus")}</p>
                 <p className="text-sm font-medium text-foreground">
-                  {mfa ? (mfa.enabled ? "Habilitado" : "Deshabilitado") : "Cargando..."}
+                  {mfa ? (mfa.enabled ? tSettings("enabled") : tSettings("disabled")) : tSettings("loading")}
                 </p>
               </div>
               {mfa?.enabled ? (
@@ -287,7 +291,7 @@ export default function AdminSettingsPage() {
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <KeyRound className="h-3 w-3" />
                 <span>
-                  Última verificación: {new Date(mfa.lastVerifiedAt).toLocaleString("es-CO")}
+                  {tSettings("lastVerification")}: {formatDate(mfa.lastVerifiedAt, "PPpp")}
                 </span>
               </div>
             )}
@@ -300,15 +304,15 @@ export default function AdminSettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
-            Organización Activa
+            {tSettings("activeOrganization")}
           </CardTitle>
           <CardDescription>
-            Cambia la organización con la que trabajas en el panel. Esto usa los datos reales de /api/organizations.
+            {tSettings("activeOrganizationDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <OrgSelector
-            label="Selecciona organización"
+            label={tSettings("selectOrganization")}
             onChange={(org: Org | null) => setOrgFromProfile(org?.id || null)}
           />
         </CardContent>
@@ -319,9 +323,9 @@ export default function AdminSettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            Usuarios del Sistema
+            {tSettings("systemUsers")}
           </CardTitle>
-          <CardDescription>Lista de todos los usuarios registrados</CardDescription>
+          <CardDescription>{tSettings("systemUsersDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           {usersError && (
@@ -338,7 +342,7 @@ export default function AdminSettingsPage() {
             </div>
           ) : users.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">
-              No hay usuarios registrados.
+              {tSettings("noUsers")}
             </p>
           ) : (
             <div className="rounded-md border">
@@ -346,12 +350,12 @@ export default function AdminSettingsPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>ID</TableHead>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Correo</TableHead>
-                    <TableHead>Rol</TableHead>
-                    <TableHead>Tier</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Organización</TableHead>
+                    <TableHead>{tSettings("name")}</TableHead>
+                    <TableHead>{tSettings("email")}</TableHead>
+                    <TableHead>{tSettings("role")}</TableHead>
+                    <TableHead>{tSettings("tier")}</TableHead>
+                    <TableHead>{tSettings("status")}</TableHead>
+                    <TableHead>{tSettings("assignedOrganization")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

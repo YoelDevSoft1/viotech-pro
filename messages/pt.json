@@ -53,6 +53,12 @@
     "edit": "Editar",
     "create": "Criar",
     "update": "Atualizar",
+    "organization": "Organização",
+    "selectOrganization": "Selecionar organização",
+    "orgIdPlaceholder": "ID da organização (UUID)",
+    "orgSelectorHelp": "Salvo localmente. Se a API não responder, deixe vazio ou insira o UUID manualmente.",
+    "loadingOrganizations": "Carregando organizações…",
+    "serverStarting": "(O servidor pode estar iniciando)",
     "search": "Buscar",
     "filter": "Filtrar",
     "close": "Fechar",
@@ -216,7 +222,8 @@
       "previous": "Anterior",
       "next": "Próximo",
       "ticketDetail": "Detalhes do Ticket",
-      "generalInfo": "Informações Gerais"
+      "generalInfo": "Informações Gerais",
+      "metadata": "Metadados"
     },
     "export": "Exportar",
     "refresh": "Atualizar",
@@ -620,13 +627,111 @@
       "timeFormat": "Formato HH:mm"
     }
   },
+  "profile": {
+    "title": "Meu Perfil",
+    "description": "Gerencie suas informações pessoais e preferências da conta.",
+    "profileUpdated": "Seu perfil foi atualizado com sucesso.",
+    "profilePhoto": "Foto de Perfil",
+    "profilePhotoDescription": "Sua foto de perfil visível para outros usuários",
+    "user": "Usuário",
+    "personalInfo": "Informações Pessoais",
+    "personalInfoDescription": "Atualize suas informações pessoais. Esses dados serão visíveis no seu perfil.",
+    "fullName": "Nome Completo",
+    "fullNamePlaceholder": "João Silva",
+    "fullNameDescription": "Este é seu nome completo que será exibido no seu perfil.",
+    "email": "E-mail",
+    "emailPlaceholder": "nome@empresa.com",
+    "emailDescription": "Seu endereço de e-mail para notificações e acesso.",
+    "saveChanges": "Salvar Alterações",
+    "saving": "Salvando...",
+    "accountInfo": "Informações da Conta",
+    "accountInfoDescription": "Detalhes da conta que não podem ser modificados",
+    "userId": "ID do Usuário",
+    "role": "Função",
+    "validation": {
+      "nameMin": "O nome deve ter pelo menos 2 caracteres",
+      "emailInvalid": "Digite um e-mail válido"
+    },
+    "success": {
+      "updated": "Perfil atualizado com sucesso"
+    },
+    "error": {
+      "updateFailed": "Erro ao atualizar o perfil"
+    }
+  },
   "settings": {
     "title": "Configurações",
+    "description": "Gerencie as configurações da sua conta, segurança e preferências.",
     "preferences": "Preferências",
     "profile": "Perfil",
     "security": "Segurança",
     "notifications": "Notificações",
-    "customization": "Personalização"
+    "customization": "Personalização",
+    "securityTab": {
+      "changePassword": "Alterar Senha",
+      "changePasswordDescription": "Atualize sua senha para manter sua conta segura. Use uma senha forte e única.",
+      "passwordUpdated": "Sua senha foi atualizada com sucesso.",
+      "currentPassword": "Senha Atual",
+      "newPassword": "Nova Senha",
+      "newPasswordDescription": "Mínimo de 8 caracteres. Recomendamos usar uma combinação de letras, números e símbolos.",
+      "confirmPassword": "Confirmar Nova Senha",
+      "updatePassword": "Atualizar Senha",
+      "saving": "Salvando...",
+      "additionalSecurity": "Segurança Adicional",
+      "additionalSecurityDescription": "Configurações adicionais para proteger sua conta",
+      "twoFactorAuth": "Autenticação de Dois Fatores (2FA)",
+      "mfaEnabled": "MFA está habilitado em sua conta",
+      "mfaDisabled": "Adicione uma camada adicional de segurança à sua conta",
+      "lastVerification": "Última verificação",
+      "configure": "Configurar",
+      "disable": "Desabilitar",
+      "disableMFA": "Desabilitar MFA",
+      "disableMFADescription": "Digite sua senha para confirmar que deseja desabilitar a autenticação de dois fatores.",
+      "password": "Senha",
+      "passwordPlaceholder": "Digite sua senha",
+      "disabling": "Desabilitando...",
+      "activeSessions": "Sessões Ativas",
+      "activeSessionsDescription": "Gerencie suas sessões ativas e feche aquelas que você não reconhece."
+    },
+    "notificationsTab": {
+      "preferences": "Preferências de Notificações",
+      "preferencesDescription": "Escolha como e quando deseja receber notificações",
+      "emailNotifications": "Notificações por e-mail",
+      "emailNotificationsDescription": "Receba notificações importantes por e-mail",
+      "pushNotifications": "Notificações push",
+      "pushNotificationsDescription": "Receba notificações em tempo real no seu navegador",
+      "ticketUpdates": "Atualizações de tickets",
+      "ticketUpdatesDescription": "Notificações quando há alterações nos seus tickets",
+      "projectUpdates": "Atualizações de projetos",
+      "projectUpdatesDescription": "Notificações sobre alterações nos seus projetos",
+      "savePreferences": "Salvar Preferências",
+      "saving": "Salvando..."
+    },
+    "preferencesTab": {
+      "generalPreferences": "Preferências Gerais",
+      "generalPreferencesDescription": "Personalize sua experiência na plataforma",
+      "language": "Idioma",
+      "languageDescription": "Selecione seu idioma preferido",
+      "languageComingSoon": "Espanhol (Em Breve)",
+      "timezone": "Fuso horário",
+      "timezoneDescription": "Configure seu fuso horário para datas e horas",
+      "timezoneComingSoon": "Automático (Em Breve)"
+    },
+    "validation": {
+      "currentPasswordRequired": "A senha atual é obrigatória",
+      "newPasswordMin": "A nova senha deve ter pelo menos 8 caracteres",
+      "passwordsMismatch": "As senhas não coincidem",
+      "passwordRequired": "Por favor, digite sua senha"
+    },
+    "success": {
+      "passwordUpdated": "Senha atualizada com sucesso",
+      "notificationsSaved": "Preferências de notificações salvas"
+    },
+    "error": {
+      "passwordUpdateFailed": "Erro ao atualizar a senha",
+      "notificationsSaveFailed": "Erro ao salvar preferências",
+      "mfaDisableFailed": "Erro ao desabilitar MFA"
+    }
   },
   "notifications": {
     "title": "Notificações",
@@ -1041,6 +1146,89 @@
         "iaTitle": "Modelo IA em modo heurístico",
         "iaDetail": "Verificar status do preditor no Render."
       }
+    }
+  },
+  "client": {
+    "tickets": {
+      "title": "Tickets e Suporte",
+      "description": "Crie, comente, anexe evidências e revise o status de suas solicitações.",
+      "backToDashboard": "Voltar ao painel",
+      "ticketDetail": {
+        "loading": "Carregando ticket...",
+        "errorTitle": "Não foi possível carregar o ticket",
+        "errorMessage": "Tente novamente mais tarde.",
+        "retry": "Tentar novamente",
+        "backToTickets": "Voltar aos meus tickets",
+        "refresh": "Atualizar",
+        "summary": "Resumo",
+        "summaryDescription": "Status, prioridade e SLA do seu ticket.",
+        "status": "Status",
+        "priority": "Prioridade",
+        "slaTarget": "Meta de SLA",
+        "impact": "Impacto",
+        "category": "Categoria",
+        "description": "Descrição",
+        "descriptionDetail": "Detalhes do problema ou solicitação.",
+        "noDescription": "Sem descrição.",
+        "metadata": "Metadados",
+        "created": "Criado",
+        "reportedBy": "Reportado por",
+        "user": "Usuário",
+        "project": "Projeto",
+        "organization": "Organização",
+        "remember": "Lembre-se",
+        "rememberMessage": "Responda com o máximo de informações possível e anexe evidências para acelerar a resolução.",
+        "comments": "Comentários"
+      }
+    },
+    "ia": {
+      "asistente": {
+        "title": "IA · Assistente de tickets",
+        "pageTitle": "Criar tickets com IA",
+        "description": "Converse com o assistente e gere tickets automaticamente com o modelo configurado.",
+        "backToDashboard": "Voltar ao painel"
+      },
+      "predictor": {
+        "title": "IA · Previsões",
+        "pageTitle": "Previsão de tempos e custos",
+        "description": "Conecte-se com o modelo ML ativo para estimar duração e custo de projetos.",
+        "backToDashboard": "Voltar ao painel"
+      }
+    }
+  },
+  "payment": {
+    "success": {
+      "title": "Pagamento Bem-sucedido!",
+      "description": "Seu pagamento foi processado corretamente",
+      "transactionReference": "Referência da Transação",
+      "transactionId": "ID da Transação",
+      "verifying": "Verificando ativação do serviço...",
+      "serviceActivated": "Serviço Ativado",
+      "serviceActivatedDescription": "Seu serviço foi ativado com sucesso e já está disponível em sua conta.",
+      "processingActivation": "Processando Ativação",
+      "processingActivationDescription": "Seu pagamento foi bem-sucedido. O serviço será ativado nos próximos minutos. Você receberá um e-mail de confirmação quando estiver pronto.",
+      "viewMyServices": "Ver Meus Serviços",
+      "goToDashboard": "Ir ao Painel",
+      "emailInfo": "Você receberá um e-mail com os detalhes da sua compra e instruções para acessar seu serviço.",
+      "loading": "Carregando..."
+    },
+    "error": {
+      "title": "Erro no Pagamento",
+      "description": "Não foi possível processar seu pagamento corretamente",
+      "errorDetails": "Detalhes do erro:",
+      "reference": "Referência",
+      "possibleCauses": "Possíveis causas:",
+      "insufficientFunds": "Fundos insuficientes no cartão",
+      "cardBlocked": "Cartão bloqueado ou expirado",
+      "incorrectData": "Dados de pagamento incorretos",
+      "gatewayIssue": "Problema temporário com o gateway de pagamento",
+      "tryAgain": "Tentar Novamente",
+      "redirecting": "Redirecionando...",
+      "backToCatalog": "Voltar ao Catálogo",
+      "contactSupport": "Se o problema persistir, entre em contato:",
+      "whatsappSupport": "Suporte WhatsApp",
+      "createTicket": "Criar Ticket",
+      "loading": "Carregando..."
     }
   },
   "ui": {

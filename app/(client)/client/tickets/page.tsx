@@ -7,9 +7,11 @@ import { ArrowLeft, MessageSquare } from "lucide-react";
 import { getAccessToken } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { TicketsPanel } from "@/components/dashboard/TicketsPanel";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 export default function ClientTicketsPage() {
   const router = useRouter();
+  const tClientTickets = useTranslationsSafe("client.tickets");
 
   useEffect(() => {
     const stored = getAccessToken();
@@ -27,7 +29,7 @@ export default function ClientTicketsPage() {
           <Button variant="ghost" size="sm" asChild>
             <Link href="/dashboard" className="gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Volver al panel
+              {tClientTickets("backToDashboard")}
             </Link>
           </Button>
         </div>
@@ -35,10 +37,10 @@ export default function ClientTicketsPage() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
               <MessageSquare className="h-8 w-8" />
-              Tickets y Soporte
+              {tClientTickets("title")}
             </h1>
             <p className="text-muted-foreground mt-1">
-              Crea, comenta, adjunta evidencias y revisa el estado de tus solicitudes.
+              {tClientTickets("description")}
             </p>
           </div>
         </div>

@@ -13,6 +13,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { useModelStatus } from "@/lib/hooks/useModelStatus";
 import { useMetrics } from "@/lib/hooks/useMetrics";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 import Link from "next/link";
 
 type HealthEntry = {
@@ -31,17 +33,19 @@ export default function AdminHealthPage() {
   const { metrics, loading: metricsLoading, error: metricsError, refresh: refreshMetrics } = useMetrics();
   const [authRole, setAuthRole] = useState<string>("");
   const [authError, setAuthError] = useState<string | null>(null);
+  const tHealth = useTranslationsSafe("admin.health");
+  const { formatDate } = useI18n();
 
   const apiHealthUrl = useMemo(
     () => (orgId ? `${buildApiUrl("/health")}?organizationId=${orgId}` : buildApiUrl("/health")),
     [orgId]
   );
-  const labelMap: Record<string, string> = {
-    status: "Estado",
-    message: "Mensaje",
-    timestamp: "Fecha/hora",
-    environment: "Entorno",
-  };
+  const labelMap: Record<string, string> = useMemo(() => ({
+    status: tHealth("labelMap.status"),
+    message: tHealth("labelMap.message"),
+    timestamp: tHealth("labelMap.timestamp"),
+    environment: tHealth("labelMap.environment"),
+  }), [tHealth]);
 
   const loadHealth = async () => {
     setLoading(true);
@@ -52,7 +56,7 @@ export default function AdminHealthPage() {
       if (refreshed) token = refreshed;
       else {
         await logout();
-        setError("Sesión expirada. Vuelve a iniciar sesión.");
+        setError(tHealth("errors.sessionExpired"));
         setLoading(false);
         return;
       }
@@ -65,7 +69,7 @@ export default function AdminHealthPage() {
       });
       const payload = await res.json().catch(() => null);
       if (!res.ok || !payload) {
-        throw new Error(payload?.error || payload?.message || "No se pudo obtener salud del sistema");
+        throw new Error(payload?.error || payload?.message || tHealth("errors.couldNotGetHealth"));
       }
       const data = payload.data || payload;
       const overallStatus = (payload.status || data.status || "").toString().toLowerCase();
@@ -97,7 +101,7 @@ export default function AdminHealthPage() {
       setHealth(entries);
       setError(null);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error al cargar salud";
+      const msg = err instanceof Error ? err.message : tHealth("errors.couldNotLoadHealth");
       setError(msg);
     } finally {
       setLoading(false);
@@ -113,7 +117,7 @@ export default function AdminHealthPage() {
     setAuthError(null);
     let token = getAccessToken();
     if (!token) {
-      setAuthError("No autenticado");
+      setAuthError(tHealth("errors.notAuthenticated"));
       return;
     }
     if (isTokenExpired(token)) {
@@ -121,7 +125,7 @@ export default function AdminHealthPage() {
       if (refreshed) token = refreshed;
       else {
         await logout();
-        setAuthError("Sesión expirada. Vuelve a iniciar sesión.");
+        setAuthError(tHealth("errors.sessionExpired"));
         return;
       }
     }
@@ -131,12 +135,12 @@ export default function AdminHealthPage() {
         cache: "no-store",
       });
       const payload = await res.json().catch(() => null);
-      if (!res.ok || !payload) throw new Error("No se pudo leer auth");
+      if (!res.ok || !payload) throw new Error(tHealth("errors.couldNotReadAuth"));
       const data = payload.data || payload;
       const user = data.user || data;
       setAuthRole(user.rol || user.role || "");
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error al validar rol";
+      const msg = err instanceof Error ? err.message : tHealth("errors.couldNotValidateRole");
       setAuthError(msg);
     }
   };
@@ -153,17 +157,17 @@ export default function AdminHealthPage() {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Estado de Servicios</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{tHealth("title")}</h1>
             <p className="text-muted-foreground">
-              Monitoreo de salud del sistema: DB, Redis, IA, Wompi, Supabase y servicios internos.
+              {tHealth("description")}
             </p>
           </div>
           <Button onClick={loadHealth} disabled={loading} variant="outline" size="sm">
             <RefreshCcw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-            Refrescar
+            {tHealth("refresh")}
           </Button>
         </div>
-        <OrgSelector onChange={(org: Org | null) => setOrgId(org?.id || "")} label="Organización" />
+        <OrgSelector onChange={(org: Org | null) => setOrgId(org?.id || "")} label={tHealth("organization")} />
       </div>
 
       {/* Error Alert */}
@@ -180,13 +184,13 @@ export default function AdminHealthPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <Activity className="h-4 w-4" />
-              Rol Actual
+              {tHealth("currentRole")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
               <Badge variant="outline" className="capitalize">
-                {authRole || "desconocido"}
+                {authRole || tHealth("unknown")}
               </Badge>
               {authError && (
                 <Alert variant="destructive" className="py-2">
@@ -202,16 +206,16 @@ export default function AdminHealthPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <HeartPulse className="h-4 w-4" />
-              Modelo IA
+              {tHealth("aiModel")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex items-center justify-between">
               <Badge variant={modelStatus?.healthy ? "default" : "destructive"} className="capitalize">
-                {modelStatus?.enabled ? "Activo" : "Inactivo"}
+                {modelStatus?.enabled ? tHealth("active") : tHealth("inactive")}
               </Badge>
               <span className="text-xs text-muted-foreground">
-                v{modelStatus?.modelVersion || "N/D"}
+                v{modelStatus?.modelVersion || tHealth("notAvailable")}
               </span>
             </div>
             {modelError && (
@@ -232,9 +236,9 @@ export default function AdminHealthPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <HeartPulse className="h-5 w-5" />
-            Verificaciones de Salud
+            {tHealth("healthChecks")}
           </CardTitle>
-          <CardDescription>Estado de todos los servicios del sistema</CardDescription>
+          <CardDescription>{tHealth("healthChecksDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -245,7 +249,7 @@ export default function AdminHealthPage() {
             </div>
           ) : health.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">
-              No hay verificaciones de salud disponibles.
+              {tHealth("noHealthChecks")}
             </p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -271,7 +275,7 @@ export default function AdminHealthPage() {
                       {h.error && (
                         <Alert variant="destructive" className="mt-3 py-2">
                           <AlertTriangle className="h-3 w-3" />
-                          <AlertDescription className="text-xs">Error: {h.error}</AlertDescription>
+                          <AlertDescription className="text-xs">{tHealth("error")}: {h.error}</AlertDescription>
                         </Alert>
                       )}
                     </CardContent>
@@ -290,9 +294,9 @@ export default function AdminHealthPage() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Activity className="h-5 w-5" />
-                KPIs por Organización
+                {tHealth("kpisByOrganization")}
               </CardTitle>
-              <CardDescription>Métricas clave del sistema</CardDescription>
+              <CardDescription>{tHealth("kpisDescription")}</CardDescription>
             </div>
             <Button
               onClick={() => refreshMetrics()}
@@ -301,7 +305,7 @@ export default function AdminHealthPage() {
               disabled={metricsLoading || !orgId}
             >
               <RefreshCcw className={`h-4 w-4 ${metricsLoading ? "animate-spin" : ""}`} />
-              Recargar
+              {tHealth("reload")}
             </Button>
           </div>
         </CardHeader>
@@ -310,13 +314,13 @@ export default function AdminHealthPage() {
             <Alert variant="destructive" className="mb-4">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                {metricsError || "Error desconocido"}
+                {metricsError || tHealth("unknownError")}
               </AlertDescription>
             </Alert>
           )}
           {!orgId ? (
             <p className="text-sm text-muted-foreground text-center py-8">
-              Selecciona una organización para ver las métricas.
+              {tHealth("selectOrganizationForMetrics")}
             </p>
           ) : metricsLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -328,7 +332,7 @@ export default function AdminHealthPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Servicios Activos</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">{tHealth("activeServices")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold">{metrics.serviciosActivos ?? 0}</p>
@@ -336,7 +340,7 @@ export default function AdminHealthPage() {
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Tickets Abiertos</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">{tHealth("openTickets")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold">{metrics.ticketsAbiertos ?? 0}</p>
@@ -344,43 +348,39 @@ export default function AdminHealthPage() {
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">SLA Cumplido</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">{tHealth("slaMet")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold">
-                    {metrics.slaCumplido !== undefined ? `${Math.round(metrics.slaCumplido)}%` : "N/D"}
+                    {metrics.slaCumplido !== undefined ? `${Math.round(metrics.slaCumplido)}%` : tHealth("notAvailable")}
                   </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Próxima Renovación</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">{tHealth("nextRenewal")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm font-medium">
                     {metrics.proximaRenovacion
-                      ? new Date(metrics.proximaRenovacion).toLocaleDateString("es-CO", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })
-                      : "N/D"}
+                      ? formatDate(metrics.proximaRenovacion, "PP")
+                      : tHealth("notAvailable")}
                   </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Avance Promedio</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">{tHealth("averageProgress")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold">
-                    {metrics.avancePromedio !== undefined ? `${Math.round(metrics.avancePromedio)}%` : "N/D"}
+                    {metrics.avancePromedio !== undefined ? `${Math.round(metrics.avancePromedio)}%` : tHealth("notAvailable")}
                   </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Tickets Resueltos</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">{tHealth("resolvedTickets")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold">{metrics.ticketsResueltos ?? 0}</p>

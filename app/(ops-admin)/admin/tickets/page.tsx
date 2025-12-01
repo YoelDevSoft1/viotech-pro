@@ -993,26 +993,26 @@ export default function AdminTicketsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Información General</CardTitle>
+                    <CardTitle className="text-base">{tTickets("admin.generalInfo")}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Estado:</span>
+                      <span className="text-muted-foreground">{tTickets("statusLabel")}:</span>
                       <StatusBadge status={selectedTicket.estado} />
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Prioridad:</span>
+                      <span className="text-muted-foreground">{tTickets("priorityLabel")}:</span>
                       <PriorityBadge priority={selectedTicket.prioridad} />
                     </div>
                     {selectedTicket.categoria && (
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Categoría:</span>
+                        <span className="text-muted-foreground">{tTickets("category")}:</span>
                         <span className="capitalize">{selectedTicket.categoria}</span>
                       </div>
                     )}
                     {selectedTicket.impacto && (
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Impacto:</span>
+                        <span className="text-muted-foreground">{tTickets("impact")}:</span>
                         <span className="capitalize">{selectedTicket.impacto}</span>
                       </div>
                     )}
@@ -1020,22 +1020,22 @@ export default function AdminTicketsPage() {
                 </Card>
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Metadatos</CardTitle>
+                    <CardTitle className="text-base">{tTickets("admin.metadata")}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Creado:</span>
-                      <span>{new Date(selectedTicket.createdAt).toLocaleString("es-CO")}</span>
+                      <span className="text-muted-foreground">{tTickets("createdAt")}:</span>
+                      <span>{formatDate(selectedTicket.createdAt, "PPpp")}</span>
                     </div>
                     {selectedTicket.usuario?.email && (
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Usuario:</span>
+                        <span className="text-muted-foreground">{tTickets("user")}:</span>
                         <span>{selectedTicket.usuario.email}</span>
                       </div>
                     )}
                     {selectedTicket.organizationId && (
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Organización:</span>
+                        <span className="text-muted-foreground">{tTickets("organization")}:</span>
                         <span className="font-mono text-xs">{selectedTicket.organizationId}</span>
                       </div>
                     )}
@@ -1045,7 +1045,7 @@ export default function AdminTicketsPage() {
               {selectedTicket.descripcion && (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Descripción</CardTitle>
+                    <CardTitle className="text-base">{tTickets("description")}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm whitespace-pre-wrap">{selectedTicket.descripcion}</p>

@@ -21,17 +21,19 @@ import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import MFASetupModal from "@/components/auth/MFASetupModal";
 import { ActiveSessionsList } from "@/components/sessions/ActiveSessionsList";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 
-const passwordSchema = z.object({
-  currentPassword: z.string().min(1, "La contraseña actual es requerida"),
-  newPassword: z.string().min(8, "La nueva contraseña debe tener al menos 8 caracteres"),
+const getPasswordSchema = (t: (key: string) => string) => z.object({
+  currentPassword: z.string().min(1, t("validation.currentPasswordRequired")),
+  newPassword: z.string().min(8, t("validation.newPasswordMin")),
   confirmPassword: z.string(),
 }).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Las contraseñas no coinciden",
+  message: t("validation.passwordsMismatch"),
   path: ["confirmPassword"],
 });
 
-type PasswordFormValues = z.infer<typeof passwordSchema>;
+type PasswordFormValues = z.infer<ReturnType<typeof getPasswordSchema>>;
 
 export default function SettingsPage() {
   const { data: user, isLoading } = useCurrentUser();
@@ -52,6 +54,14 @@ export default function SettingsPage() {
   const [ticketUpdates, setTicketUpdates] = useState(true);
   const [projectUpdates, setProjectUpdates] = useState(true);
   const [isSavingNotifications, setIsSavingNotifications] = useState(false);
+  
+  const tSettings = useTranslationsSafe("settings");
+  const tCommon = useTranslationsSafe("common");
+  const tSecurity = useTranslationsSafe("settings.securityTab");
+  const tNotifications = useTranslationsSafe("settings.notificationsTab");
+  const tPreferences = useTranslationsSafe("settings.preferencesTab");
+  const { formatDate } = useI18n();
+  const passwordSchema = getPasswordSchema(tSettings);
 
   const passwordForm = useForm<PasswordFormValues>({
     resolver: zodResolver(passwordSchema),
@@ -70,12 +80,12 @@ export default function SettingsPage() {
         currentPassword: values.currentPassword,
         newPassword: values.newPassword,
       });
-      toast.success("Contraseña actualizada correctamente");
+      toast.success(tSettings("success.passwordUpdated"));
       setPasswordSuccess(true);
       passwordForm.reset();
       setTimeout(() => setPasswordSuccess(false), 3000);
     } catch (error: any) {
-      toast.error(error.message || "Error al actualizar la contraseña");
+      toast.error(error.message || tSettings("error.passwordUpdateFailed"));
     } finally {
       setIsSavingPassword(false);
     }
@@ -90,9 +100,9 @@ export default function SettingsPage() {
         ticketUpdates,
         projectUpdates,
       });
-      toast.success("Preferencias de notificaciones guardadas");
+      toast.success(tSettings("success.notificationsSaved"));
     } catch (error: any) {
-      toast.error(error.message || "Error al guardar las preferencias");
+      toast.error(error.message || tSettings("error.notificationsSaveFailed"));
     } finally {
       setIsSavingNotifications(false);
     }
@@ -100,7 +110,7 @@ export default function SettingsPage() {
 
   const handleDisableMFA = async () => {
     if (!disablePassword) {
-      toast.error("Por favor ingresa tu contraseña");
+      toast.error(tSettings("validation.passwordRequired"));
       return;
     }
     try {
@@ -126,9 +136,9 @@ export default function SettingsPage() {
       {/* Header */}
       <div className="space-y-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Configuración</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{tSettings("title")}</h1>
           <p className="text-muted-foreground">
-            Gestiona la configuración de tu cuenta, seguridad y preferencias.
+            {tSettings("description")}
           </p>
         </div>
       </div>
@@ -137,15 +147,15 @@ export default function SettingsPage() {
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="security" className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
-            Seguridad
+            {tSettings("security")}
           </TabsTrigger>
           <TabsTrigger value="notifications" className="flex items-center gap-2">
             <Bell className="h-4 w-4" />
-            Notificaciones
+            {tSettings("notifications")}
           </TabsTrigger>
           <TabsTrigger value="preferences" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
-            Preferencias
+            {tSettings("preferences")}
           </TabsTrigger>
         </TabsList>
 
@@ -155,10 +165,10 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Lock className="h-5 w-5" />
-                Cambiar Contraseña
+                {tSecurity("changePassword")}
               </CardTitle>
               <CardDescription>
-                Actualiza tu contraseña para mantener tu cuenta segura. Usa una contraseña fuerte y única.
+                {tSecurity("changePasswordDescription")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -166,7 +176,7 @@ export default function SettingsPage() {
                 <Alert className="mb-4 border-green-500 bg-green-50 dark:bg-green-950">
                   <CheckCircle2 className="h-4 w-4 text-green-600" />
                   <AlertDescription className="text-green-800 dark:text-green-200">
-                    Tu contraseña se ha actualizado correctamente.
+                    {tSecurity("passwordUpdated")}
                   </AlertDescription>
                 </Alert>
               )}
@@ -178,7 +188,7 @@ export default function SettingsPage() {
                     name="currentPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Contraseña Actual</FormLabel>
+                        <FormLabel>{tSecurity("currentPassword")}</FormLabel>
                         <FormControl>
                           <div className="relative">
                             <Input
@@ -211,7 +221,7 @@ export default function SettingsPage() {
                     name="newPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nueva Contraseña</FormLabel>
+                        <FormLabel>{tSecurity("newPassword")}</FormLabel>
                         <FormControl>
                           <div className="relative">
                             <Input
@@ -235,7 +245,7 @@ export default function SettingsPage() {
                           </div>
                         </FormControl>
                         <FormDescription>
-                          Mínimo 8 caracteres. Recomendamos usar una combinación de letras, números y símbolos.
+                          {tSecurity("newPasswordDescription")}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -247,7 +257,7 @@ export default function SettingsPage() {
                     name="confirmPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Confirmar Nueva Contraseña</FormLabel>
+                        <FormLabel>{tSecurity("confirmPassword")}</FormLabel>
                         <FormControl>
                           <div className="relative">
                             <Input
@@ -280,12 +290,12 @@ export default function SettingsPage() {
                       {isSavingPassword ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Guardando...
+                          {tSecurity("saving")}
                         </>
                       ) : (
                         <>
                           <Save className="mr-2 h-4 w-4" />
-                          Actualizar Contraseña
+                          {tSecurity("updatePassword")}
                         </>
                       )}
                     </Button>
@@ -299,31 +309,31 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="h-5 w-5" />
-                Seguridad Adicional
+                {tSecurity("additionalSecurity")}
               </CardTitle>
               <CardDescription>
-                Configuraciones adicionales para proteger tu cuenta
+                {tSecurity("additionalSecurityDescription")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5 flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium">Autenticación de dos factores (2FA)</p>
+                    <p className="text-sm font-medium">{tSecurity("twoFactorAuth")}</p>
                     {mfaStatus?.enabled && (
                       <ShieldCheck className="h-4 w-4 text-green-600" />
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {mfaStatus?.enabled
-                      ? "MFA está habilitado en tu cuenta"
-                      : "Agrega una capa adicional de seguridad a tu cuenta"}
+                      ? tSecurity("mfaEnabled")
+                      : tSecurity("mfaDisabled")}
                   </p>
                   {mfaStatus?.lastVerifiedAt && (
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
                       <KeyRound className="h-3 w-3" />
                       <span>
-                        Última verificación: {new Date(mfaStatus.lastVerifiedAt).toLocaleString("es-CO")}
+                        {tSecurity("lastVerification")}: {formatDate(mfaStatus.lastVerifiedAt, "PPpp")}
                       </span>
                     </div>
                   )}
@@ -333,24 +343,24 @@ export default function SettingsPage() {
                     <AlertDialog open={disableMfaDialogOpen} onOpenChange={setDisableMfaDialogOpen}>
                       <AlertDialogTrigger asChild>
                         <Button variant="outline" size="sm">
-                          Deshabilitar
+                          {tSecurity("disable")}
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Deshabilitar MFA</AlertDialogTitle>
+                          <AlertDialogTitle>{tSecurity("disableMFA")}</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Ingresa tu contraseña para confirmar que deseas deshabilitar la autenticación de dos factores.
+                            {tSecurity("disableMFADescription")}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <div className="space-y-4 py-4">
                           <div className="space-y-2">
-                            <label className="text-sm font-medium">Contraseña</label>
+                            <label className="text-sm font-medium">{tSecurity("password")}</label>
                             <Input
                               type="password"
                               value={disablePassword}
                               onChange={(e) => setDisablePassword(e.target.value)}
-                              placeholder="Ingresa tu contraseña"
+                              placeholder={tSecurity("passwordPlaceholder")}
                               disabled={disableMFA.isPending}
                               autoFocus
                             />
@@ -359,14 +369,14 @@ export default function SettingsPage() {
                             <Alert variant="destructive">
                               <AlertTriangle className="h-4 w-4" />
                               <AlertDescription>
-                                {(disableMFA.error as any)?.message || "Error al deshabilitar MFA"}
+                                {(disableMFA.error as any)?.message || tSettings("error.mfaDisableFailed")}
                               </AlertDescription>
                             </Alert>
                           )}
                         </div>
                         <AlertDialogFooter>
                           <AlertDialogCancel onClick={() => setDisablePassword("")}>
-                            Cancelar
+                            {tCommon("cancel")}
                           </AlertDialogCancel>
                           <AlertDialogAction
                             onClick={handleDisableMFA}
@@ -376,10 +386,10 @@ export default function SettingsPage() {
                             {disableMFA.isPending ? (
                               <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Deshabilitando...
+                                {tSecurity("disabling")}
                               </>
                             ) : (
-                              "Deshabilitar MFA"
+                              tSecurity("disableMFA")
                             )}
                           </AlertDialogAction>
                         </AlertDialogFooter>
@@ -392,7 +402,7 @@ export default function SettingsPage() {
                       onClick={() => setMfaSetupModalOpen(true)}
                       disabled={mfaLoading}
                     >
-                      Configurar
+                      {tSecurity("configure")}
                     </Button>
                   )}
                 </div>
@@ -409,19 +419,19 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Bell className="h-5 w-5" />
-                Preferencias de Notificaciones
+                {tNotifications("preferences")}
               </CardTitle>
               <CardDescription>
-                Elige cómo y cuándo quieres recibir notificaciones
+                {tNotifications("preferencesDescription")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <p className="text-sm font-medium">Notificaciones por correo</p>
+                    <p className="text-sm font-medium">{tNotifications("emailNotifications")}</p>
                     <p className="text-xs text-muted-foreground">
-                      Recibe notificaciones importantes por correo electrónico
+                      {tNotifications("emailNotificationsDescription")}
                     </p>
                   </div>
                   <Switch
@@ -432,9 +442,9 @@ export default function SettingsPage() {
                 <Separator />
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <p className="text-sm font-medium">Notificaciones push</p>
+                    <p className="text-sm font-medium">{tNotifications("pushNotifications")}</p>
                     <p className="text-xs text-muted-foreground">
-                      Recibe notificaciones en tiempo real en tu navegador
+                      {tNotifications("pushNotificationsDescription")}
                     </p>
                   </div>
                   <Switch
@@ -445,9 +455,9 @@ export default function SettingsPage() {
                 <Separator />
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <p className="text-sm font-medium">Actualizaciones de tickets</p>
+                    <p className="text-sm font-medium">{tNotifications("ticketUpdates")}</p>
                     <p className="text-xs text-muted-foreground">
-                      Notificaciones cuando hay cambios en tus tickets
+                      {tNotifications("ticketUpdatesDescription")}
                     </p>
                   </div>
                   <Switch
@@ -458,9 +468,9 @@ export default function SettingsPage() {
                 <Separator />
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <p className="text-sm font-medium">Actualizaciones de proyectos</p>
+                    <p className="text-sm font-medium">{tNotifications("projectUpdates")}</p>
                     <p className="text-xs text-muted-foreground">
-                      Notificaciones sobre cambios en tus proyectos
+                      {tNotifications("projectUpdatesDescription")}
                     </p>
                   </div>
                   <Switch
@@ -475,12 +485,12 @@ export default function SettingsPage() {
                   {isSavingNotifications ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Guardando...
+                      {tNotifications("saving")}
                     </>
                   ) : (
                     <>
                       <Save className="mr-2 h-4 w-4" />
-                      Guardar Preferencias
+                      {tNotifications("savePreferences")}
                     </>
                   )}
                 </Button>
@@ -495,34 +505,34 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="h-5 w-5" />
-                Preferencias Generales
+                {tPreferences("generalPreferences")}
               </CardTitle>
               <CardDescription>
-                Personaliza tu experiencia en la plataforma
+                {tPreferences("generalPreferencesDescription")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <p className="text-sm font-medium">Idioma</p>
+                  <p className="text-sm font-medium">{tPreferences("language")}</p>
                   <p className="text-xs text-muted-foreground">
-                    Selecciona tu idioma preferido
+                    {tPreferences("languageDescription")}
                   </p>
                 </div>
                 <Button variant="outline" size="sm" disabled>
-                  Español (Próximamente)
+                  {tPreferences("languageComingSoon")}
                 </Button>
               </div>
               <Separator />
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <p className="text-sm font-medium">Zona horaria</p>
+                  <p className="text-sm font-medium">{tPreferences("timezone")}</p>
                   <p className="text-xs text-muted-foreground">
-                    Configura tu zona horaria para fechas y horas
+                    {tPreferences("timezoneDescription")}
                   </p>
                 </div>
                 <Button variant="outline" size="sm" disabled>
-                  Automática (Próximamente)
+                  {tPreferences("timezoneComingSoon")}
                 </Button>
               </div>
             </CardContent>

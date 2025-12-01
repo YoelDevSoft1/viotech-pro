@@ -53,6 +53,12 @@
     "edit": "Edit",
     "create": "Create",
     "update": "Update",
+    "organization": "Organization",
+    "selectOrganization": "Select organization",
+    "orgIdPlaceholder": "Organization ID (UUID)",
+    "orgSelectorHelp": "Saved locally. If the API doesn't respond, leave empty or enter the UUID manually.",
+    "loadingOrganizations": "Loading organizations…",
+    "serverStarting": "(Server may be starting)",
     "search": "Search",
     "filter": "Filter",
     "close": "Close",
@@ -202,7 +208,8 @@
       "previous": "Previous",
       "next": "Next",
       "ticketDetail": "Ticket Detail",
-      "generalInfo": "General Information"
+      "generalInfo": "General Information",
+      "metadata": "Metadata"
     },
     "export": "Export",
     "refresh": "Refresh",
@@ -615,13 +622,111 @@
     "pdf": "PDF",
     "excel": "Excel"
   },
+  "profile": {
+    "title": "My Profile",
+    "description": "Manage your personal information and account preferences.",
+    "profileUpdated": "Your profile has been updated successfully.",
+    "profilePhoto": "Profile Photo",
+    "profilePhotoDescription": "Your profile photo visible to other users",
+    "user": "User",
+    "personalInfo": "Personal Information",
+    "personalInfoDescription": "Update your personal information. This data will be visible on your profile.",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "John Doe",
+    "fullNameDescription": "This is your full name that will be displayed on your profile.",
+    "email": "Email",
+    "emailPlaceholder": "name@company.com",
+    "emailDescription": "Your email address for notifications and access.",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "accountInfo": "Account Information",
+    "accountInfoDescription": "Account details that cannot be modified",
+    "userId": "User ID",
+    "role": "Role",
+    "validation": {
+      "nameMin": "Name must be at least 2 characters",
+      "emailInvalid": "Enter a valid email"
+    },
+    "success": {
+      "updated": "Profile updated successfully"
+    },
+    "error": {
+      "updateFailed": "Error updating profile"
+    }
+  },
   "settings": {
     "title": "Settings",
+    "description": "Manage your account settings, security and preferences.",
     "preferences": "Preferences",
     "profile": "Profile",
     "security": "Security",
     "notifications": "Notifications",
-    "customization": "Customization"
+    "customization": "Customization",
+    "securityTab": {
+      "changePassword": "Change Password",
+      "changePasswordDescription": "Update your password to keep your account secure. Use a strong and unique password.",
+      "passwordUpdated": "Your password has been updated successfully.",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "newPasswordDescription": "Minimum 8 characters. We recommend using a combination of letters, numbers and symbols.",
+      "confirmPassword": "Confirm New Password",
+      "updatePassword": "Update Password",
+      "saving": "Saving...",
+      "additionalSecurity": "Additional Security",
+      "additionalSecurityDescription": "Additional settings to protect your account",
+      "twoFactorAuth": "Two-Factor Authentication (2FA)",
+      "mfaEnabled": "MFA is enabled on your account",
+      "mfaDisabled": "Add an additional layer of security to your account",
+      "lastVerification": "Last verification",
+      "configure": "Configure",
+      "disable": "Disable",
+      "disableMFA": "Disable MFA",
+      "disableMFADescription": "Enter your password to confirm that you want to disable two-factor authentication.",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "disabling": "Disabling...",
+      "activeSessions": "Active Sessions",
+      "activeSessionsDescription": "Manage your active sessions and close those you don't recognize."
+    },
+    "notificationsTab": {
+      "preferences": "Notification Preferences",
+      "preferencesDescription": "Choose how and when you want to receive notifications",
+      "emailNotifications": "Email notifications",
+      "emailNotificationsDescription": "Receive important notifications by email",
+      "pushNotifications": "Push notifications",
+      "pushNotificationsDescription": "Receive real-time notifications in your browser",
+      "ticketUpdates": "Ticket updates",
+      "ticketUpdatesDescription": "Notifications when there are changes to your tickets",
+      "projectUpdates": "Project updates",
+      "projectUpdatesDescription": "Notifications about changes to your projects",
+      "savePreferences": "Save Preferences",
+      "saving": "Saving..."
+    },
+    "preferencesTab": {
+      "generalPreferences": "General Preferences",
+      "generalPreferencesDescription": "Customize your experience on the platform",
+      "language": "Language",
+      "languageDescription": "Select your preferred language",
+      "languageComingSoon": "Spanish (Coming Soon)",
+      "timezone": "Timezone",
+      "timezoneDescription": "Configure your timezone for dates and times",
+      "timezoneComingSoon": "Automatic (Coming Soon)"
+    },
+    "validation": {
+      "currentPasswordRequired": "Current password is required",
+      "newPasswordMin": "New password must be at least 8 characters",
+      "passwordsMismatch": "Passwords do not match",
+      "passwordRequired": "Please enter your password"
+    },
+    "success": {
+      "passwordUpdated": "Password updated successfully",
+      "notificationsSaved": "Notification preferences saved"
+    },
+    "error": {
+      "passwordUpdateFailed": "Error updating password",
+      "notificationsSaveFailed": "Error saving preferences",
+      "mfaDisableFailed": "Error disabling MFA"
+    }
   },
   "notifications": {
     "title": "Notifications",
@@ -1036,6 +1141,89 @@
         "iaTitle": "AI Model in heuristic mode",
         "iaDetail": "Check predictor status on Render."
       }
+    }
+  },
+  "client": {
+    "tickets": {
+      "title": "Tickets and Support",
+      "description": "Create, comment, attach evidence and review the status of your requests.",
+      "backToDashboard": "Back to dashboard",
+      "ticketDetail": {
+        "loading": "Loading ticket...",
+        "errorTitle": "We couldn't load the ticket",
+        "errorMessage": "Please try again later.",
+        "retry": "Retry",
+        "backToTickets": "Back to my tickets",
+        "refresh": "Refresh",
+        "summary": "Summary",
+        "summaryDescription": "Status, priority and SLA of your ticket.",
+        "status": "Status",
+        "priority": "Priority",
+        "slaTarget": "SLA target",
+        "impact": "Impact",
+        "category": "Category",
+        "description": "Description",
+        "descriptionDetail": "Problem or request details.",
+        "noDescription": "No description.",
+        "metadata": "Metadata",
+        "created": "Created",
+        "reportedBy": "Reported by",
+        "user": "User",
+        "project": "Project",
+        "organization": "Organization",
+        "remember": "Remember",
+        "rememberMessage": "Respond with as much information as possible and attach evidence to speed up resolution.",
+        "comments": "Comments"
+      }
+    },
+    "ia": {
+      "asistente": {
+        "title": "AI · Ticket Assistant",
+        "pageTitle": "Create tickets with AI",
+        "description": "Chat with the assistant and automatically generate tickets with the configured model.",
+        "backToDashboard": "Back to dashboard"
+      },
+      "predictor": {
+        "title": "AI · Predictions",
+        "pageTitle": "Time and cost prediction",
+        "description": "Connect with the active ML model to estimate project duration and cost.",
+        "backToDashboard": "Back to dashboard"
+      }
+    }
+  },
+  "payment": {
+    "success": {
+      "title": "Payment Successful!",
+      "description": "Your payment has been processed correctly",
+      "transactionReference": "Transaction Reference",
+      "transactionId": "Transaction ID",
+      "verifying": "Verifying service activation...",
+      "serviceActivated": "Service Activated",
+      "serviceActivatedDescription": "Your service has been successfully activated and is now available in your account.",
+      "processingActivation": "Processing Activation",
+      "processingActivationDescription": "Your payment was successful. The service will be activated in the next few minutes. You will receive a confirmation email when it's ready.",
+      "viewMyServices": "View My Services",
+      "goToDashboard": "Go to Dashboard",
+      "emailInfo": "You will receive an email with the details of your purchase and instructions to access your service.",
+      "loading": "Loading..."
+    },
+    "error": {
+      "title": "Payment Error",
+      "description": "Your payment could not be processed correctly",
+      "errorDetails": "Error details:",
+      "reference": "Reference",
+      "possibleCauses": "Possible causes:",
+      "insufficientFunds": "Insufficient funds on the card",
+      "cardBlocked": "Card blocked or expired",
+      "incorrectData": "Incorrect payment data",
+      "gatewayIssue": "Temporary issue with the payment gateway",
+      "tryAgain": "Try Again",
+      "redirecting": "Redirecting...",
+      "backToCatalog": "Back to Catalog",
+      "contactSupport": "If the problem persists, contact us:",
+      "whatsappSupport": "WhatsApp Support",
+      "createTicket": "Create Ticket",
+      "loading": "Loading..."
     }
   },
   "ui": {

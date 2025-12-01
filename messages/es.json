@@ -53,6 +53,12 @@
     "edit": "Editar",
     "create": "Crear",
     "update": "Actualizar",
+    "organization": "Organización",
+    "selectOrganization": "Selecciona organización",
+    "orgIdPlaceholder": "ID de organización (UUID)",
+    "orgSelectorHelp": "Se guarda localmente. Si la API no responde, deja vacío o ingresa manualmente el UUID.",
+    "loadingOrganizations": "Cargando organizaciones…",
+    "serverStarting": "(El servidor puede estar iniciando)",
     "search": "Buscar",
     "filter": "Filtrar",
     "close": "Cerrar",
@@ -387,6 +393,83 @@
       "unauthorized": "No autorizado",
       "serverError": "Error del servidor",
       "summaryError": "Error en resumen"
+    },
+    "health": {
+      "title": "Estado de Servicios",
+      "description": "Monitoreo de salud del sistema: DB, Redis, IA, Wompi, Supabase y servicios internos.",
+      "refresh": "Refrescar",
+      "organization": "Organización",
+      "currentRole": "Rol Actual",
+      "unknown": "desconocido",
+      "aiModel": "Modelo IA",
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "healthChecks": "Verificaciones de Salud",
+      "healthChecksDescription": "Estado de todos los servicios del sistema",
+      "noHealthChecks": "No hay verificaciones de salud disponibles.",
+      "error": "Error",
+      "kpisByOrganization": "KPIs por Organización",
+      "kpisDescription": "Métricas clave del sistema",
+      "reload": "Recargar",
+      "selectOrganizationForMetrics": "Selecciona una organización para ver las métricas.",
+      "activeServices": "Servicios Activos",
+      "openTickets": "Tickets Abiertos",
+      "slaMet": "SLA Cumplido",
+      "nextRenewal": "Próxima Renovación",
+      "averageProgress": "Avance Promedio",
+      "resolvedTickets": "Tickets Resueltos",
+      "notAvailable": "N/D",
+      "unknownError": "Error desconocido",
+      "labelMap": {
+        "status": "Estado",
+        "message": "Mensaje",
+        "timestamp": "Fecha/hora",
+        "environment": "Entorno"
+      },
+      "errors": {
+        "sessionExpired": "Sesión expirada. Vuelve a iniciar sesión.",
+        "notAuthenticated": "No autenticado",
+        "couldNotGetHealth": "No se pudo obtener salud del sistema",
+        "couldNotLoadHealth": "Error al cargar salud",
+        "couldNotReadAuth": "No se pudo leer auth",
+        "couldNotValidateRole": "Error al validar rol"
+      }
+    },
+    "settings": {
+      "title": "Configuración",
+      "description": "Gestiona tu perfil, seguridad y organización.",
+      "refresh": "Refrescar",
+      "accountInfo": "Información de Cuenta",
+      "accountInfoDescription": "Datos de tu perfil de usuario",
+      "accountId": "ID de Cuenta",
+      "name": "Nombre",
+      "email": "Correo",
+      "role": "Rol",
+      "tier": "Tier",
+      "status": "Estado",
+      "assignedOrganization": "Organización Asignada",
+      "securityMFA": "Seguridad (MFA)",
+      "securityMFADescription": "Autenticación de dos factores",
+      "mfaStatus": "Estado MFA",
+      "enabled": "Habilitado",
+      "disabled": "Deshabilitado",
+      "loading": "Cargando...",
+      "lastVerification": "Última verificación",
+      "activeOrganization": "Organización Activa",
+      "activeOrganizationDescription": "Cambia la organización con la que trabajas en el panel. Esto usa los datos reales de /api/organizations.",
+      "selectOrganization": "Selecciona organización",
+      "systemUsers": "Usuarios del Sistema",
+      "systemUsersDescription": "Lista de todos los usuarios registrados",
+      "noUsers": "No hay usuarios registrados.",
+      "errors": {
+        "sessionExpired": "Sesión expirada. Vuelve a iniciar sesión.",
+        "couldNotLoadProfile": "No se pudo cargar el perfil",
+        "loadProfileError": "Error al cargar perfil",
+        "couldNotLoadMFA": "No se pudo cargar MFA",
+        "loadMFAError": "Error al cargar MFA",
+        "couldNotLoadUsers": "No se pudieron cargar usuarios",
+        "loadUsersError": "Error al cargar usuarios"
+      }
     }
   },
   "services": {
@@ -618,13 +701,111 @@
       "monthlyOn": "Día {day} a las {time}"
     }
   },
+  "profile": {
+    "title": "Mi Perfil",
+    "description": "Gestiona tu información personal y preferencias de cuenta.",
+    "profileUpdated": "Tu perfil se ha actualizado correctamente.",
+    "profilePhoto": "Foto de Perfil",
+    "profilePhotoDescription": "Tu foto de perfil visible para otros usuarios",
+    "user": "Usuario",
+    "personalInfo": "Información Personal",
+    "personalInfoDescription": "Actualiza tu información personal. Estos datos serán visibles en tu perfil.",
+    "fullName": "Nombre Completo",
+    "fullNamePlaceholder": "Juan Pérez",
+    "fullNameDescription": "Este es tu nombre completo que se mostrará en tu perfil.",
+    "email": "Correo Electrónico",
+    "emailPlaceholder": "nombre@empresa.com",
+    "emailDescription": "Tu dirección de correo electrónico para notificaciones y acceso.",
+    "saveChanges": "Guardar Cambios",
+    "saving": "Guardando...",
+    "accountInfo": "Información de Cuenta",
+    "accountInfoDescription": "Detalles de tu cuenta que no se pueden modificar",
+    "userId": "ID de Usuario",
+    "role": "Rol",
+    "validation": {
+      "nameMin": "El nombre debe tener al menos 2 caracteres",
+      "emailInvalid": "Ingresa un correo válido"
+    },
+    "success": {
+      "updated": "Perfil actualizado correctamente"
+    },
+    "error": {
+      "updateFailed": "Error al actualizar el perfil"
+    }
+  },
   "settings": {
     "title": "Configuración",
+    "description": "Gestiona la configuración de tu cuenta, seguridad y preferencias.",
     "preferences": "Preferencias",
     "profile": "Perfil",
     "security": "Seguridad",
     "notifications": "Notificaciones",
-    "customization": "Personalización"
+    "customization": "Personalización",
+    "securityTab": {
+      "changePassword": "Cambiar Contraseña",
+      "changePasswordDescription": "Actualiza tu contraseña para mantener tu cuenta segura. Usa una contraseña fuerte y única.",
+      "passwordUpdated": "Tu contraseña se ha actualizado correctamente.",
+      "currentPassword": "Contraseña Actual",
+      "newPassword": "Nueva Contraseña",
+      "newPasswordDescription": "Mínimo 8 caracteres. Recomendamos usar una combinación de letras, números y símbolos.",
+      "confirmPassword": "Confirmar Nueva Contraseña",
+      "updatePassword": "Actualizar Contraseña",
+      "saving": "Guardando...",
+      "additionalSecurity": "Seguridad Adicional",
+      "additionalSecurityDescription": "Configuraciones adicionales para proteger tu cuenta",
+      "twoFactorAuth": "Autenticación de dos factores (2FA)",
+      "mfaEnabled": "MFA está habilitado en tu cuenta",
+      "mfaDisabled": "Agrega una capa adicional de seguridad a tu cuenta",
+      "lastVerification": "Última verificación",
+      "configure": "Configurar",
+      "disable": "Deshabilitar",
+      "disableMFA": "Deshabilitar MFA",
+      "disableMFADescription": "Ingresa tu contraseña para confirmar que deseas deshabilitar la autenticación de dos factores.",
+      "password": "Contraseña",
+      "passwordPlaceholder": "Ingresa tu contraseña",
+      "disabling": "Deshabilitando...",
+      "activeSessions": "Sesiones Activas",
+      "activeSessionsDescription": "Gestiona tus sesiones activas y cierra las que no reconozcas."
+    },
+    "notificationsTab": {
+      "preferences": "Preferencias de Notificaciones",
+      "preferencesDescription": "Elige cómo y cuándo quieres recibir notificaciones",
+      "emailNotifications": "Notificaciones por correo",
+      "emailNotificationsDescription": "Recibe notificaciones importantes por correo electrónico",
+      "pushNotifications": "Notificaciones push",
+      "pushNotificationsDescription": "Recibe notificaciones en tiempo real en tu navegador",
+      "ticketUpdates": "Actualizaciones de tickets",
+      "ticketUpdatesDescription": "Notificaciones cuando hay cambios en tus tickets",
+      "projectUpdates": "Actualizaciones de proyectos",
+      "projectUpdatesDescription": "Notificaciones sobre cambios en tus proyectos",
+      "savePreferences": "Guardar Preferencias",
+      "saving": "Guardando..."
+    },
+    "preferencesTab": {
+      "generalPreferences": "Preferencias Generales",
+      "generalPreferencesDescription": "Personaliza tu experiencia en la plataforma",
+      "language": "Idioma",
+      "languageDescription": "Selecciona tu idioma preferido",
+      "languageComingSoon": "Español (Próximamente)",
+      "timezone": "Zona horaria",
+      "timezoneDescription": "Configura tu zona horaria para fechas y horas",
+      "timezoneComingSoon": "Automática (Próximamente)"
+    },
+    "validation": {
+      "currentPasswordRequired": "La contraseña actual es requerida",
+      "newPasswordMin": "La nueva contraseña debe tener al menos 8 caracteres",
+      "passwordsMismatch": "Las contraseñas no coinciden",
+      "passwordRequired": "Por favor ingresa tu contraseña"
+    },
+    "success": {
+      "passwordUpdated": "Contraseña actualizada correctamente",
+      "notificationsSaved": "Preferencias de notificaciones guardadas"
+    },
+    "error": {
+      "passwordUpdateFailed": "Error al actualizar la contraseña",
+      "notificationsSaveFailed": "Error al guardar las preferencias",
+      "mfaDisableFailed": "Error al deshabilitar MFA"
+    }
   },
   "notifications": {
     "title": "Notificaciones",
@@ -1039,6 +1220,89 @@
         "iaTitle": "Modelo IA en modo heurístico",
         "iaDetail": "Revisar estado del predictor en Render."
       }
+    }
+  },
+  "client": {
+    "tickets": {
+      "title": "Tickets y Soporte",
+      "description": "Crea, comenta, adjunta evidencias y revisa el estado de tus solicitudes.",
+      "backToDashboard": "Volver al panel",
+      "ticketDetail": {
+        "loading": "Cargando ticket...",
+        "errorTitle": "No pudimos cargar el ticket",
+        "errorMessage": "Reintenta más tarde.",
+        "retry": "Reintentar",
+        "backToTickets": "Volver a mis tickets",
+        "refresh": "Refrescar",
+        "summary": "Resumen",
+        "summaryDescription": "Estado, prioridad y SLA de tu ticket.",
+        "status": "Estado",
+        "priority": "Prioridad",
+        "slaTarget": "SLA objetivo",
+        "impact": "Impacto",
+        "category": "Categoría",
+        "description": "Descripción",
+        "descriptionDetail": "Detalle del problema o solicitud.",
+        "noDescription": "Sin descripción.",
+        "metadata": "Metadatos",
+        "created": "Creado",
+        "reportedBy": "Reportado por",
+        "user": "Usuario",
+        "project": "Proyecto",
+        "organization": "Organización",
+        "remember": "Recuerda",
+        "rememberMessage": "Responde con la mayor información posible y adjunta evidencias para acelerar la resolución.",
+        "comments": "Comentarios"
+      }
+    },
+    "ia": {
+      "asistente": {
+        "title": "IA · Asistente de tickets",
+        "pageTitle": "Crea tickets con IA",
+        "description": "Conversa con el asistente y genera tickets automáticamente con el modelo configurado.",
+        "backToDashboard": "Volver al dashboard"
+      },
+      "predictor": {
+        "title": "IA · Predicciones",
+        "pageTitle": "Predicción de tiempos y costos",
+        "description": "Conecta con el modelo ML activo para estimar duración y costo de proyectos.",
+        "backToDashboard": "Volver al dashboard"
+      }
+    }
+  },
+  "payment": {
+    "success": {
+      "title": "¡Pago Exitoso!",
+      "description": "Tu pago ha sido procesado correctamente",
+      "transactionReference": "Referencia de Transacción",
+      "transactionId": "ID de Transacción",
+      "verifying": "Verificando activación del servicio...",
+      "serviceActivated": "Servicio Activado",
+      "serviceActivatedDescription": "Tu servicio ha sido activado exitosamente y ya está disponible en tu cuenta.",
+      "processingActivation": "Procesando Activación",
+      "processingActivationDescription": "Tu pago fue exitoso. El servicio se activará en los próximos minutos. Recibirás un correo de confirmación cuando esté listo.",
+      "viewMyServices": "Ver Mis Servicios",
+      "goToDashboard": "Ir al Dashboard",
+      "emailInfo": "Recibirás un correo electrónico con los detalles de tu compra y las instrucciones para acceder a tu servicio.",
+      "loading": "Cargando..."
+    },
+    "error": {
+      "title": "Error en el Pago",
+      "description": "No se pudo procesar tu pago correctamente",
+      "errorDetails": "Detalles del error:",
+      "reference": "Referencia",
+      "possibleCauses": "Posibles causas:",
+      "insufficientFunds": "Fondos insuficientes en la tarjeta",
+      "cardBlocked": "Tarjeta bloqueada o expirada",
+      "incorrectData": "Datos de pago incorrectos",
+      "gatewayIssue": "Problema temporal con la pasarela de pagos",
+      "tryAgain": "Intentar Nuevamente",
+      "redirecting": "Redirigiendo...",
+      "backToCatalog": "Volver al Catálogo",
+      "contactSupport": "Si el problema persiste, contáctanos:",
+      "whatsappSupport": "Soporte WhatsApp",
+      "createTicket": "Crear Ticket",
+      "loading": "Cargando..."
     }
   },
   "ui": {

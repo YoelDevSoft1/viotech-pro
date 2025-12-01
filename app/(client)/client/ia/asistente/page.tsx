@@ -5,9 +5,11 @@ import { ArrowLeft } from "lucide-react";
 import AITicketAssistant from "@/components/common/AITicketAssistant";
 import { getAccessToken } from "@/lib/auth";
 import { useEffect, useState } from "react";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 export default function AsistentePage() {
   const [token, setToken] = useState<string | null>(null);
+  const tIA = useTranslationsSafe("client.ia.asistente");
 
   useEffect(() => {
     setToken(getAccessToken());
@@ -21,16 +23,16 @@ export default function AsistentePage() {
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="w-4 h-4" />
-            Volver al dashboard
+            {tIA("backToDashboard")}
           </Link>
         </div>
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-            IA · Asistente de tickets
+            {tIA("title")}
           </p>
-          <h1 className="text-3xl font-medium text-foreground">Crea tickets con IA</h1>
+          <h1 className="text-3xl font-medium text-foreground">{tIA("pageTitle")}</h1>
           <p className="text-sm text-muted-foreground">
-            Conversa con el asistente y genera tickets automáticamente con el modelo configurado.
+            {tIA("description")}
           </p>
         </div>
 
