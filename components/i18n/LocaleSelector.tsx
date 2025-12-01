@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Globe, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,8 +9,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRouter, usePathname } from "next/navigation";
-import { locales, defaultLocale, type Locale } from "@/i18n";
+import { useLocaleContext } from "@/lib/contexts/LocaleContext";
+import { locales, type Locale } from "@/i18n";
 
 const localeNames: Record<Locale, string> = {
   es: "Español",
@@ -25,35 +25,31 @@ const localeFlags: Record<Locale, string> = {
 };
 
 export function LocaleSelector() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const [currentLocale, setCurrentLocale] = useState<Locale>(defaultLocale);
+  const { locale, setLocale } = useLocaleContext();
   const [mounted, setMounted] = useState(false);
 
-  // Detectar locale actual desde localStorage o preferencias del navegador
-  // Solo en el cliente para evitar errores de hidratación
+  // Detectar cuando el componente está montado
   useEffect(() => {
     setMounted(true);
-    const savedLocale = localStorage.getItem("viotech_locale") as Locale | null;
-    if (savedLocale && locales.includes(savedLocale)) {
-      setCurrentLocale(savedLocale);
-    } else {
-      // Detectar desde navegador
-      const browserLang = navigator.language.split("-")[0];
-      if (browserLang === "en" || browserLang === "pt") {
-        setCurrentLocale(browserLang as Locale);
-      }
-    }
+  }, []);
+
+  // Escuchar cambios de locale desde otros componentes
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleLocaleChange = (event: CustomEvent) => {
+      // El locale ya se actualizó en el contexto, solo necesitamos re-renderizar
+      setMounted(true);
+    };
+
+    window.addEventListener("localeChanged", handleLocaleChange as EventListener);
+    return () => {
+      window.removeEventListener("localeChanged", handleLocaleChange as EventListener);
+    };
   }, []);
 
   const handleLocaleChange = (newLocale: Locale) => {
-    setCurrentLocale(newLocale);
-    if (mounted) {
-      localStorage.setItem("viotech_locale", newLocale);
-    }
-    // Por ahora solo guardamos la preferencia
-    // Cuando next-intl esté activo, aquí se cambiará la ruta
-    router.refresh();
+    setLocale(newLocale);
   };
 
   // No renderizar hasta que esté montado para evitar diferencias de hidratación
@@ -83,7 +79,7 @@ export function LocaleSelector() {
           >
             <span className="text-lg">{localeFlags[loc]}</span>
             <span className="flex-1">{localeNames[loc]}</span>
-            {currentLocale === loc && (
+            {locale === loc && (
               <Check className="h-4 w-4 text-primary" />
             )}
           </DropdownMenuItem>

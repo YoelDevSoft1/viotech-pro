@@ -717,6 +717,110 @@
         "next": "Próximo",
         "page": "Página",
         "of": "de"
+      },
+      "post": {
+        "backToBlog": "Voltar ao blog",
+        "readingTime": "min de leitura",
+        "share": "Compartilhar:",
+        "facebook": "Facebook",
+        "twitter": "Twitter",
+        "linkedin": "LinkedIn",
+        "copy": "Copiar",
+        "copied": "Copiado",
+        "linkCopied": "Link copiado para a área de transferência",
+        "linkCopyError": "Erro ao copiar link",
+        "tags": "Tags:",
+        "relatedArticles": "Artigos Relacionados"
+      }
+    },
+    "caseStudies": {
+      "title": "Casos de Sucesso",
+      "description": "Transformações digitais mensuráveis que impulsionam o crescimento empresarial",
+      "backToHome": "Voltar ao início",
+      "challenge": "Desafio",
+      "solution": "Solução",
+      "results": "Resultados",
+      "cta": {
+        "title": "Pronto para ser nosso próximo caso de sucesso?",
+        "description": "Agende uma consultoria gratuita e descubra como podemos transformar seu negócio",
+        "button": "Agendar Consultoria Gratuita"
+      }
+    },
+    "industries": {
+      "backToHome": "Voltar ao início",
+      "scheduleConsultation": "Agendar Consultoria Gratuita",
+      "viewCaseStudies": "Ver Casos de Sucesso",
+      "commonChallenges": "Desafios comuns em",
+      "commonChallengesDescription": "Problemas que resolvemos todos os dias",
+      "ourSolutions": "Nossas Soluções",
+      "ourSolutionsDescription": "Tecnologia que resolve problemas reais",
+      "caseStudy": "Caso de Sucesso",
+      "viewFullCase": "Ver caso completo",
+      "cta": {
+        "title": "Pronto para transformar sua",
+        "description": "Agende uma consultoria gratuita e descubra como podemos ajudá-lo",
+        "button": "Agendar Consultoria Gratuita"
+      }
+    },
+    "services": {
+      "detail": {
+        "backToServices": "Voltar aos Serviços",
+        "whatIncludes": "O que este serviço inclui?",
+        "whatIncludesDescription": "Tudo o que você precisa para transformar seu negócio",
+        "measurableBenefits": "Benefícios Mensuráveis",
+        "measurableBenefitsDescription": "Resultados reais para empresas reais",
+        "readyToStart": "Pronto para começar?",
+        "readyToStartDescription": "Agende uma consultoria gratuita de 45 minutos e descubra como podemos ajudá-lo",
+        "scheduleConsultation": "Agendar Consultoria Gratuita",
+        "viewPlans": "Ver Planos e Preços"
+      }
+    },
+    "home": {
+      "newVersion": "🚀 Nova versão 2.0 disponível",
+      "heroTitle": "Digitalize sua PME",
+      "heroTitleLine2": "com tecnologia premium.",
+      "heroDescription": "Desenvolvimento web de alto impacto, infraestrutura cloud segura e consultoria estratégica. Ajudamos empresas colombianas a escalar sem limites técnicos.",
+      "scheduleConsultation": "Agendar Consultoria Gratuita",
+      "viewPlans": "Ver Planos e Preços",
+      "featuresTitle": "Tudo o que você precisa para crescer",
+      "featuresSubtitle": "Tecnologia enterprise adaptada à sua escala.",
+      "features": {
+        "ultraFast": {
+          "title": "Ultra Rápido",
+          "description": "Sites otimizados para Core Web Vitals. Carrega em milissegundos, não segundos."
+        },
+        "bankSecurity": {
+          "title": "Segurança Bancária",
+          "description": "Proteção DDoS, certificados SSL e criptografia de dados end-to-end."
+        },
+        "analytics": {
+          "title": "Analytics Integrado",
+          "description": "Painéis de controle em tempo real para tomar decisões baseadas em dados."
+        },
+        "globalDomain": {
+          "title": "Domínio Global",
+          "description": "Infraestrutura implantada na borda (Edge) para acesso mundial instantâneo."
+        },
+        "support24x7": {
+          "title": "Suporte 24/7",
+          "description": "Equipe de engenharia dedicada. Resolvemos incidentes antes que você os note."
+        },
+        "scalability": {
+          "title": "Escalabilidade",
+          "description": "Arquitetura serverless que cresce automaticamente com seu tráfego."
+        }
+      },
+      "stats": {
+        "projectsDelivered": "Projetos Entregues",
+        "uptimeGuaranteed": "Uptime Garantido",
+        "supportTime": "Tempo de Suporte",
+        "usersImpacted": "Usuários Impactados"
+      },
+      "cta": {
+        "title": "Pronto para transformar seu negócio?",
+        "description": "Agende uma consultoria gratuita de 30 minutos e descubra como podemos acelerar seu crescimento digital hoje mesmo.",
+        "scheduleConsultation": "Agendar Consultoria Gratuita",
+        "viewCaseStudies": "Ver Casos de Sucesso"
       }
     }
   },

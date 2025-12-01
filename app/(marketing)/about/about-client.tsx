@@ -5,39 +5,48 @@ import { ArrowRight, Target, Users, Zap, Shield, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useLocaleContext } from "@/lib/contexts/LocaleContext";
+import { useMemo } from "react";
 
 export function AboutPageClient() {
   const t = useTranslationsSafe("marketing.about");
+  const { locale } = useLocaleContext(); // Obtener locale para forzar re-render cuando cambie
 
-  const values = [
-    {
-      icon: Target,
-      title: t("values.results.title"),
-      description: t("values.results.description"),
-    },
-    {
-      icon: Zap,
-      title: t("values.speed.title"),
-      description: t("values.speed.description"),
-    },
-    {
-      icon: Shield,
-      title: t("values.security.title"),
-      description: t("values.security.description"),
-    },
-    {
-      icon: Globe,
-      title: t("values.global.title"),
-      description: t("values.global.description"),
-    },
-  ];
+  const values = useMemo(
+    () => [
+      {
+        icon: Target,
+        title: t("values.results.title"),
+        description: t("values.results.description"),
+      },
+      {
+        icon: Zap,
+        title: t("values.speed.title"),
+        description: t("values.speed.description"),
+      },
+      {
+        icon: Shield,
+        title: t("values.security.title"),
+        description: t("values.security.description"),
+      },
+      {
+        icon: Globe,
+        title: t("values.global.title"),
+        description: t("values.global.description"),
+      },
+    ],
+    [t, locale]
+  );
 
-  const stats = [
-    { value: "+50", label: t("stats.projectsDelivered") },
-    { value: "5+", label: t("stats.yearsExperience") },
-    { value: "99.9%", label: t("stats.uptimeAverage") },
-    { value: "98%", label: t("stats.clientSatisfaction") },
-  ];
+  const stats = useMemo(
+    () => [
+      { value: "+50", label: t("stats.projectsDelivered") },
+      { value: "5+", label: t("stats.yearsExperience") },
+      { value: "99.9%", label: t("stats.uptimeAverage") },
+      { value: "98%", label: t("stats.clientSatisfaction") },
+    ],
+    [t, locale]
+  );
 
   return (
     <div className="min-h-screen">

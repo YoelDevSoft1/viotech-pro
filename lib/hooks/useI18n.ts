@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { format, formatDistanceToNow } from "date-fns";
 import { es, enUS, ptBR } from "date-fns/locale";
 import type { Locale as AppLocale } from "@/i18n";
-import { defaultLocale, locales } from "@/i18n";
+import { defaultLocale } from "@/i18n";
 import type { Locale as DateFnsLocale } from "date-fns/locale";
+import { useLocaleContext } from "@/lib/contexts/LocaleContext";
 
 const dateFnsLocales: Record<AppLocale, DateFnsLocale> = {
   es: es,
@@ -18,22 +19,12 @@ const dateFnsLocales: Record<AppLocale, DateFnsLocale> = {
  * Versión segura que funciona sin middleware activo
  */
 export function useI18n() {
-  const [locale, setLocale] = useState<AppLocale>(defaultLocale);
+  const { locale } = useLocaleContext();
   const [mounted, setMounted] = useState(false);
 
-  // Detectar locale desde localStorage o navegador (solo en cliente)
+  // Detectar cuando el componente está montado
   useEffect(() => {
     setMounted(true);
-    const savedLocale = localStorage.getItem("viotech_locale") as AppLocale | null;
-    if (savedLocale && locales.includes(savedLocale)) {
-      setLocale(savedLocale);
-    } else {
-      // Detectar desde navegador
-      const browserLang = navigator.language.split("-")[0];
-      if (browserLang === "en" || browserLang === "pt") {
-        setLocale(browserLang as AppLocale);
-      }
-    }
   }, []);
 
   const dateFnsLocale = useMemo(() => dateFnsLocales[locale], [locale]);

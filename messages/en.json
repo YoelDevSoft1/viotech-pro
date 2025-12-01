@@ -764,6 +764,110 @@
         "next": "Next",
         "page": "Page",
         "of": "of"
+      },
+      "post": {
+        "backToBlog": "Back to blog",
+        "readingTime": "min read",
+        "share": "Share:",
+        "facebook": "Facebook",
+        "twitter": "Twitter",
+        "linkedin": "LinkedIn",
+        "copy": "Copy",
+        "copied": "Copied",
+        "linkCopied": "Link copied to clipboard",
+        "linkCopyError": "Error copying link",
+        "tags": "Tags:",
+        "relatedArticles": "Related Articles"
+      }
+    },
+    "caseStudies": {
+      "title": "Success Stories",
+      "description": "Measurable digital transformations that drive business growth",
+      "backToHome": "Back to home",
+      "challenge": "Challenge",
+      "solution": "Solution",
+      "results": "Results",
+      "cta": {
+        "title": "Ready to be our next success story?",
+        "description": "Schedule a free consultation and discover how we can transform your business",
+        "button": "Schedule Free Consultation"
+      }
+    },
+    "industries": {
+      "backToHome": "Back to home",
+      "scheduleConsultation": "Schedule Free Consultation",
+      "viewCaseStudies": "View Success Stories",
+      "commonChallenges": "Common challenges in",
+      "commonChallengesDescription": "Problems we solve every day",
+      "ourSolutions": "Our Solutions",
+      "ourSolutionsDescription": "Technology that solves real problems",
+      "caseStudy": "Success Story",
+      "viewFullCase": "View full case",
+      "cta": {
+        "title": "Ready to transform your",
+        "description": "Schedule a free consultation and discover how we can help you",
+        "button": "Schedule Free Consultation"
+      }
+    },
+    "services": {
+      "detail": {
+        "backToServices": "Back to Services",
+        "whatIncludes": "What does this service include?",
+        "whatIncludesDescription": "Everything you need to transform your business",
+        "measurableBenefits": "Measurable Benefits",
+        "measurableBenefitsDescription": "Real results for real companies",
+        "readyToStart": "Ready to get started?",
+        "readyToStartDescription": "Schedule a free 45-minute consultation and discover how we can help you",
+        "scheduleConsultation": "Schedule Free Consultation",
+        "viewPlans": "View Plans and Pricing"
+      }
+    },
+    "home": {
+      "newVersion": "🚀 New version 2.0 available",
+      "heroTitle": "Digitize your SME",
+      "heroTitleLine2": "with premium technology.",
+      "heroDescription": "High-impact web development, secure cloud infrastructure and strategic consulting. We help Colombian companies scale without technical limits.",
+      "scheduleConsultation": "Schedule Free Consultation",
+      "viewPlans": "View Plans and Pricing",
+      "featuresTitle": "Everything you need to grow",
+      "featuresSubtitle": "Enterprise technology adapted to your scale.",
+      "features": {
+        "ultraFast": {
+          "title": "Ultra Fast",
+          "description": "Sites optimized for Core Web Vitals. Loads in milliseconds, not seconds."
+        },
+        "bankSecurity": {
+          "title": "Bank-Level Security",
+          "description": "DDoS protection, SSL certificates and end-to-end data encryption."
+        },
+        "analytics": {
+          "title": "Integrated Analytics",
+          "description": "Real-time dashboards to make data-driven decisions."
+        },
+        "globalDomain": {
+          "title": "Global Domain",
+          "description": "Infrastructure deployed at the edge for instant worldwide access."
+        },
+        "support24x7": {
+          "title": "24/7 Support",
+          "description": "Dedicated engineering team. We resolve issues before you notice them."
+        },
+        "scalability": {
+          "title": "Scalability",
+          "description": "Serverless architecture that automatically grows with your traffic."
+        }
+      },
+      "stats": {
+        "projectsDelivered": "Projects Delivered",
+        "uptimeGuaranteed": "Uptime Guaranteed",
+        "supportTime": "Support Time",
+        "usersImpacted": "Users Impacted"
+      },
+      "cta": {
+        "title": "Ready to transform your business?",
+        "description": "Schedule a free 30-minute consultation and discover how we can accelerate your digital growth today.",
+        "scheduleConsultation": "Schedule Free Consultation",
+        "viewCaseStudies": "View Success Stories"
       }
     }
   },
