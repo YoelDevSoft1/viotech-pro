@@ -186,6 +186,9 @@ export function useMarketingMaterials(filters?: {
   });
 }
 
+// Alias para compatibilidad
+export const usePartnerMarketingMaterials = useMarketingMaterials;
+
 // Hook para obtener trainings
 export function usePartnerTrainings(filters?: {
   type?: string;
@@ -219,6 +222,40 @@ export function usePartnerTrainings(filters?: {
 
       const data = await response.json();
       return data.data;
+    },
+  });
+}
+
+// Hook para iniciar un training
+export function useStartTraining() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (trainingId: string) => {
+      const token = getAccessToken();
+      if (!token) throw new Error("No autenticado");
+
+      const response = await fetch(
+        buildApiUrl(`/partners/trainings/${trainingId}/start`),
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Error al iniciar training");
+      }
+
+      const data = await response.json();
+      return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["partner-trainings"] });
+      queryClient.invalidateQueries({ queryKey: ["partner-dashboard"] });
     },
   });
 }

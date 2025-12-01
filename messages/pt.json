@@ -1704,6 +1704,72 @@
         "paidAt": "Pago em",
         "created": "Criado"
       }
+    },
+    "marketing": {
+      "title": "Materiais de Marketing",
+      "description": "Baixe e use materiais de marketing para promover nossos serviços",
+      "searchPlaceholder": "Buscar materiais...",
+      "filters": {
+        "allCategories": "Todas as categorias",
+        "allTypes": "Todos os tipos"
+      },
+      "category": {
+        "logo": "Logo",
+        "banner": "Banner",
+        "brochure": "Brochura",
+        "presentation": "Apresentação",
+        "video": "Vídeo",
+        "social": "Redes Sociais"
+      },
+      "type": {
+        "image": "Imagem",
+        "video": "Vídeo",
+        "document": "Documento"
+      },
+      "noMaterials": "Nenhum material disponível",
+      "noDescription": "Sem descrição",
+      "updated": "Atualizado",
+      "download": "Baixar",
+      "size": "Tamanho",
+      "usageGuidelines": "Diretrizes de Uso",
+      "close": "Fechar",
+      "label": "Categoria"
+    },
+    "training": {
+      "title": "Treinamentos e Certificações",
+      "description": "Complete treinamentos e obtenha certificações para melhorar seu desempenho",
+      "trainings": "Treinamentos",
+      "certifications": "Certificações",
+      "noTrainings": "Nenhum treinamento disponível",
+      "noCertifications": "Você não tem certificações",
+      "progress": "Progresso",
+      "minutes": "minutos",
+      "required": "Obrigatório",
+      "start": "Iniciar",
+      "continue": "Continuar",
+      "completed": "Completado",
+      "details": "Detalhes",
+      "level": {
+        "label": "Nível",
+        "beginner": "Iniciante",
+        "intermediate": "Intermediário",
+        "advanced": "Avançado"
+      },
+      "certStatus": {
+        "not_started": "Não Iniciada",
+        "in_progress": "Em Progresso",
+        "completed": "Completada",
+        "expired": "Expirada"
+      },
+      "completedOn": "Completada em",
+      "expires": "Expira",
+      "requiredTraining": "Treinamento Obrigatório",
+      "viewCertificate": "Ver Certificado",
+      "startCertification": "Iniciar Certificação",
+      "duration": "Duração",
+      "content": "Conteúdo",
+      "complete": "Completar",
+      "close": "Fechar"
     }
   }
 }

@@ -1701,6 +1701,72 @@
         "paidAt": "Pagado el",
         "created": "Creado"
       }
+    },
+    "marketing": {
+      "title": "Materiales de Marketing",
+      "description": "Descarga y utiliza materiales de marketing para promocionar nuestros servicios",
+      "searchPlaceholder": "Buscar materiales...",
+      "filters": {
+        "allCategories": "Todas las categorías",
+        "allTypes": "Todos los tipos"
+      },
+      "category": {
+        "logo": "Logo",
+        "banner": "Banner",
+        "brochure": "Folleto",
+        "presentation": "Presentación",
+        "video": "Video",
+        "social": "Redes Sociales"
+      },
+      "type": {
+        "image": "Imagen",
+        "video": "Video",
+        "document": "Documento"
+      },
+      "noMaterials": "No hay materiales disponibles",
+      "noDescription": "Sin descripción",
+      "updated": "Actualizado",
+      "download": "Descargar",
+      "size": "Tamaño",
+      "usageGuidelines": "Guía de Uso",
+      "close": "Cerrar",
+      "label": "Categoría"
+    },
+    "training": {
+      "title": "Training y Certificaciones",
+      "description": "Completa trainings y obtén certificaciones para mejorar tu rendimiento",
+      "trainings": "Trainings",
+      "certifications": "Certificaciones",
+      "noTrainings": "No hay trainings disponibles",
+      "noCertifications": "No tienes certificaciones",
+      "progress": "Progreso",
+      "minutes": "minutos",
+      "required": "Requerido",
+      "start": "Iniciar",
+      "continue": "Continuar",
+      "completed": "Completado",
+      "details": "Detalles",
+      "level": {
+        "label": "Nivel",
+        "beginner": "Principiante",
+        "intermediate": "Intermedio",
+        "advanced": "Avanzado"
+      },
+      "certStatus": {
+        "not_started": "No iniciada",
+        "in_progress": "En progreso",
+        "completed": "Completada",
+        "expired": "Expirada"
+      },
+      "completedOn": "Completada el",
+      "expires": "Expira",
+      "requiredTraining": "Training Requerido",
+      "viewCertificate": "Ver Certificado",
+      "startCertification": "Iniciar Certificación",
+      "duration": "Duración",
+      "content": "Contenido",
+      "complete": "Completar",
+      "close": "Cerrar"
     }
   }
 }

@@ -1694,6 +1694,72 @@
         "paidAt": "Paid At",
         "created": "Created"
       }
+    },
+    "marketing": {
+      "title": "Marketing Materials",
+      "description": "Download and use marketing materials to promote our services",
+      "searchPlaceholder": "Search materials...",
+      "filters": {
+        "allCategories": "All categories",
+        "allTypes": "All types"
+      },
+      "category": {
+        "logo": "Logo",
+        "banner": "Banner",
+        "brochure": "Brochure",
+        "presentation": "Presentation",
+        "video": "Video",
+        "social": "Social Media"
+      },
+      "type": {
+        "image": "Image",
+        "video": "Video",
+        "document": "Document"
+      },
+      "noMaterials": "No materials available",
+      "noDescription": "No description",
+      "updated": "Updated",
+      "download": "Download",
+      "size": "Size",
+      "usageGuidelines": "Usage Guidelines",
+      "close": "Close",
+      "label": "Category"
+    },
+    "training": {
+      "title": "Training and Certifications",
+      "description": "Complete trainings and earn certifications to improve your performance",
+      "trainings": "Trainings",
+      "certifications": "Certifications",
+      "noTrainings": "No trainings available",
+      "noCertifications": "You have no certifications",
+      "progress": "Progress",
+      "minutes": "minutes",
+      "required": "Required",
+      "start": "Start",
+      "continue": "Continue",
+      "completed": "Completed",
+      "details": "Details",
+      "level": {
+        "label": "Level",
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced"
+      },
+      "certStatus": {
+        "not_started": "Not Started",
+        "in_progress": "In Progress",
+        "completed": "Completed",
+        "expired": "Expired"
+      },
+      "completedOn": "Completed on",
+      "expires": "Expires",
+      "requiredTraining": "Required Training",
+      "viewCertificate": "View Certificate",
+      "startCertification": "Start Certification",
+      "duration": "Duration",
+      "content": "Content",
+      "complete": "Complete",
+      "close": "Close"
     }
   }
 }
