@@ -375,15 +375,15 @@ app/(ops-admin)/
 - [ ] Email digests
 - [ ] Integración con Slack/Teams
 
-#### **Sprint 3.4: Internacionalización (🔄 EN PROGRESO)**
+#### **Sprint 3.4: Internacionalización (✅ COMPLETADO)**
 - [x] next-intl instalado y configurado
 - [x] Traducciones (ES, EN, PT) - Archivos base creados
 - [x] Formato de fechas/números por región - Utilidades implementadas
-- [ ] RTL support (si necesario) - Pendiente
+- [ ] RTL support (si necesario) - Opcional para fase futura
 - [x] Detección automática de idioma - Infraestructura lista
 - [x] Selector de idioma en UI - Componente creado
 - [x] Roadmap completo de migración - Documentado
-- [ ] Activación completa - Requiere migración gradual (ver `docs/ROADMAP_MIGRACION_I18N.md`)
+- [x] Activación completa - Migración completa de todas las páginas y componentes principales
 
 **Métricas de Éxito:**
 - Tiempo de onboarding

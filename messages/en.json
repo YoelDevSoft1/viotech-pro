@@ -1457,7 +1457,75 @@
     "health": "Health",
     "blog": "Blog",
     "comments": "Comments",
-    "auditLog": "Audit Log"
+    "auditLog": "Audit Log",
+    "partners": "Partners"
+  },
+  "partners": {
+    "dashboard": {
+      "title": "Partner Portal",
+      "subtitle": "Partner since {joinedAt}"
+    },
+    "tiers": {
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold",
+      "platinum": "Platinum"
+    },
+    "performanceScore": "Performance Score",
+    "stats": {
+      "totalLeads": "Total Leads",
+      "active": "active",
+      "conversionRate": "Conversion Rate",
+      "trend": "Trend",
+      "totalRevenue": "Total Revenue",
+      "pending": "pending",
+      "commissions": "Commissions",
+      "commissionRate": "Commission rate: {rate}%"
+    },
+    "recentLeads": "Recent Leads",
+    "recentLeadsDescription": "Latest generated leads",
+    "recentCommissions": "Recent Commissions",
+    "recentCommissionsDescription": "Latest commissions",
+    "upcomingTrainings": "Upcoming Trainings",
+    "upcomingTrainingsDescription": "Available trainings",
+    "certifications": "Certifications",
+    "certificationsDescription": "Your active certifications",
+    "viewAll": "View all",
+    "noLeads": "No recent leads",
+    "noCommissions": "No recent commissions",
+    "noTrainings": "No trainings available",
+    "noCertifications": "You have no certifications",
+    "noData": "No data available",
+    "leadStatus": {
+      "new": "New",
+      "contacted": "Contacted",
+      "qualified": "Qualified",
+      "converted": "Converted",
+      "lost": "Lost"
+    },
+    "commissionStatus": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "paid": "Paid",
+      "cancelled": "Cancelled"
+    },
+    "trainingLevel": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "certStatus": {
+      "not_started": "Not started",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "expired": "Expired"
+    },
+    "required": "Required",
+    "minutes": "minutes",
+    "expires": "Expires",
+    "error": {
+      "loading": "Error loading dashboard"
+    }
   }
 }
 

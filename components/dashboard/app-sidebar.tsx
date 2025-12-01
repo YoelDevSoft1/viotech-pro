@@ -21,7 +21,8 @@ import {
   Bell,
   History,
   UserCog,
-  BarChart3
+  BarChart3,
+  Handshake
 } from "lucide-react";
 import {
   Sidebar,
@@ -112,6 +113,11 @@ export function AppSidebar() {
       title: t("sidebar.payments"),
       href: "/client/payments",
       icon: CreditCard,
+    },
+    {
+      title: t("sidebar.partners"),
+      href: "/partners",
+      icon: Handshake,
     },
   ];
 

@@ -1464,7 +1464,75 @@
     "health": "Health",
     "blog": "Blog",
     "comments": "Comentarios",
-    "auditLog": "Audit Log"
+    "auditLog": "Audit Log",
+    "partners": "Partners"
+  },
+  "partners": {
+    "dashboard": {
+      "title": "Portal de Partners",
+      "subtitle": "Partner desde {joinedAt}"
+    },
+    "tiers": {
+      "bronze": "Bronce",
+      "silver": "Plata",
+      "gold": "Oro",
+      "platinum": "Platino"
+    },
+    "performanceScore": "Puntuación de Rendimiento",
+    "stats": {
+      "totalLeads": "Total de Leads",
+      "active": "activos",
+      "conversionRate": "Tasa de Conversión",
+      "trend": "Tendencia",
+      "totalRevenue": "Ingresos Totales",
+      "pending": "pendientes",
+      "commissions": "Comisiones",
+      "commissionRate": "Tasa de comisión: {rate}%"
+    },
+    "recentLeads": "Leads Recientes",
+    "recentLeadsDescription": "Últimos leads generados",
+    "recentCommissions": "Comisiones Recientes",
+    "recentCommissionsDescription": "Últimas comisiones",
+    "upcomingTrainings": "Trainings Próximos",
+    "upcomingTrainingsDescription": "Capacitaciones disponibles",
+    "certifications": "Certificaciones",
+    "certificationsDescription": "Tus certificaciones activas",
+    "viewAll": "Ver todo",
+    "noLeads": "No hay leads recientes",
+    "noCommissions": "No hay comisiones recientes",
+    "noTrainings": "No hay trainings disponibles",
+    "noCertifications": "No tienes certificaciones",
+    "noData": "No hay datos disponibles",
+    "leadStatus": {
+      "new": "Nuevo",
+      "contacted": "Contactado",
+      "qualified": "Calificado",
+      "converted": "Convertido",
+      "lost": "Perdido"
+    },
+    "commissionStatus": {
+      "pending": "Pendiente",
+      "approved": "Aprobada",
+      "paid": "Pagada",
+      "cancelled": "Cancelada"
+    },
+    "trainingLevel": {
+      "beginner": "Principiante",
+      "intermediate": "Intermedio",
+      "advanced": "Avanzado"
+    },
+    "certStatus": {
+      "not_started": "No iniciada",
+      "in_progress": "En progreso",
+      "completed": "Completada",
+      "expired": "Expirada"
+    },
+    "required": "Requerido",
+    "minutes": "minutos",
+    "expires": "Expira",
+    "error": {
+      "loading": "Error al cargar el dashboard"
+    }
   }
 }
 
