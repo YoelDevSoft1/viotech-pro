@@ -1535,6 +1535,90 @@
     "expires": "Expira",
     "error": {
       "loading": "Erro ao carregar o painel"
+    },
+    "admin": {
+      "title": "Gestão de Parceiros",
+      "description": "Gerencie e administre os parceiros do sistema",
+      "filters": {
+        "status": "Status",
+        "tier": "Tier",
+        "allStatuses": "Todos os status",
+        "allTiers": "Todos os tiers"
+      },
+      "status": {
+        "active": "Ativo",
+        "pending": "Pendente",
+        "suspended": "Suspenso",
+        "inactive": "Inativo"
+      },
+      "tiers": {
+        "bronze": "Bronze",
+        "silver": "Prata",
+        "gold": "Ouro",
+        "platinum": "Platina"
+      },
+      "registerNew": "Registrar Novo Parceiro",
+      "table": {
+        "user": "Usuário",
+        "status": "Status",
+        "tier": "Tier",
+        "commission": "Comissão",
+        "leads": "Leads",
+        "revenue": "Receita",
+        "performance": "Desempenho",
+        "actions": "Ações"
+      },
+      "noPartners": "Nenhum parceiro registrado",
+      "actions": {
+        "view": "Ver",
+        "activate": "Ativar",
+        "suspend": "Suspender"
+      },
+      "confirm": {
+        "activateTitle": "Ativar parceiro?",
+        "activateDescription": "Tem certeza de que deseja ativar este parceiro?",
+        "suspendTitle": "Suspender parceiro?",
+        "suspendDescription": "Tem certeza de que deseja suspender este parceiro?",
+        "activate": "Ativar",
+        "suspend": "Suspender",
+        "cancel": "Cancelar"
+      },
+      "register": {
+        "title": "Registrar Novo Parceiro",
+        "description": "Registre um usuário como parceiro do sistema",
+        "user": "Usuário",
+        "selectUser": "Selecionar usuário",
+        "loadingUsers": "Carregando usuários...",
+        "tier": "Tier",
+        "commissionRate": "Taxa de Comissão (%)",
+        "status": "Status",
+        "cancel": "Cancelar",
+        "register": "Registrar",
+        "registering": "Registrando..."
+      },
+      "detail": {
+        "title": "Detalhes do Parceiro",
+        "description": "Informações detalhadas do parceiro",
+        "notFound": "Parceiro não encontrado",
+        "userInfo": "Informações do Usuário",
+        "partnerInfo": "Informações do Parceiro",
+        "name": "Nome",
+        "email": "Email",
+        "role": "Função",
+        "status": "Status",
+        "tier": "Tier",
+        "commissionRate": "Taxa de Comissão",
+        "performanceScore": "Pontuação de Desempenho",
+        "stats": "Estatísticas",
+        "totalLeads": "Total de Leads",
+        "convertedLeads": "Leads Convertidos",
+        "totalRevenue": "Receita Total",
+        "commissions": "Comissões",
+        "totalCommissions": "Total",
+        "pendingCommissions": "Pendentes",
+        "paidCommissions": "Pagas",
+        "close": "Fechar"
+      }
     }
   }
 }

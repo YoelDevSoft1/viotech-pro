@@ -131,3 +131,45 @@ export interface PartnerDashboard {
   performance: PartnerPerformance[];
 }
 
+// Tipos para administración de partners
+export interface PartnerWithUser extends Partner {
+  user: {
+    id: string;
+    nombre: string;
+    email: string;
+    rol: string;
+  } | null;
+}
+
+export interface PartnerDetail extends Partner {
+  user: {
+    id: string;
+    nombre: string;
+    email: string;
+    rol: string;
+    organizationId: string | null;
+  } | null;
+  stats: {
+    totalLeads: number;
+    activeLeads: number;
+    convertedLeads: number;
+    totalCommissions: number;
+    pendingCommissions: number;
+    paidCommissions: number;
+  };
+}
+
+export interface RegisterPartnerData {
+  userId: string;
+  organizationId?: string;
+  tier?: "bronze" | "silver" | "gold" | "platinum";
+  commissionRate?: number;
+  status?: "pending" | "active" | "suspended" | "inactive";
+}
+
+export interface UpdatePartnerData {
+  status?: "pending" | "active" | "suspended" | "inactive";
+  tier?: "bronze" | "silver" | "gold" | "platinum";
+  commissionRate?: number;
+}
+

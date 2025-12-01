@@ -396,13 +396,17 @@ app/(ops-admin)/
 ### **FASE 4: Funcionalidades Top-Tier ()**
 **Objetivo:** Diferenciadores competitivos
 
-#### **Sprint 4.1: Portal de Partners ()**
-- [ ] Dashboard para partners
-- [ ] Gestión de leads y comisiones
-- [ ] Materiales de marketing
-- [ ] Training y certificaciones
-- [ ] Reportes de performance
-- [ ] Sistema de referidos
+#### **Sprint 4.1: Portal de Partners (🔄 EN PROGRESO)**
+- [x] Dashboard para partners - Componente y página implementados
+- [x] Tipos TypeScript y hooks de React Query - Completados
+- [x] Traducciones (ES, EN, PT) - Completadas
+- [x] Ruta agregada al sidebar - Implementada
+- [x] Documentación de requisitos backend - Completada
+- [ ] Gestión de leads y comisiones - Páginas pendientes
+- [ ] Materiales de marketing - Página pendiente
+- [ ] Training y certificaciones - Páginas pendientes
+- [ ] Reportes de performance - Página pendiente
+- [ ] Sistema de referidos - Página pendiente
 
 #### **Sprint 4.2: Marketplace de Servicios ()**
 - [ ] Catálogo expandido de servicios
