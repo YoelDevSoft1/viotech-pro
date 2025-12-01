@@ -6,18 +6,21 @@ import { SavedViews } from "@/components/customization/SavedViews";
 import { KeyboardShortcuts } from "@/components/customization/KeyboardShortcuts";
 import { OrganizationBranding } from "@/components/customization/OrganizationBranding";
 import { Settings, Palette, Eye, Keyboard, Building2 } from "lucide-react";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 export default function AdminCustomizationPage() {
+  const tCustomization = useTranslationsSafe("customization");
+  
   return (
     <main className="min-h-screen bg-background px-6 py-10 md:py-12">
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-            Configuración
+            {tCustomization("settings")}
           </p>
-          <h1 className="text-3xl font-semibold text-foreground">Personalización</h1>
+          <h1 className="text-3xl font-semibold text-foreground">{tCustomization("title")}</h1>
           <p className="text-sm text-muted-foreground">
-            Personaliza tu experiencia en la plataforma
+            {tCustomization("description")}
           </p>
         </div>
 
@@ -25,19 +28,19 @@ export default function AdminCustomizationPage() {
           <TabsList>
             <TabsTrigger value="preferences">
               <Settings className="h-4 w-4 mr-2" />
-              Preferencias
+              {tCustomization("preferences")}
             </TabsTrigger>
             <TabsTrigger value="views">
               <Eye className="h-4 w-4 mr-2" />
-              Vistas Guardadas
+              {tCustomization("savedViews")}
             </TabsTrigger>
             <TabsTrigger value="shortcuts">
               <Keyboard className="h-4 w-4 mr-2" />
-              Atajos de Teclado
+              {tCustomization("keyboardShortcuts")}
             </TabsTrigger>
             <TabsTrigger value="branding">
               <Building2 className="h-4 w-4 mr-2" />
-              Branding
+              {tCustomization("branding")}
             </TabsTrigger>
           </TabsList>
 

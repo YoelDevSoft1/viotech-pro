@@ -15,6 +15,8 @@ import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 
 type Role = "admin" | "agente" | "cliente";
 
@@ -37,11 +39,7 @@ type PendingAction =
   | { type: "org"; userId: string }
   | null;
 
-const ROLE_OPTIONS: { value: Role; label: string; description: string }[] = [
-  { value: "admin", label: "Admin", description: "Acceso total al panel y datos críticos." },
-  { value: "agente", label: "Agente", description: "Gestiona tickets de todos los usuarios." },
-  { value: "cliente", label: "Cliente", description: "Solo sus propios tickets." },
-];
+// ROLE_OPTIONS se define dentro del componente para usar traducciones
 
 const MOCK_USERS: UserRecord[] = [
   {
@@ -85,15 +83,23 @@ export default function RoleManager() {
   const [pending, setPending] = useState<PendingAction>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [orgs, setOrgs] = useState<{ id: string; nombre: string }[]>([]);
+  const tUsers = useTranslationsSafe("users");
+  const { formatDate } = useI18n();
+
+  const ROLE_OPTIONS: { value: Role; label: string; description: string }[] = [
+    { value: "admin", label: tUsers("roles.admin"), description: tUsers("roles.adminDescription") },
+    { value: "agente", label: tUsers("roles.agente"), description: tUsers("roles.agenteDescription") },
+    { value: "cliente", label: tUsers("roles.cliente"), description: tUsers("roles.clienteDescription") },
+  ];
 
   const apiBase = useMemo(() => buildApiUrl("").replace(/\/+$/, ""), []);
 
   const getValidToken = useCallback(async () => {
     let token = getAccessToken();
-    if (!token) throw new Error("No autenticado");
+    if (!token) throw new Error(tUsers("errors.notAuthenticated"));
     if (isTokenExpired(token)) {
       const refreshed = await refreshAccessToken();
-      if (!refreshed) throw new Error("Sesión expirada");
+      if (!refreshed) throw new Error(tUsers("errors.sessionExpired"));
       token = refreshed;
     }
     return token;
@@ -125,7 +131,7 @@ export default function RoleManager() {
 
         const payload = await response.json().catch(() => null);
         if (!response.ok || !payload) {
-          throw new Error(payload?.error || payload?.message || "No se pudo cargar usuarios");
+          throw new Error(payload?.error || payload?.message || tUsers("errors.loadError"));
         }
 
         const dataRaw = payload.data || payload.users || payload || [];
@@ -143,7 +149,7 @@ export default function RoleManager() {
               const normalizedRole = (u.rol || u.role || "cliente").toLowerCase() as Role;
               return {
                 id: String(u.id),
-                nombre: u.nombre || u.name || "Sin nombre",
+                nombre: u.nombre || u.name || tUsers("noName"),
                 email: u.email || "sin-email",
                 rol: normalizedRole,
                 estado: u.estado || u.state || "activo",
@@ -157,7 +163,7 @@ export default function RoleManager() {
         );
       } catch (err) {
         if (controller.signal.aborted) return;
-        const msg = err instanceof Error ? err.message : "Error al cargar usuarios";
+        const msg = err instanceof Error ? err.message : tUsers("errors.loadError");
         setError(msg);
       } finally {
         if (!controller.signal.aborted) setLoading(false);
@@ -228,7 +234,7 @@ export default function RoleManager() {
 
     if (ADMIN_MOCK) {
       setPending(null);
-      setFeedback("Cambios simulados en modo mock.");
+      setFeedback(tUsers("feedback.mockChanges"));
       return;
     }
 
@@ -245,14 +251,14 @@ export default function RoleManager() {
 
       const data = await response.json().catch(() => null);
       if (!response.ok || !data?.success) {
-        throw new Error(data?.error || data?.message || "No se pudo actualizar el usuario");
+        throw new Error(data?.error || data?.message || tUsers("errors.updateError"));
       }
-      setFeedback("Cambios guardados.");
+      setFeedback(tUsers("feedback.changesSaved"));
     } catch (err) {
       // Revertir si falla
       setUsers(previous);
       setFeedback(null);
-      setError(err instanceof Error ? err.message : "Error al actualizar");
+      setError(err instanceof Error ? err.message : tUsers("errors.genericUpdateError"));
     } finally {
       setPending(null);
     }
@@ -268,7 +274,7 @@ export default function RoleManager() {
     setUsers((curr) => curr.map((u) => (u.id === userId ? { ...u, tier } : u)));
     if (ADMIN_MOCK) {
       setPending(null);
-      setFeedback("Cambios simulados en modo mock.");
+      setFeedback(tUsers("feedback.mockChanges"));
       return;
     }
     try {
@@ -283,13 +289,13 @@ export default function RoleManager() {
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.success) {
-        throw new Error(data?.error || data?.message || "No se pudo actualizar el tier");
+        throw new Error(data?.error || data?.message || tUsers("errors.updateTierError"));
       }
-      setFeedback("Tier actualizado.");
+      setFeedback(tUsers("feedback.tierUpdated"));
     } catch (err) {
       setUsers(prev);
       setFeedback(null);
-      setError(err instanceof Error ? err.message : "Error al actualizar tier");
+      setError(err instanceof Error ? err.message : tUsers("errors.updateTierError"));
     } finally {
       setPending(null);
     }
@@ -301,7 +307,7 @@ export default function RoleManager() {
     setUsers((curr) => curr.map((u) => (u.id === userId ? { ...u, estado } : u)));
     if (ADMIN_MOCK) {
       setPending(null);
-      setFeedback("Cambios simulados en modo mock.");
+      setFeedback(tUsers("feedback.mockChanges"));
       return;
     }
     try {
@@ -316,13 +322,13 @@ export default function RoleManager() {
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.success) {
-        throw new Error(data?.error || data?.message || "No se pudo actualizar estado");
+        throw new Error(data?.error || data?.message || tUsers("errors.updateStateError"));
       }
-      setFeedback("Estado actualizado.");
+      setFeedback(tUsers("feedback.stateUpdated"));
     } catch (err) {
       setUsers(prev);
       setFeedback(null);
-      setError(err instanceof Error ? err.message : "Error al actualizar estado");
+      setError(err instanceof Error ? err.message : tUsers("errors.updateStateError"));
     } finally {
       setPending(null);
     }
@@ -334,7 +340,7 @@ export default function RoleManager() {
     setUsers((curr) => curr.map((u) => (u.id === userId ? { ...u, organizationId } : u)));
     if (ADMIN_MOCK) {
       setPending(null);
-      setFeedback("Cambios simulados en modo mock.");
+      setFeedback(tUsers("feedback.mockChanges"));
       return;
     }
     try {
@@ -349,13 +355,13 @@ export default function RoleManager() {
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.success) {
-        throw new Error(data?.error || data?.message || "No se pudo actualizar la organización");
+        throw new Error(data?.error || data?.message || tUsers("errors.updateOrgError"));
       }
-      setFeedback("Organización asignada.");
+      setFeedback(tUsers("feedback.orgAssigned"));
     } catch (err) {
       setUsers(prev);
       setFeedback(null);
-      setError(err instanceof Error ? err.message : "Error al actualizar organización");
+      setError(err instanceof Error ? err.message : tUsers("errors.updateOrgError"));
     } finally {
       setPending(null);
     }
@@ -389,16 +395,16 @@ export default function RoleManager() {
       {/* Header */}
       <div className="space-y-2">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Gestión de Usuarios</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{tUsers("title")}</h1>
           <p className="text-muted-foreground">
-            Controla accesos sensibles y estados de cuentas. Filtra por organización para aplicar cambios puntuales.
+            {tUsers("description")}
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="sm:w-64">
             <OrgSelector
               onChange={(org: Org | null) => setOrgId(org?.id || "")}
-              label="Organización"
+              label={tUsers("organization")}
             />
           </div>
           <div className="relative flex-1 sm:max-w-sm">
@@ -406,9 +412,9 @@ export default function RoleManager() {
             <Input
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              placeholder="Buscar por nombre, email o rol"
+              placeholder={tUsers("searchPlaceholder")}
               className="pl-9"
-              aria-label="Buscar usuarios por nombre, email o rol"
+              aria-label={tUsers("searchLabel")}
             />
           </div>
         </div>
@@ -467,7 +473,7 @@ export default function RoleManager() {
           {filtered.length === 0 ? (
             <Card>
               <CardContent className="pt-6">
-                <EmptyState title="Sin resultados" message="No se encontraron usuarios con ese criterio u organización." />
+                <EmptyState title={tUsers("noResults")} message={tUsers("noResultsMessage")} />
               </CardContent>
             </Card>
           ) : (
@@ -475,21 +481,21 @@ export default function RoleManager() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <UsersIcon className="h-5 w-5" />
-                  Usuarios ({filtered.length})
+                  {tUsers("usersList")} ({filtered.length})
                 </CardTitle>
-                <CardDescription>Lista de todos los usuarios del sistema</CardDescription>
+                <CardDescription>{tUsers("usersListDescription")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="rounded-md border">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Usuario</TableHead>
-                        <TableHead>Rol</TableHead>
-                        <TableHead>Tier</TableHead>
-                        <TableHead>Estado</TableHead>
-                        <TableHead>Organización</TableHead>
-                        <TableHead>Último Acceso</TableHead>
+                        <TableHead>{tUsers("user")}</TableHead>
+                        <TableHead>{tUsers("role")}</TableHead>
+                        <TableHead>{tUsers("tier")}</TableHead>
+                        <TableHead>{tUsers("state")}</TableHead>
+                        <TableHead>{tUsers("organization")}</TableHead>
+                        <TableHead>{tUsers("lastAccess")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -541,8 +547,8 @@ export default function RoleManager() {
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="activo">Activo</SelectItem>
-                                  <SelectItem value="inactivo">Inactivo</SelectItem>
+                                  <SelectItem value="activo">{tUsers("states.activo")}</SelectItem>
+                                  <SelectItem value="inactivo">{tUsers("states.inactivo")}</SelectItem>
                                 </SelectContent>
                               </Select>
                             </TableCell>
@@ -556,7 +562,7 @@ export default function RoleManager() {
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="none">Sin asignar</SelectItem>
+                                  <SelectItem value="none">{tUsers("unassigned")}</SelectItem>
                                   {orgs.map((org) => (
                                     <SelectItem key={org.id} value={org.id}>
                                       {org.nombre}
@@ -568,12 +574,7 @@ export default function RoleManager() {
                             <TableCell>
                               {user.ultimoAcceso ? (
                                 <span className="text-sm text-muted-foreground">
-                                  {new Date(user.ultimoAcceso).toLocaleDateString("es-CO", {
-                                    day: "2-digit",
-                                    month: "short",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })}
+                                  {formatDate(user.ultimoAcceso, "PPp")}
                                 </span>
                               ) : (
                                 <span className="text-sm text-muted-foreground">—</span>

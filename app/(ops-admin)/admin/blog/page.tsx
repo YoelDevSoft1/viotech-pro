@@ -28,10 +28,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 
 export default function AdminBlogPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const tBlog = useTranslationsSafe("blog");
+  const { formatDate } = useI18n();
   
   const { data: postsData, isLoading } = useBlogPostsAdmin({
     search: searchQuery || undefined,
@@ -57,15 +61,15 @@ export default function AdminBlogPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Gestión de Blog</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{tBlog("management")}</h1>
           <p className="text-muted-foreground">
-            Administra los artículos del blog
+            {tBlog("managementDescription")}
           </p>
         </div>
         <Button asChild>
           <Link href="/admin/blog/new">
             <Plus className="h-4 w-4 mr-2" />
-            Nuevo Artículo
+            {tBlog("newArticle")}
           </Link>
         </Button>
       </div>
@@ -73,7 +77,7 @@ export default function AdminBlogPage() {
       {/* Search */}
       <Card>
         <CardHeader>
-          <CardTitle>Buscar Artículos</CardTitle>
+          <CardTitle>{tBlog("searchArticles")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex gap-2">
@@ -81,7 +85,7 @@ export default function AdminBlogPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
-                placeholder="Buscar por título..."
+                placeholder={tBlog("searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -94,7 +98,7 @@ export default function AdminBlogPage() {
       {/* Posts Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Artículos ({posts.length})</CardTitle>
+          <CardTitle>{tBlog("articles")} ({posts.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -105,18 +109,18 @@ export default function AdminBlogPage() {
             </div>
           ) : posts.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <p>No hay artículos. Crea tu primer artículo.</p>
+              <p>{tBlog("noArticles")}</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Título</TableHead>
-                  <TableHead>Categoría</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead>Vistas</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
+                  <TableHead>{tBlog("title")}</TableHead>
+                  <TableHead>{tBlog("category")}</TableHead>
+                  <TableHead>{tBlog("status")}</TableHead>
+                  <TableHead>{tBlog("date")}</TableHead>
+                  <TableHead>{tBlog("views")}</TableHead>
+                  <TableHead className="text-right">{tBlog("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -128,12 +132,12 @@ export default function AdminBlogPage() {
                     </TableCell>
                     <TableCell>
                       <Badge variant={post.publishedAt ? "default" : "outline"}>
-                        {post.publishedAt ? "Publicado" : "Borrador"}
+                        {post.publishedAt ? tBlog("published") : tBlog("draft")}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       {post.publishedAt
-                        ? new Date(post.publishedAt).toLocaleDateString("es-CO")
+                        ? formatDate(new Date(post.publishedAt), "PP")
                         : "-"}
                     </TableCell>
                     <TableCell>{post.views || 0}</TableCell>
@@ -171,18 +175,18 @@ export default function AdminBlogPage() {
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar artículo?</AlertDialogTitle>
+            <AlertDialogTitle>{tBlog("deleteArticleConfirm")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. El artículo será eliminado permanentemente.
+              {tBlog("deleteArticleDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel>{tBlog("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Eliminar
+              {tBlog("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

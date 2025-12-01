@@ -19,6 +19,7 @@ import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale/es";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 function NotificationItem({ notification }: { notification: Notification }) {
   const markAsRead = useMarkNotificationAsRead();
@@ -103,6 +104,7 @@ export function NotificationCenter() {
   const { data: notifications = [], isLoading } = useNotifications();
   const { data: stats } = useNotificationStats();
   const markAllAsRead = useMarkAllNotificationsAsRead();
+  const tNotifications = useTranslationsSafe("notifications");
   
   // Conectar a notificaciones en tiempo real
   useRealtimeNotifications();
@@ -145,10 +147,10 @@ export function NotificationCenter() {
       <DropdownMenuContent align="end" className="w-80 p-0">
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-sm">Notificaciones</h3>
+            <h3 className="font-semibold text-sm">{tNotifications("title")}</h3>
             {hasUnread && (
               <Badge variant="secondary" className="text-xs">
-                {unreadCount} sin leer
+                {unreadCount} {tNotifications("unread")}
               </Badge>
             )}
           </div>
@@ -160,7 +162,7 @@ export function NotificationCenter() {
               onClick={handleMarkAllAsRead}
             >
               <CheckCheck className="h-3 w-3 mr-1" />
-              Marcar todas
+              {tNotifications("markAll")}
             </Button>
           )}
         </div>
@@ -179,7 +181,7 @@ export function NotificationCenter() {
           ) : notifications.length === 0 ? (
             <div className="p-8 text-center text-sm text-muted-foreground">
               <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p>No hay notificaciones</p>
+              <p>{tNotifications("noNotifications")}</p>
             </div>
           ) : (
             <div>
@@ -198,7 +200,7 @@ export function NotificationCenter() {
               className="w-full text-xs"
               asChild
             >
-              <Link href="/notifications">Ver todas las notificaciones</Link>
+              <Link href="/notifications">{tNotifications("viewAll")}</Link>
             </Button>
           </div>
         )}

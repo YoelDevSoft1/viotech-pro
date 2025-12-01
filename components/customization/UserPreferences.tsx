@@ -20,11 +20,13 @@ import {
 } from "@/lib/hooks/useCustomization";
 import { useTheme } from "next-themes";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 export function UserPreferences() {
   const { data: preferences, isLoading } = useUserPreferences();
   const updatePreferences = useUpdateUserPreferences();
   const { theme, setTheme } = useTheme();
+  const tCustomization = useTranslationsSafe("customization");
 
   const [localTheme, setLocalTheme] = useState<string>(theme || "system");
 
@@ -32,7 +34,7 @@ export function UserPreferences() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Preferencias</CardTitle>
+          <CardTitle>{tCustomization("preferences")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-64 w-full" />
@@ -77,10 +79,10 @@ export function UserPreferences() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Settings className="h-5 w-5" />
-          Preferencias de Usuario
+          {tCustomization("userPreferences")}
         </CardTitle>
         <CardDescription>
-          Personaliza tu experiencia en la plataforma
+          {tCustomization("description")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -88,21 +90,21 @@ export function UserPreferences() {
           <TabsList>
             <TabsTrigger value="appearance">
               <Palette className="h-4 w-4 mr-2" />
-              Apariencia
+              {tCustomization("appearance")}
             </TabsTrigger>
             <TabsTrigger value="notifications">
               <Bell className="h-4 w-4 mr-2" />
-              Notificaciones
+              {tCustomization("notifications")}
             </TabsTrigger>
             <TabsTrigger value="regional">
               <Monitor className="h-4 w-4 mr-2" />
-              Regional
+              {tCustomization("regional")}
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="appearance" className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="theme">Tema</Label>
+              <Label htmlFor="theme">{tCustomization("theme")}</Label>
               <Select value={localTheme} onValueChange={handleThemeChange}>
                 <SelectTrigger id="theme">
                   <SelectValue />
@@ -111,19 +113,19 @@ export function UserPreferences() {
                   <SelectItem value="light">
                     <div className="flex items-center gap-2">
                       <Sun className="h-4 w-4" />
-                      Claro
+                      {tCustomization("themeLight")}
                     </div>
                   </SelectItem>
                   <SelectItem value="dark">
                     <div className="flex items-center gap-2">
                       <Moon className="h-4 w-4" />
-                      Oscuro
+                      {tCustomization("themeDark")}
                     </div>
                   </SelectItem>
                   <SelectItem value="system">
                     <div className="flex items-center gap-2">
                       <Monitor className="h-4 w-4" />
-                      Sistema
+                      {tCustomization("themeSystem")}
                     </div>
                   </SelectItem>
                 </SelectContent>
@@ -135,9 +137,9 @@ export function UserPreferences() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="email-notifications">Notificaciones por Email</Label>
+                  <Label htmlFor="email-notifications">{tCustomization("emailNotifications")}</Label>
                   <p className="text-xs text-muted-foreground">
-                    Recibe notificaciones importantes por correo electrónico
+                    {tCustomization("emailNotificationsDescription")}
                   </p>
                 </div>
                 <Switch
@@ -151,9 +153,9 @@ export function UserPreferences() {
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="push-notifications">Notificaciones Push</Label>
+                  <Label htmlFor="push-notifications">{tCustomization("pushNotifications")}</Label>
                   <p className="text-xs text-muted-foreground">
-                    Recibe notificaciones en tiempo real en tu navegador
+                    {tCustomization("pushNotificationsDescription")}
                   </p>
                 </div>
                 <Switch
@@ -167,9 +169,9 @@ export function UserPreferences() {
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="in-app-notifications">Notificaciones en App</Label>
+                  <Label htmlFor="in-app-notifications">{tCustomization("inAppNotifications")}</Label>
                   <p className="text-xs text-muted-foreground">
-                    Muestra notificaciones dentro de la aplicación
+                    {tCustomization("inAppNotificationsDescription")}
                   </p>
                 </div>
                 <Switch
@@ -183,9 +185,9 @@ export function UserPreferences() {
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="digest-notifications">Resumen Diario</Label>
+                  <Label htmlFor="digest-notifications">{tCustomization("digestNotifications")}</Label>
                   <p className="text-xs text-muted-foreground">
-                    Recibe un resumen diario de actividades
+                    {tCustomization("digestNotificationsDescription")}
                   </p>
                 </div>
                 <Switch
@@ -201,7 +203,7 @@ export function UserPreferences() {
 
           <TabsContent value="regional" className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="timezone">Zona Horaria</Label>
+              <Label htmlFor="timezone">{tCustomization("timezone")}</Label>
               <Select
                 value={preferences.timezone}
                 onValueChange={handleTimezoneChange}
@@ -221,7 +223,7 @@ export function UserPreferences() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="date-format">Formato de Fecha</Label>
+              <Label htmlFor="date-format">{tCustomization("dateFormat")}</Label>
               <Select
                 value={preferences.dateFormat}
                 onValueChange={handleDateFormatChange}
@@ -239,7 +241,7 @@ export function UserPreferences() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="time-format">Formato de Hora</Label>
+              <Label htmlFor="time-format">{tCustomization("timeFormat")}</Label>
               <Select
                 value={preferences.timeFormat}
                 onValueChange={(value) => handleTimeFormatChange(value as "12h" | "24h")}
@@ -248,8 +250,8 @@ export function UserPreferences() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="24h">24 horas</SelectItem>
-                  <SelectItem value="12h">12 horas (AM/PM)</SelectItem>
+                  <SelectItem value="24h">{tCustomization("timeFormat24h")}</SelectItem>
+                  <SelectItem value="12h">{tCustomization("timeFormat12h")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>

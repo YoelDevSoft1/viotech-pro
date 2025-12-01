@@ -15,9 +15,10 @@ import {
 } from "@/components/ui/select";
 import { useResources, useResourceCalendar } from "@/lib/hooks/useResources";
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, eachDayOfInterval } from "date-fns";
-import { es } from "date-fns/locale/es";
 import type { ResourceCalendarEvent } from "@/lib/types/resources";
 import { cn } from "@/lib/utils";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 
 interface ResourceCalendarProps {
   organizationId?: string;
@@ -34,6 +35,8 @@ const eventColors: Record<string, string> = {
 export function ResourceCalendar({ organizationId }: ResourceCalendarProps) {
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [selectedResources, setSelectedResources] = useState<string[]>([]);
+  const tResources = useTranslationsSafe("resources");
+  const { formatDate } = useI18n();
 
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 }); // Lunes
   const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 1 });
@@ -97,7 +100,7 @@ export function ResourceCalendar({ organizationId }: ResourceCalendarProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Calendario de Recursos</CardTitle>
+          <CardTitle>{tResources("calendarTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-96 w-full" />
@@ -119,7 +122,7 @@ export function ResourceCalendar({ organizationId }: ResourceCalendarProps) {
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <Button variant="outline" size="sm" onClick={handleToday}>
-              Hoy
+              {tResources("today")}
             </Button>
             <Button variant="outline" size="sm" onClick={handleNextWeek}>
               <ChevronRight className="h-4 w-4" />
@@ -139,10 +142,10 @@ export function ResourceCalendar({ organizationId }: ResourceCalendarProps) {
             }}
           >
             <SelectTrigger className="w-64">
-              <SelectValue placeholder="Filtrar recursos" />
+              <SelectValue placeholder={tResources("filterResources")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos los recursos</SelectItem>
+              <SelectItem value="all">{tResources("allResources")}</SelectItem>
               {resources.map((resource) => (
                 <SelectItem
                   key={resource.id}
@@ -166,11 +169,11 @@ export function ResourceCalendar({ organizationId }: ResourceCalendarProps) {
         <div className="border rounded-lg overflow-hidden">
           {/* Header con días de la semana */}
           <div className="grid grid-cols-8 border-b bg-muted/50">
-            <div className="p-2 font-medium text-sm">Recurso</div>
+            <div className="p-2 font-medium text-sm">{tResources("resource")}</div>
             {weekDays.map((day) => (
               <div key={day.toISOString()} className="p-2 text-center border-l">
                 <div className="text-xs text-muted-foreground">
-                  {format(day, "EEE", { locale: es })}
+                  {formatDate(day, "EEE")}
                 </div>
                 <div className="text-sm font-medium">
                   {format(day, "d")}
@@ -186,7 +189,7 @@ export function ResourceCalendar({ organizationId }: ResourceCalendarProps) {
             </div>
           ) : displayResources.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
-              No hay recursos disponibles
+              {tResources("noResourcesAvailable")}
             </div>
           ) : (
             <div className="divide-y">

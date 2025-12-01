@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForgotPassword } from "@/lib/hooks/useAuth";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 const forgotSchema = z.object({
   email: z.string().email("Ingresa un correo válido"),
@@ -18,6 +19,7 @@ const forgotSchema = z.object({
 
 export default function ForgotPasswordPage() {
   const { mutate: recover, isPending, isSuccess } = useForgotPassword();
+  const tAuth = useTranslationsSafe("auth");
 
   const form = useForm<z.infer<typeof forgotSchema>>({
     resolver: zodResolver(forgotSchema),
@@ -32,9 +34,9 @@ export default function ForgotPasswordPage() {
     return (
       <Card className="border-border/60 shadow-xl">
         <CardHeader>
-          <CardTitle className="text-xl text-center">¡Correo enviado!</CardTitle>
+          <CardTitle className="text-xl text-center">{tAuth("emailSent")}</CardTitle>
           <CardDescription className="text-center">
-            Si existe una cuenta asociada a <strong>{form.getValues("email")}</strong>, recibirás un enlace para restablecer tu contraseña.
+            {tAuth("emailSentDescriptionStart")} <strong>{form.getValues("email")}</strong>, {tAuth("emailSentDescriptionEnd")}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center">
@@ -44,7 +46,7 @@ export default function ForgotPasswordPage() {
         </CardContent>
         <CardFooter className="flex justify-center">
           <Link href="/login">
-            <Button variant="outline">Volver al inicio de sesión</Button>
+            <Button variant="outline">{tAuth("backToSignIn")}</Button>
           </Link>
         </CardFooter>
       </Card>
@@ -54,9 +56,9 @@ export default function ForgotPasswordPage() {
   return (
     <Card className="border-border/60 shadow-xl">
       <CardHeader>
-        <CardTitle className="text-xl">Recuperar Contraseña</CardTitle>
+        <CardTitle className="text-xl">{tAuth("recoverPassword")}</CardTitle>
         <CardDescription>
-          Ingresa tu correo y te enviaremos las instrucciones.
+          {tAuth("recoverPasswordDescription")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -67,9 +69,9 @@ export default function ForgotPasswordPage() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Correo Electrónico</FormLabel>
+                  <FormLabel>{tAuth("email")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="tu@email.com" {...field} />
+                    <Input placeholder={tAuth("emailPlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -77,14 +79,14 @@ export default function ForgotPasswordPage() {
             />
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isPending ? "Enviando..." : "Enviar enlace"}
+              {isPending ? tAuth("sending") : tAuth("sendLink")}
             </Button>
           </form>
         </Form>
       </CardContent>
       <CardFooter className="justify-center">
         <Link href="/login" className="flex items-center text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Volver
+          <ArrowLeft className="mr-2 h-4 w-4" /> {tAuth("back")}
         </Link>
       </CardFooter>
     </Card>

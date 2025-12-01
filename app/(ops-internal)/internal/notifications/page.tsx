@@ -20,11 +20,13 @@ import { es } from "date-fns/locale/es";
 import type { Notification, NotificationType } from "@/lib/types/notifications";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 function NotificationItem({ notification }: { notification: Notification }) {
   const markAsRead = useMarkNotificationAsRead();
   const deleteNotification = useDeleteNotification();
   const [isHovered, setIsHovered] = useState(false);
+  const tNotifications = useTranslationsSafe("notifications");
 
   const handleClick = () => {
     if (!notification.read) {
@@ -57,7 +59,7 @@ function NotificationItem({ notification }: { notification: Notification }) {
             <div className="flex items-center gap-2">
               {!notification.read && (
                 <Badge variant="default" className="text-xs">
-                  Nuevo
+                  {tNotifications("new")}
                 </Badge>
               )}
               {isHovered && (
@@ -87,7 +89,7 @@ function NotificationItem({ notification }: { notification: Notification }) {
             )}
             {notification.metadata?.projectId && (
               <Badge variant="outline" className="text-xs">
-                Proyecto
+                {tNotifications("project")}
               </Badge>
             )}
           </div>
@@ -119,6 +121,7 @@ export default function NotificationsPage() {
   const { data: stats } = useNotificationStats();
   const markAllAsRead = useMarkAllNotificationsAsRead();
   const deleteAllRead = useDeleteAllReadNotifications();
+  const tNotifications = useTranslationsSafe("notifications");
 
   // Conectar a notificaciones en tiempo real
   useRealtimeNotifications();
@@ -137,11 +140,11 @@ export default function NotificationsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-semibold text-foreground">Notificaciones</h1>
+            <h1 className="text-3xl font-semibold text-foreground">{tNotifications("title")}</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {unreadCount > 0
-                ? `${unreadCount} notificación${unreadCount > 1 ? "es" : ""} sin leer`
-                : "Todas las notificaciones leídas"}
+                {unreadCount > 0
+                ? `${unreadCount} ${unreadCount === 1 ? tNotifications("unreadCountOne") : tNotifications("unreadCountMany")}`
+                : tNotifications("allRead")}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -153,7 +156,7 @@ export default function NotificationsPage() {
                 disabled={markAllAsRead.isPending}
               >
                 <CheckCheck className="h-4 w-4 mr-2" />
-                Marcar todas como leídas
+                {tNotifications("markAllAsRead")}
               </Button>
             )}
             <Button
@@ -163,7 +166,7 @@ export default function NotificationsPage() {
               disabled={deleteAllRead.isPending}
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              Eliminar leídas
+              {tNotifications("deleteRead")}
             </Button>
           </div>
         </div>
@@ -173,23 +176,23 @@ export default function NotificationsPage() {
           <CardHeader>
             <CardTitle className="text-sm flex items-center gap-2">
               <Filter className="h-4 w-4" />
-              Filtros
+              {tNotifications("filters")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <Select value={filter} onValueChange={(value) => setFilter(value as typeof filter)}>
               <SelectTrigger className="w-full sm:w-64">
-                <SelectValue placeholder="Filtrar notificaciones" />
+                <SelectValue placeholder={tNotifications("filterPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todas</SelectItem>
-                <SelectItem value="unread">Sin leer</SelectItem>
-                <SelectItem value="ticket_created">Tickets creados</SelectItem>
-                <SelectItem value="ticket_updated">Tickets actualizados</SelectItem>
-                <SelectItem value="ticket_assigned">Tickets asignados</SelectItem>
-                <SelectItem value="project_created">Proyectos creados</SelectItem>
-                <SelectItem value="project_updated">Proyectos actualizados</SelectItem>
-                <SelectItem value="system">Sistema</SelectItem>
+                <SelectItem value="all">{tNotifications("all")}</SelectItem>
+                <SelectItem value="unread">{tNotifications("unread")}</SelectItem>
+                <SelectItem value="ticket_created">{tNotifications("types.ticketCreated")}</SelectItem>
+                <SelectItem value="ticket_updated">{tNotifications("types.ticketUpdated")}</SelectItem>
+                <SelectItem value="ticket_assigned">{tNotifications("types.ticketAssigned")}</SelectItem>
+                <SelectItem value="project_created">{tNotifications("types.projectCreated")}</SelectItem>
+                <SelectItem value="project_updated">{tNotifications("types.projectUpdated")}</SelectItem>
+                <SelectItem value="system">{tNotifications("types.system")}</SelectItem>
               </SelectContent>
             </Select>
           </CardContent>
@@ -199,7 +202,9 @@ export default function NotificationsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-sm">
-              {filteredNotifications.length} notificación{filteredNotifications.length !== 1 ? "es" : ""}
+              {filteredNotifications.length} {filteredNotifications.length === 1 
+                ? tNotifications("notificationCountOne")
+                : tNotifications("notificationCountMany")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -218,8 +223,8 @@ export default function NotificationsPage() {
                 <Bell className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
                 <p className="text-sm text-muted-foreground">
                   {filter === "unread"
-                    ? "No hay notificaciones sin leer"
-                    : "No hay notificaciones"}
+                    ? tNotifications("noUnread")
+                    : tNotifications("noNotifications")}
                 </p>
               </div>
             ) : (

@@ -19,8 +19,11 @@ import { Separator } from "@/components/ui/separator";
 
 // Hooks de lógica
 import { useLogin, useRegister } from "@/lib/hooks/useAuth";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 // --- Esquemas de Validación (Zod) ---
+// Los mensajes de validación se mantienen en español por ahora
+// Se pueden migrar después si es necesario
 const loginSchema = z.object({
   email: z.string().email("Ingresa un correo válido"),
   password: z.string().min(1, "La contraseña es obligatoria"),
@@ -42,6 +45,7 @@ function LoginPageContent() {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("from") || undefined;
+  const tAuth = useTranslationsSafe("auth");
   
   // React Query Hooks
   const { mutate: login, isPending: isLoggingIn } = useLogin(redirectTo);
@@ -122,19 +126,19 @@ function LoginPageContent() {
           <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
             <div className="flex flex-col space-y-2 text-center">
               <h1 className="text-2xl font-semibold tracking-tight">
-                Crear una cuenta
+                {tAuth("createAccount")}
               </h1>
               <p className="text-sm text-muted-foreground">
-                Ingresa tu correo electrónico para crear tu cuenta
+                {tAuth("createAccountDescription")}
               </p>
             </div>
 
             {/* Formulario de Login */}
             <Card className="border-border/60 shadow-lg">
               <CardHeader className="space-y-1">
-                <CardTitle className="text-xl">Iniciar Sesión</CardTitle>
+                <CardTitle className="text-xl">{tAuth("signIn")}</CardTitle>
                 <CardDescription>
-                  Ingresa tus credenciales para continuar
+                  {tAuth("signInDescription")}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -145,12 +149,12 @@ function LoginPageContent() {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Correo Electrónico</FormLabel>
+                          <FormLabel>{tAuth("email")}</FormLabel>
                           <FormControl>
                             <div className="relative">
                               <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                               <Input 
-                                placeholder="nombre@empresa.com" 
+                                placeholder={tAuth("emailPlaceholder")} 
                                 className="pl-9" 
                                 {...field} 
                               />
@@ -167,12 +171,12 @@ function LoginPageContent() {
                       render={({ field }) => (
                         <FormItem>
                           <div className="flex items-center justify-between">
-                            <FormLabel>Contraseña</FormLabel>
+                            <FormLabel>{tAuth("password")}</FormLabel>
                             <Link 
                               href="/forgot-password" 
                               className="text-xs text-muted-foreground hover:text-primary underline-offset-4 hover:underline"
                             >
-                              ¿Olvidaste tu contraseña?
+                              {tAuth("forgotPassword")}
                             </Link>
                           </div>
                           <FormControl>
@@ -211,7 +215,7 @@ function LoginPageContent() {
                           </FormControl>
                           <div className="space-y-1 leading-none">
                             <FormLabel className="text-sm font-normal text-muted-foreground cursor-pointer">
-                              Recordar mi sesión
+                              {tAuth("rememberMe")}
                             </FormLabel>
                           </div>
                         </FormItem>
@@ -220,7 +224,7 @@ function LoginPageContent() {
 
                     <Button type="submit" className="w-full" disabled={isLoggingIn}>
                       {isLoggingIn && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      {isLoggingIn ? "Validando..." : "Iniciar Sesión"}
+                      {isLoggingIn ? tAuth("validating") : tAuth("signIn")}
                     </Button>
                   </form>
                 </Form>
@@ -231,7 +235,7 @@ function LoginPageContent() {
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
                     <span className="bg-card px-2 text-muted-foreground">
-                      O continúa con
+                      {tAuth("orContinueWith")}
                     </span>
                   </div>
                 </div>
@@ -244,26 +248,26 @@ function LoginPageContent() {
                     className="w-full"
                   >
                     <User className="mr-2 h-4 w-4" />
-                    Crear cuenta nueva
+                    {tAuth("createNewAccount")}
                   </Button>
                 </div>
               </CardContent>
             </Card>
 
             <p className="px-8 text-center text-sm text-muted-foreground">
-              Al continuar, aceptas nuestros{" "}
+              {tAuth("termsAndPrivacyStart")}{" "}
               <Link
                 href="/terms"
                 className="underline underline-offset-4 hover:text-primary"
               >
-                Términos de Servicio
+                {tAuth("termsOfService")}
               </Link>{" "}
-              y{" "}
+              {tAuth("termsAndPrivacyAnd")}{" "}
               <Link
                 href="/privacy"
                 className="underline underline-offset-4 hover:text-primary"
               >
-                Política de Privacidad
+                {tAuth("privacyPolicy")}
               </Link>
               .
             </p>
@@ -425,9 +429,9 @@ function LoginPageContent() {
       <Dialog open={isRegisterOpen} onOpenChange={setIsRegisterOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Crear Cuenta</DialogTitle>
+            <DialogTitle>{tAuth("createAccount")}</DialogTitle>
             <DialogDescription>
-              Únete a VioTech para gestionar tus servicios.
+              {tAuth("createAccountDialogDescription")}
             </DialogDescription>
           </DialogHeader>
           
@@ -438,11 +442,11 @@ function LoginPageContent() {
                 name="nombre"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nombre completo</FormLabel>
+                    <FormLabel>{tAuth("fullName")}</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="Juan Pérez" className="pl-9" {...field} />
+                        <Input placeholder={tAuth("fullNamePlaceholder")} className="pl-9" {...field} />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -454,11 +458,11 @@ function LoginPageContent() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{tAuth("email")}</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="juan@empresa.com" className="pl-9" {...field} />
+                        <Input placeholder={tAuth("emailPlaceholder")} className="pl-9" {...field} />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -471,9 +475,9 @@ function LoginPageContent() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Contraseña</FormLabel>
+                      <FormLabel>{tAuth("password")}</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="Min 8 chars" {...field} />
+                        <Input type="password" placeholder={tAuth("passwordPlaceholder")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -484,9 +488,9 @@ function LoginPageContent() {
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Repetir</FormLabel>
+                      <FormLabel>{tAuth("confirmPassword")}</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="Confirmar" {...field} />
+                        <Input type="password" placeholder={tAuth("confirmPasswordPlaceholder")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -496,11 +500,11 @@ function LoginPageContent() {
               
               <div className="pt-4 flex justify-end gap-2">
                 <Button type="button" variant="ghost" onClick={() => setIsRegisterOpen(false)}>
-                  Cancelar
+                  {tAuth("cancel")}
                 </Button>
                 <Button type="submit" disabled={isRegistering}>
                   {isRegistering && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {isRegistering ? "Creando..." : "Registrarse"}
+                  {isRegistering ? tAuth("creating") : tAuth("register")}
                 </Button>
               </div>
             </form>

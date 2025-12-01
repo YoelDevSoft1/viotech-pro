@@ -31,6 +31,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 const postSchema = z.object({
   title: z.string().min(3, "Mínimo 3 caracteres").max(500, "Máximo 500 caracteres"),
@@ -55,6 +56,7 @@ export default function NewBlogPostPage() {
   const createPost = useCreatePost();
   const { data: categories, isLoading: categoriesLoading, error: categoriesError } = useBlogCategoriesAdmin();
   const { data: tags, isLoading: tagsLoading, error: tagsError } = useBlogTagsAdmin();
+  const tBlog = useTranslationsSafe("blog");
 
   // Debug: Ver qué datos tenemos
   console.log("🔍 Categories:", categories);
@@ -114,8 +116,8 @@ export default function NewBlogPostPage() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Nuevo Artículo</h1>
-          <p className="text-muted-foreground">Crea un nuevo artículo para el blog</p>
+          <h1 className="text-3xl font-bold tracking-tight">{tBlog("newArticle")}</h1>
+          <p className="text-muted-foreground">{tBlog("newArticleDescription")}</p>
         </div>
       </div>
 
@@ -126,7 +128,7 @@ export default function NewBlogPostPage() {
             <div className="lg:col-span-2 space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Contenido</CardTitle>
+                  <CardTitle>{tBlog("form.content")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <FormField
@@ -134,12 +136,12 @@ export default function NewBlogPostPage() {
                     name="title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Título *</FormLabel>
+                        <FormLabel>{tBlog("form.title")} *</FormLabel>
                         <FormControl>
-                          <Input placeholder="Título del artículo" {...field} />
+                          <Input placeholder={tBlog("form.titlePlaceholder")} {...field} />
                         </FormControl>
                         <FormDescription>
-                          {field.value?.length || 0}/500 caracteres
+                          {field.value?.length || 0}/500 {tBlog("form.characters")}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -151,16 +153,16 @@ export default function NewBlogPostPage() {
                     name="excerpt"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Resumen *</FormLabel>
+                        <FormLabel>{tBlog("form.excerpt")} *</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Resumen corto del artículo (150-200 caracteres)"
+                            placeholder={tBlog("form.excerptPlaceholder")}
                             rows={3}
                             {...field}
                           />
                         </FormControl>
                         <FormDescription>
-                          {field.value?.length || 0}/300 caracteres
+                          {field.value?.length || 0}/300 {tBlog("form.characters")}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -172,17 +174,17 @@ export default function NewBlogPostPage() {
                     name="content"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Contenido *</FormLabel>
+                        <FormLabel>{tBlog("form.content")} *</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Contenido completo del artículo en HTML"
+                            placeholder={tBlog("form.contentPlaceholder")}
                             rows={20}
                             className="font-mono text-sm"
                             {...field}
                           />
                         </FormControl>
                         <FormDescription>
-                          {field.value?.length || 0} caracteres (mínimo 500)
+                          {field.value?.length || 0} {tBlog("form.characters")} ({tBlog("form.minimum")} 500)
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -197,7 +199,7 @@ export default function NewBlogPostPage() {
               {/* Publish */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Publicación</CardTitle>
+                  <CardTitle>{tBlog("form.publication")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <FormField
@@ -212,9 +214,9 @@ export default function NewBlogPostPage() {
                           />
                         </FormControl>
                         <div className="space-y-1 leading-none">
-                          <FormLabel>Publicar inmediatamente</FormLabel>
+                          <FormLabel>{tBlog("form.publishImmediately")}</FormLabel>
                           <FormDescription>
-                            El artículo será visible públicamente
+                            {tBlog("form.publishImmediatelyDescription")}
                           </FormDescription>
                         </div>
                       </FormItem>
@@ -226,7 +228,7 @@ export default function NewBlogPostPage() {
               {/* Category */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Categoría</CardTitle>
+                  <CardTitle>{tBlog("form.category")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <FormField
@@ -234,17 +236,17 @@ export default function NewBlogPostPage() {
                     name="categoryId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Categoría *</FormLabel>
+                        <FormLabel>{tBlog("form.category")} *</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Selecciona una categoría" />
+                              <SelectValue placeholder={tBlog("form.selectCategory")} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent className="z-[100]">
                             {categoriesLoading ? (
                               <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                                Cargando categorías...
+                                {tBlog("form.loadingCategories")}
                               </div>
                             ) : categories && categories.length > 0 ? (
                               categories.map((category) => (
@@ -254,7 +256,7 @@ export default function NewBlogPostPage() {
                               ))
                             ) : (
                               <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                                No hay categorías disponibles. Crea una categoría primero.
+                                {tBlog("form.noCategoriesAvailable")}
                               </div>
                             )}
                           </SelectContent>
@@ -262,14 +264,14 @@ export default function NewBlogPostPage() {
                         <FormDescription>
                           {categoriesError ? (
                             <span className="text-destructive">
-                              Error: {categoriesError instanceof Error ? categoriesError.message : "Error al cargar categorías"}
+                              {tBlog("form.error")}: {categoriesError instanceof Error ? categoriesError.message : tBlog("form.errorLoadingCategories")}
                             </span>
                           ) : categoriesLoading ? (
-                            "Cargando..."
+                            tBlog("form.loading")
                           ) : categories && categories.length > 0 ? (
-                            `${categories.length} categoría${categories.length !== 1 ? "s" : ""} disponible${categories.length !== 1 ? "s" : ""}`
+                            `${categories.length} ${tBlog("form.categoriesAvailable")}`
                           ) : (
-                            "No hay categorías disponibles"
+                            tBlog("form.noCategoriesAvailable")
                           )}
                         </FormDescription>
                         <FormMessage />
@@ -282,7 +284,7 @@ export default function NewBlogPostPage() {
               {/* Tags */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Tags</CardTitle>
+                  <CardTitle>{tBlog("form.tags")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <FormField
@@ -291,9 +293,9 @@ export default function NewBlogPostPage() {
                     render={() => (
                       <FormItem>
                         <div className="mb-4">
-                          <FormLabel className="text-base">Tags</FormLabel>
+                          <FormLabel className="text-base">{tBlog("form.tags")}</FormLabel>
                           <FormDescription>
-                            Selecciona los tags relacionados
+                            {tBlog("form.selectRelatedTags")}
                           </FormDescription>
                         </div>
                         {tags?.map((tag) => (
@@ -335,7 +337,7 @@ export default function NewBlogPostPage() {
               {/* Featured Image */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Imagen Destacada</CardTitle>
+                  <CardTitle>{tBlog("form.featuredImage")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <FormField
@@ -343,7 +345,7 @@ export default function NewBlogPostPage() {
                     name="featuredImage"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>URL de Imagen</FormLabel>
+                        <FormLabel>{tBlog("form.imageUrl")}</FormLabel>
                         <FormControl>
                           <Input placeholder="https://..." {...field} />
                         </FormControl>
@@ -359,15 +361,15 @@ export default function NewBlogPostPage() {
           {/* Actions */}
           <div className="flex justify-end gap-4">
             <Button type="button" variant="outline" asChild>
-              <Link href="/admin/blog">Cancelar</Link>
+              <Link href="/admin/blog">{tBlog("cancel")}</Link>
             </Button>
             <Button type="submit" disabled={createPost.isPending}>
               {createPost.isPending ? (
-                <>Guardando...</>
+                <>{tBlog("form.saving")}</>
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  Guardar Artículo
+                  {tBlog("form.saveArticle")}
                 </>
               )}
             </Button>

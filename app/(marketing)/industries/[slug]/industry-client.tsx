@@ -5,6 +5,7 @@ import { ArrowRight, Check, TrendingUp, ShoppingCart, Heart, AlertCircle } from 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 const iconMap = {
   TrendingUp,
@@ -29,6 +30,7 @@ interface IndustryPageClientProps {
 
 export function IndustryPageClient({ industry, slug }: IndustryPageClientProps) {
   const Icon = iconMap[industry.icon] || TrendingUp;
+  const t = useTranslationsSafe("marketing.industries");
 
   return (
     <div className="min-h-screen">
@@ -40,7 +42,7 @@ export function IndustryPageClient({ industry, slug }: IndustryPageClientProps) 
               href="/"
               className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-4"
             >
-              <ArrowRight className="w-4 h-4 mr-2 rotate-180" /> Volver al inicio
+              <ArrowRight className="w-4 h-4 mr-2 rotate-180" /> {t("backToHome")}
             </Link>
             
             <div className="flex items-center justify-center mb-6">
@@ -60,13 +62,13 @@ export function IndustryPageClient({ industry, slug }: IndustryPageClientProps) 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild>
                 <Link href="/contact">
-                  Agendar Consultoría Gratuita
+                  {t("scheduleConsultation")}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
                 <Link href="/case-studies">
-                  Ver Casos de Éxito
+                  {t("viewCaseStudies")}
                 </Link>
               </Button>
             </div>
@@ -80,10 +82,10 @@ export function IndustryPageClient({ industry, slug }: IndustryPageClientProps) 
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold tracking-tight mb-4">
-                Desafíos comunes en {slug === "fintech" ? "Fintech" : slug === "retail" ? "Retail" : "Salud"}
+                {t("commonChallenges")} {slug === "fintech" ? "Fintech" : slug === "retail" ? "Retail" : "Salud"}
               </h2>
               <p className="text-muted-foreground">
-                Problemas que resolvemos todos los días
+                {t("commonChallengesDescription")}
               </p>
             </div>
             
@@ -111,10 +113,10 @@ export function IndustryPageClient({ industry, slug }: IndustryPageClientProps) 
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold tracking-tight mb-4">
-                Nuestras soluciones
+                {t("ourSolutions")}
               </h2>
               <p className="text-muted-foreground">
-                Tecnología que resuelve problemas reales
+                {t("ourSolutionsDescription")}
               </p>
             </div>
             
@@ -143,7 +145,7 @@ export function IndustryPageClient({ industry, slug }: IndustryPageClientProps) 
             <Card className="bg-primary text-primary-foreground border-none">
               <CardHeader>
                 <Badge variant="secondary" className="w-fit mb-4">
-                  Caso de Éxito
+                  {t("caseStudy")}
                 </Badge>
                 <CardTitle className="text-3xl mb-2">
                   {industry.caseStudy.client}
@@ -155,7 +157,7 @@ export function IndustryPageClient({ industry, slug }: IndustryPageClientProps) 
               <CardContent>
                 <Button variant="secondary" asChild>
                   <Link href="/case-studies">
-                    Ver caso completo
+                    {t("viewFullCase")}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
@@ -171,16 +173,16 @@ export function IndustryPageClient({ industry, slug }: IndustryPageClientProps) 
           <Card className="max-w-4xl mx-auto">
             <CardHeader className="text-center">
               <CardTitle className="text-3xl mb-4">
-                ¿Listo para transformar tu {slug === "fintech" ? "fintech" : slug === "retail" ? "retail" : "clínica"}?
+                {t("cta.title")} {slug === "fintech" ? "fintech" : slug === "retail" ? "retail" : "clínica"}?
               </CardTitle>
               <CardDescription className="text-lg">
-                Agenda una consultoría gratuita y descubre cómo podemos ayudarte
+                {t("cta.description")}
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
               <Button size="lg" asChild>
                 <Link href="/contact">
-                  Agendar Consultoría Gratuita
+                  {t("cta.button")}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>

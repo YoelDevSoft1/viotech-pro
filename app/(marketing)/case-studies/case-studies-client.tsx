@@ -5,6 +5,7 @@ import { ArrowRight, TrendingUp, Users, Zap, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 const caseStudies = [
   {
@@ -54,6 +55,8 @@ const caseStudies = [
 ];
 
 export function CaseStudiesPageClient() {
+  const t = useTranslationsSafe("marketing.caseStudies");
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -64,15 +67,15 @@ export function CaseStudiesPageClient() {
               href="/"
               className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-4"
             >
-              <ArrowRight className="w-4 h-4 mr-2 rotate-180" /> Volver al inicio
+              <ArrowRight className="w-4 h-4 mr-2 rotate-180" /> {t("backToHome")}
             </Link>
             
             <h1 className="text-4xl font-extrabold tracking-tight sm:text-6xl md:text-7xl">
-              Casos de Éxito
+              {t("title")}
             </h1>
             
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Transformaciones digitales medibles que impulsan el crecimiento empresarial
+              {t("description")}
             </p>
           </div>
         </div>
@@ -96,17 +99,17 @@ export function CaseStudiesPageClient() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div>
-                    <h3 className="font-semibold mb-2 text-foreground">Desafío</h3>
+                    <h3 className="font-semibold mb-2 text-foreground">{t("challenge")}</h3>
                     <p className="text-muted-foreground">{study.challenge}</p>
                   </div>
                   
                   <div>
-                    <h3 className="font-semibold mb-2 text-foreground">Solución</h3>
+                    <h3 className="font-semibold mb-2 text-foreground">{t("solution")}</h3>
                     <p className="text-muted-foreground">{study.solution}</p>
                   </div>
                   
                   <div>
-                    <h3 className="font-semibold mb-4 text-foreground">Resultados</h3>
+                    <h3 className="font-semibold mb-4 text-foreground">{t("results")}</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {study.results.map((result, i) => {
                         const Icon = result.icon;
@@ -140,16 +143,16 @@ export function CaseStudiesPageClient() {
           <Card className="bg-primary text-primary-foreground border-none max-w-4xl mx-auto">
             <CardHeader className="text-center">
               <CardTitle className="text-3xl mb-4">
-                ¿Listo para ser nuestro próximo caso de éxito?
+                {t("cta.title")}
               </CardTitle>
               <CardDescription className="text-primary-foreground/90 text-lg">
-                Agenda una consultoría gratuita y descubre cómo podemos transformar tu negocio
+                {t("cta.description")}
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
               <Button size="lg" variant="secondary" asChild>
                 <Link href="/contact">
-                  Agendar Consultoría Gratuita
+                  {t("cta.button")}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>

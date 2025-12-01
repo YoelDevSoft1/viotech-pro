@@ -21,12 +21,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/apiClient";
 import type { KanbanFilters } from "@/lib/types/kanban";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 export default function ProjectKanbanPage() {
   const params = useParams();
   const projectId = params.id as string;
   const [filters, setFilters] = useState<KanbanFilters>({});
   const [showFilters, setShowFilters] = useState(false);
+  const tKanban = useTranslationsSafe("kanban");
+  const tCommon = useTranslationsSafe("common");
 
   // Obtener proyecto
   const { data: project, isLoading: projectLoading } = useQuery({
@@ -72,7 +75,7 @@ export default function ProjectKanbanPage() {
               className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="w-4 h-4" />
-              Volver al proyecto
+              {tKanban("goBackToProject")}
             </Link>
           </div>
         </div>
@@ -88,7 +91,7 @@ export default function ProjectKanbanPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                    Kanban Board
+                    {tKanban("title")}
                   </p>
                   <h1 className="text-3xl font-semibold text-foreground">
                     {project.nombre}
@@ -100,7 +103,7 @@ export default function ProjectKanbanPage() {
                   onClick={() => setShowFilters(!showFilters)}
                 >
                   <Filter className="w-4 h-4 mr-2" />
-                  Filtros
+                  {tKanban("filters")}
                   {hasActiveFilters && (
                     <Badge variant="secondary" className="ml-2">
                       {Object.keys(filters).filter((k) => filters[k as keyof KanbanFilters]).length}
@@ -114,16 +117,16 @@ export default function ProjectKanbanPage() {
             {showFilters && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-sm">Filtros</CardTitle>
+                  <CardTitle className="text-sm">{tKanban("filters")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="space-y-2">
-                      <label className="text-xs text-muted-foreground">Búsqueda</label>
+                      <label className="text-xs text-muted-foreground">{tKanban("search")}</label>
                       <div className="relative">
                         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
-                          placeholder="Buscar tareas..."
+                          placeholder={tKanban("searchPlaceholder")}
                           value={filters.search || ""}
                           onChange={(e) =>
                             setFilters({ ...filters, search: e.target.value || undefined })
@@ -134,7 +137,7 @@ export default function ProjectKanbanPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-xs text-muted-foreground">Asignado a</label>
+                      <label className="text-xs text-muted-foreground">{tKanban("assignedTo")}</label>
                       <Select
                         value={filters.asignadoA || undefined}
                         onValueChange={(value) =>
@@ -142,10 +145,10 @@ export default function ProjectKanbanPage() {
                         }
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Todos" />
+                          <SelectValue placeholder={tKanban("all")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">Todos</SelectItem>
+                          <SelectItem value="all">{tKanban("all")}</SelectItem>
                           {users.map((user: any) => (
                             <SelectItem key={user.id} value={user.id}>
                               {user.nombre || user.name || user.email}
@@ -156,7 +159,7 @@ export default function ProjectKanbanPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-xs text-muted-foreground">Prioridad</label>
+                      <label className="text-xs text-muted-foreground">{tKanban("priority")}</label>
                       <Select
                         value={filters.prioridad || undefined}
                         onValueChange={(value) =>
@@ -164,20 +167,20 @@ export default function ProjectKanbanPage() {
                         }
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Todas" />
+                          <SelectValue placeholder={tKanban("all")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">Todas</SelectItem>
-                          <SelectItem value="P1">P1 - Crítica</SelectItem>
-                          <SelectItem value="P2">P2 - Alta</SelectItem>
-                          <SelectItem value="P3">P3 - Media</SelectItem>
-                          <SelectItem value="P4">P4 - Baja</SelectItem>
+                          <SelectItem value="all">{tKanban("all")}</SelectItem>
+                          <SelectItem value="P1">P1 - {tKanban("priority.critical")}</SelectItem>
+                          <SelectItem value="P2">P2 - {tKanban("priority.high")}</SelectItem>
+                          <SelectItem value="P3">P3 - {tKanban("priority.medium")}</SelectItem>
+                          <SelectItem value="P4">P4 - {tKanban("priority.low")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-xs text-muted-foreground">Categoría</label>
+                      <label className="text-xs text-muted-foreground">{tKanban("category")}</label>
                       <Select
                         value={filters.categoria || undefined}
                         onValueChange={(value) =>
@@ -185,13 +188,13 @@ export default function ProjectKanbanPage() {
                         }
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Todas" />
+                          <SelectValue placeholder={tKanban("all")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">Todas</SelectItem>
-                          <SelectItem value="Técnico">Técnico</SelectItem>
-                          <SelectItem value="Funcional">Funcional</SelectItem>
-                          <SelectItem value="Consultoría">Consultoría</SelectItem>
+                          <SelectItem value="all">{tKanban("all")}</SelectItem>
+                          <SelectItem value="Técnico">{tKanban("category.technical")}</SelectItem>
+                          <SelectItem value="Funcional">{tKanban("category.functional")}</SelectItem>
+                          <SelectItem value="Consultoría">{tKanban("category.consulting")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -201,7 +204,7 @@ export default function ProjectKanbanPage() {
                     <div className="mt-4 flex items-center gap-2">
                       <Button variant="ghost" size="sm" onClick={clearFilters}>
                         <X className="w-4 h-4 mr-2" />
-                        Limpiar filtros
+                        {tKanban("clearFilters")}
                       </Button>
                     </div>
                   )}
@@ -217,7 +220,7 @@ export default function ProjectKanbanPage() {
         ) : (
           <Card>
             <CardContent className="py-8 text-center text-muted-foreground">
-              Proyecto no encontrado
+              {tKanban("projectNotFound")}
             </CardContent>
           </Card>
         )}

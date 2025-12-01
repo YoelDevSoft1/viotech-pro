@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fetchProjectById, type Project } from "@/lib/projects";
 import { ProjectTimeline } from "@/components/projects/ProjectTimeline";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 export default function InternalProjectDetail() {
   const router = useRouter();
@@ -23,10 +24,12 @@ export default function InternalProjectDetail() {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const tProjects = useTranslationsSafe("projects");
+  const tCommon = useTranslationsSafe("common");
 
   const loadProject = useCallback(async () => {
     if (!projectId) {
-      setError("ID de proyecto inválido");
+      setError(tProjects("error.invalidId"));
       return;
     }
     
@@ -37,13 +40,13 @@ export default function InternalProjectDetail() {
       const data = await fetchProjectById(projectId);
       console.log("✅ Proyecto cargado:", data);
       if (!data) {
-        setError("No se encontró el proyecto");
+        setError(tProjects("notFound"));
         return;
       }
       setProject(data);
     } catch (err) {
       console.error("❌ Error al cargar proyecto:", err);
-      const msg = err instanceof Error ? err.message : "Error al cargar proyecto";
+      const msg = err instanceof Error ? err.message : tProjects("error.loadingFailed");
       setError(msg);
     } finally {
       setLoading(false);
@@ -63,20 +66,20 @@ export default function InternalProjectDetail() {
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="w-4 h-4" />
-            Volver a proyectos
+            {tProjects("goBackToProjects")}
           </Link>
           {project && projectId && (
             <div className="flex items-center gap-2">
               <Button asChild variant="outline" size="sm">
                 <Link href={`/internal/projects/${projectId}/kanban`}>
                   <LayoutGrid className="w-4 h-4 mr-2" />
-                  Kanban
+                  {tProjects("kanban")}
                 </Link>
               </Button>
               <Button asChild variant="outline" size="sm">
                 <Link href={`/internal/projects/${projectId}/gantt`}>
                   <Calendar className="w-4 h-4 mr-2" />
-                  Gantt
+                  {tProjects("gantt")}
                 </Link>
               </Button>
             </div>
@@ -92,7 +95,7 @@ export default function InternalProjectDetail() {
 
         {loading ? (
           <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
-            Cargando proyecto...
+            {tProjects("loading")}
           </div>
         ) : project ? (
           <>
@@ -109,7 +112,7 @@ export default function InternalProjectDetail() {
                 {project.organizationId && <span>Org: {project.organizationId}</span>}
                 {project.createdAt && (
                   <span>
-                    Creado:{" "}
+                    {tProjects("created")}:{" "}
                     {new Date(project.createdAt).toLocaleDateString("es-CO", {
                       day: "2-digit",
                       month: "short",
@@ -118,7 +121,7 @@ export default function InternalProjectDetail() {
                 )}
               </div>
               <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                {project.descripcion || "Sin descripción."}
+                {project.descripcion || tProjects("noDescription")}
               </p>
             </div>
 
@@ -126,10 +129,10 @@ export default function InternalProjectDetail() {
               <TabsList>
                 <TabsTrigger value="timeline" className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
-                  Timeline
+                  {tProjects("timeline")}
                 </TabsTrigger>
                 <TabsTrigger value="details" className="flex items-center gap-2">
-                  Detalles
+                  {tProjects("details")}
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="timeline" className="mt-4">
@@ -137,14 +140,14 @@ export default function InternalProjectDetail() {
                   <ProjectTimeline projectId={projectId} />
                 ) : (
                   <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
-                    ID de proyecto inválido
+                    {tProjects("error.invalidId")}
                   </div>
                 )}
               </TabsContent>
               <TabsContent value="details" className="mt-4">
                 <div className="rounded-2xl border border-border/70 bg-background/80 p-6">
                   <p className="text-sm text-muted-foreground">
-                    Información detallada del proyecto próximamente...
+                    {tProjects("detailsComingSoon")}
                   </p>
                 </div>
               </TabsContent>
@@ -152,7 +155,7 @@ export default function InternalProjectDetail() {
           </>
         ) : (
           <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
-            No se encontró el proyecto.
+            {tProjects("notFound")}
           </div>
         )}
       </div>

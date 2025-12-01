@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useResetPassword } from "@/lib/hooks/useAuth";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 const resetSchema = z.object({
   password: z.string().min(8, "Mínimo 8 caracteres"),
@@ -25,6 +26,7 @@ const resetSchema = z.object({
 function ResetPasswordPageContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
+  const tAuth = useTranslationsSafe("auth");
   
   const { mutate: reset, isPending } = useResetPassword();
 
@@ -42,8 +44,8 @@ function ResetPasswordPageContent() {
   if (!token) {
     return (
       <Alert variant="destructive">
-        <AlertTitle>Token inválido</AlertTitle>
-        <AlertDescription>El enlace de recuperación es inválido o falta el token.</AlertDescription>
+        <AlertTitle>{tAuth("invalidToken")}</AlertTitle>
+        <AlertDescription>{tAuth("invalidTokenDescription")}</AlertDescription>
       </Alert>
     );
   }
@@ -51,8 +53,8 @@ function ResetPasswordPageContent() {
   return (
     <Card className="border-border/60 shadow-xl">
       <CardHeader>
-        <CardTitle className="text-xl">Nueva Contraseña</CardTitle>
-        <CardDescription>Crea una contraseña segura para tu cuenta.</CardDescription>
+        <CardTitle className="text-xl">{tAuth("newPassword")}</CardTitle>
+        <CardDescription>{tAuth("newPasswordDescription")}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -62,7 +64,7 @@ function ResetPasswordPageContent() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nueva Contraseña</FormLabel>
+                  <FormLabel>{tAuth("newPassword")}</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -78,7 +80,7 @@ function ResetPasswordPageContent() {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirmar Contraseña</FormLabel>
+                  <FormLabel>{tAuth("confirmPassword")}</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -91,7 +93,7 @@ function ResetPasswordPageContent() {
             />
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isPending ? "Actualizando..." : "Restablecer"}
+              {isPending ? tAuth("updating") : tAuth("reset")}
             </Button>
           </form>
         </Form>

@@ -6,9 +6,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ResourceCalendar } from "@/components/resources/ResourceCalendar";
 import { ResourceWorkload } from "@/components/resources/ResourceWorkload";
 import { useOrg } from "@/lib/hooks/useOrg";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 export default function ResourcesPage() {
   const { orgId } = useOrg();
+  const tResources = useTranslationsSafe("resources");
 
   return (
     <main className="min-h-screen bg-background px-6 py-10 md:py-12">
@@ -16,13 +18,13 @@ export default function ResourcesPage() {
         {/* Header */}
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-            Gestión de Recursos
+            {tResources("management")}
           </p>
           <h1 className="text-3xl font-semibold text-foreground">
-            Recursos y Disponibilidad
+            {tResources("title")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Gestiona recursos, disponibilidad, carga de trabajo y asignaciones
+            {tResources("description")}
           </p>
         </div>
 
@@ -31,11 +33,11 @@ export default function ResourcesPage() {
           <TabsList>
             <TabsTrigger value="calendar">
               <Calendar className="h-4 w-4 mr-2" />
-              Calendario
+              {tResources("calendar")}
             </TabsTrigger>
             <TabsTrigger value="workload">
               <TrendingUp className="h-4 w-4 mr-2" />
-              Carga de Trabajo
+              {tResources("workload")}
             </TabsTrigger>
           </TabsList>
 

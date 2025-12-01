@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import { NewsletterSubscription } from "@/components/blog/NewsletterSubscription";
 import { BlogComments } from "@/components/blog/BlogComments";
 import type { BlogPost } from "@/lib/types/blog";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 
 interface BlogPostPageClientProps {
   post: BlogPost;
@@ -21,6 +23,8 @@ interface BlogPostPageClientProps {
 export function BlogPostPageClient({ post, slug }: BlogPostPageClientProps) {
   const [copied, setCopied] = useState(false);
   const { data: relatedPosts } = useRelatedPosts(slug, 3);
+  const t = useTranslationsSafe("marketing.blog.post");
+  const { formatDate } = useI18n();
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
   const shareText = post.title;
@@ -51,10 +55,10 @@ export function BlogPostPageClient({ post, slug }: BlogPostPageClientProps) {
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
-      toast.success("Enlace copiado al portapapeles");
+      toast.success(t("linkCopied"));
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      toast.error("Error al copiar enlace");
+      toast.error(t("linkCopyError"));
     }
   };
 
@@ -68,7 +72,7 @@ export function BlogPostPageClient({ post, slug }: BlogPostPageClientProps) {
               href="/blog"
               className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-6"
             >
-              <ArrowRight className="w-4 h-4 mr-2 rotate-180" /> Volver al blog
+              <ArrowRight className="w-4 h-4 mr-2 rotate-180" /> {t("backToBlog")}
             </Link>
 
             {/* Category & Date */}
@@ -76,16 +80,12 @@ export function BlogPostPageClient({ post, slug }: BlogPostPageClientProps) {
               <Badge variant="secondary">{post.category.name}</Badge>
               <span className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />
-                {new Date(post.publishedAt).toLocaleDateString("es-CO", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
+                {formatDate(new Date(post.publishedAt), "PP")}
               </span>
               {post.readingTime && (
                 <span className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
-                  {post.readingTime} min de lectura
+                  {post.readingTime} {t("readingTime")}
                 </span>
               )}
             </div>
@@ -114,7 +114,7 @@ export function BlogPostPageClient({ post, slug }: BlogPostPageClientProps) {
 
             {/* Share Buttons */}
             <div className="flex items-center gap-2 mb-8">
-              <span className="text-sm text-muted-foreground">Compartir:</span>
+              <span className="text-sm text-muted-foreground">{t("share")}</span>
               <Button
                 variant="outline"
                 size="sm"
@@ -122,7 +122,7 @@ export function BlogPostPageClient({ post, slug }: BlogPostPageClientProps) {
                 className="gap-2"
               >
                 <Facebook className="w-4 h-4" />
-                Facebook
+                {t("facebook")}
               </Button>
               <Button
                 variant="outline"
@@ -131,7 +131,7 @@ export function BlogPostPageClient({ post, slug }: BlogPostPageClientProps) {
                 className="gap-2"
               >
                 <Twitter className="w-4 h-4" />
-                Twitter
+                {t("twitter")}
               </Button>
               <Button
                 variant="outline"
@@ -140,7 +140,7 @@ export function BlogPostPageClient({ post, slug }: BlogPostPageClientProps) {
                 className="gap-2"
               >
                 <Linkedin className="w-4 h-4" />
-                LinkedIn
+                {t("linkedin")}
               </Button>
               <Button
                 variant="outline"
@@ -151,12 +151,12 @@ export function BlogPostPageClient({ post, slug }: BlogPostPageClientProps) {
                 {copied ? (
                   <>
                     <Check className="w-4 h-4" />
-                    Copiado
+                    {t("copied")}
                   </>
                 ) : (
                   <>
                     <Copy className="w-4 h-4" />
-                    Copiar
+                    {t("copy")}
                   </>
                 )}
               </Button>
@@ -193,7 +193,7 @@ export function BlogPostPageClient({ post, slug }: BlogPostPageClientProps) {
             {post.tags.length > 0 && (
               <div className="mt-8 pt-8 border-t">
                 <div className="flex flex-wrap gap-2">
-                  <span className="text-sm font-semibold">Tags:</span>
+                  <span className="text-sm font-semibold">{t("tags")}</span>
                   {post.tags.map((tag) => (
                     <Badge key={tag.id} variant="outline">
                       {tag.name}
@@ -212,7 +212,7 @@ export function BlogPostPageClient({ post, slug }: BlogPostPageClientProps) {
           <div className="container mx-auto px-4 md:px-6">
             <div className="max-w-6xl mx-auto">
               <h2 className="text-3xl font-bold tracking-tight mb-8">
-                Artículos Relacionados
+                {t("relatedArticles")}
               </h2>
               <div className="grid gap-6 md:grid-cols-3">
                 {relatedPosts.map((relatedPost) => (

@@ -13,10 +13,14 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 
 export default function AdminServicesPage() {
   const { services, loading, error, refresh } = useServices();
   const { setOrgId } = useOrg();
+  const tServices = useTranslationsSafe("services");
+  const { formatDate } = useI18n();
 
   const getEstadoBadgeVariant = (estado: string) => {
     switch (estado?.toLowerCase()) {
@@ -36,13 +40,13 @@ export default function AdminServicesPage() {
       {/* Header */}
       <div className="space-y-2">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Servicios y Licencias</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{tServices("title")}</h1>
           <p className="text-muted-foreground">
-            Gestiona servicios activos y expirados por organización.
+            {tServices("description")}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <OrgSelector onChange={(org: Org | null) => setOrgId(org?.id || "")} label="Organización" />
+          <OrgSelector onChange={(org: Org | null) => setOrgId(org?.id || "")} label={tServices("organization")} />
         </div>
       </div>
 
@@ -68,7 +72,7 @@ export default function AdminServicesPage() {
       ) : services.length === 0 ? (
         <Card>
           <CardContent className="pt-6">
-            <EmptyState title="Sin servicios" message="No hay servicios para la organización seleccionada." />
+            <EmptyState title={tServices("noServices")} message={tServices("noServicesMessage")} />
           </CardContent>
         </Card>
       ) : (
@@ -76,21 +80,21 @@ export default function AdminServicesPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Package className="h-5 w-5" />
-              Servicios ({services.length})
+              {tServices("services")} ({services.length})
             </CardTitle>
-            <CardDescription>Lista de todos los servicios del sistema</CardDescription>
+            <CardDescription>{tServices("servicesDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Servicio</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Fecha de Compra</TableHead>
-                    <TableHead>Fecha de Expiración</TableHead>
-                    <TableHead>Organización</TableHead>
+                    <TableHead>{tServices("service")}</TableHead>
+                    <TableHead>{tServices("type")}</TableHead>
+                    <TableHead>{tServices("status")}</TableHead>
+                    <TableHead>{tServices("purchaseDate")}</TableHead>
+                    <TableHead>{tServices("expirationDate")}</TableHead>
+                    <TableHead>{tServices("organization")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -103,7 +107,7 @@ export default function AdminServicesPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm text-muted-foreground">{s.tipo || "Servicio"}</span>
+                        <span className="text-sm text-muted-foreground">{s.tipo || tServices("service")}</span>
                       </TableCell>
                       <TableCell>
                         <Badge variant={getEstadoBadgeVariant(s.estado || "")} className="capitalize">
@@ -114,11 +118,7 @@ export default function AdminServicesPage() {
                         {s.fecha_compra ? (
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Calendar className="h-3 w-3" />
-                            {new Date(s.fecha_compra).toLocaleDateString("es-CO", {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric",
-                            })}
+                            {formatDate(new Date(s.fecha_compra), "PP")}
                           </div>
                         ) : (
                           <span className="text-sm text-muted-foreground">N/D</span>
@@ -128,11 +128,7 @@ export default function AdminServicesPage() {
                         {s.fecha_expiracion ? (
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Calendar className="h-3 w-3" />
-                            {new Date(s.fecha_expiracion).toLocaleDateString("es-CO", {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric",
-                            })}
+                            {formatDate(new Date(s.fecha_expiracion), "PP")}
                           </div>
                         ) : (
                           <span className="text-sm text-muted-foreground">N/D</span>

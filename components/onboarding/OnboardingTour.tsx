@@ -6,6 +6,7 @@ import { X, SkipForward } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCompleteTour } from "@/lib/hooks/useOnboarding";
 import type { OnboardingStep } from "@/lib/types/onboarding";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 interface OnboardingTourProps {
   tourId: string;
@@ -30,6 +31,7 @@ export function OnboardingTour({
 }: OnboardingTourProps) {
   const [runTour, setRunTour] = useState(run);
   const completeTour = useCompleteTour();
+  const tOnboarding = useTranslationsSafe("onboarding");
 
   useEffect(() => {
     setRunTour(run);
@@ -120,12 +122,12 @@ export function OnboardingTour({
         },
       }}
       locale={{
-        back: "Atrás",
-        close: "Cerrar",
-        last: "Finalizar",
-        next: "Siguiente",
-        open: "Abrir",
-        skip: "Saltar tour",
+        back: tOnboarding("tour.back"),
+        close: tOnboarding("tour.close"),
+        last: tOnboarding("tour.finish"),
+        next: tOnboarding("tour.next"),
+        open: tOnboarding("tour.open"),
+        skip: tOnboarding("skipTour"),
       }}
     />
   );

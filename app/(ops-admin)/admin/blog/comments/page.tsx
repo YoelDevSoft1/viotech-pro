@@ -28,20 +28,23 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
-import { es } from "date-fns/locale";
 import type { BlogComment } from "@/lib/types/blog";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 
 export default function BlogCommentsAdminPage() {
   const { data: comments, isLoading, error } = useBlogCommentsPending();
   const approveComment = useApproveComment();
   const [approvingId, setApprovingId] = useState<string | null>(null);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const tBlog = useTranslationsSafe("blog");
+  const { formatRelativeTime } = useI18n();
 
   const handleApprove = async (comment: BlogComment) => {
     // El backend DEBE proporcionar postSlug en la respuesta
     if (!comment.postSlug) {
       console.error("❌ Comment no tiene postSlug. El backend debe incluirlo:", comment);
-      alert("Error: El comentario no tiene información del artículo. Por favor, contacta al administrador.");
+      alert(tBlog("comments.errorNoPostSlug"));
       return;
     }
     
@@ -62,7 +65,7 @@ export default function BlogCommentsAdminPage() {
     // El backend DEBE proporcionar postSlug en la respuesta
     if (!comment.postSlug) {
       console.error("❌ Comment no tiene postSlug. El backend debe incluirlo:", comment);
-      alert("Error: El comentario no tiene información del artículo. Por favor, contacta al administrador.");
+      alert(tBlog("comments.errorNoPostSlug"));
       return;
     }
     
@@ -86,15 +89,15 @@ export default function BlogCommentsAdminPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Moderación de Comentarios</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{tBlog("comments.moderateComments")}</h1>
           <p className="text-muted-foreground">
-            Revisa y aprueba comentarios pendientes del blog
+            {tBlog("comments.moderateCommentsDescription")}
           </p>
         </div>
         <Button variant="outline" asChild>
           <Link href="/admin/blog">
             <Eye className="h-4 w-4 mr-2" />
-            Ver Posts
+            {tBlog("comments.viewPosts")}
           </Link>
         </Button>
       </div>
@@ -103,36 +106,36 @@ export default function BlogCommentsAdminPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pendientes</CardTitle>
+            <CardTitle className="text-sm font-medium">{tBlog("comments.pending")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{pendingComments.length}</div>
             <p className="text-xs text-muted-foreground">
-              Comentarios esperando aprobación
+              {tBlog("comments.waitingApproval")}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total</CardTitle>
+            <CardTitle className="text-sm font-medium">{tBlog("comments.total")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{comments?.length || 0}</div>
             <p className="text-xs text-muted-foreground">
-              Comentarios en total
+              {tBlog("comments.totalComments")}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Aprobados</CardTitle>
+            <CardTitle className="text-sm font-medium">{tBlog("comments.approved")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {(comments?.length || 0) - pendingComments.length}
             </div>
             <p className="text-xs text-muted-foreground">
-              Comentarios aprobados
+              {tBlog("comments.approvedComments")}
             </p>
           </CardContent>
         </Card>
@@ -141,7 +144,7 @@ export default function BlogCommentsAdminPage() {
       {/* Comments Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Comentarios Pendientes ({pendingComments.length})</CardTitle>
+          <CardTitle>{tBlog("comments.pendingComments")} ({pendingComments.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -153,25 +156,25 @@ export default function BlogCommentsAdminPage() {
           ) : error ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground mb-2">
-                El endpoint de comentarios pendientes aún no está implementado en el backend.
+                {tBlog("comments.endpointNotImplemented")}
               </p>
               <p className="text-sm text-muted-foreground">
-                Por favor, implementa <code className="text-xs bg-muted px-1 py-0.5 rounded">GET /api/blog/comments/pending</code> según la documentación.
+                {tBlog("comments.implementEndpoint")}
               </p>
             </div>
           ) : pendingComments.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <p>No hay comentarios pendientes de aprobación.</p>
+              <p>{tBlog("comments.noPendingComments")}</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Autor</TableHead>
-                  <TableHead>Comentario</TableHead>
-                  <TableHead>Artículo</TableHead>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
+                  <TableHead>{tBlog("comments.author")}</TableHead>
+                  <TableHead>{tBlog("comments.comment")}</TableHead>
+                  <TableHead>{tBlog("comments.article")}</TableHead>
+                  <TableHead>{tBlog("comments.date")}</TableHead>
+                  <TableHead className="text-right">{tBlog("comments.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -208,19 +211,16 @@ export default function BlogCommentsAdminPage() {
                           target="_blank"
                           className="text-sm text-primary hover:underline flex items-center gap-1"
                         >
-                          Ver artículo
+                          {tBlog("comments.viewArticle")}
                           <ExternalLink className="h-3 w-3" />
                         </Link>
                       ) : (
-                        <span className="text-sm text-muted-foreground">N/A</span>
+                        <span className="text-sm text-muted-foreground">{tBlog("comments.notAvailable")}</span>
                       )}
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        {formatDistanceToNow(new Date(comment.createdAt), {
-                          addSuffix: true,
-                          locale: es,
-                        })}
+                        {formatRelativeTime(new Date(comment.createdAt))}
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
@@ -234,12 +234,12 @@ export default function BlogCommentsAdminPage() {
                           {approvingId === comment.id ? (
                             <>
                               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              Aprobando...
+                              {tBlog("comments.approving")}
                             </>
                           ) : (
                             <>
                               <Check className="h-4 w-4 mr-2" />
-                              Aprobar
+                              {tBlog("comments.approve")}
                             </>
                           )}
                         </Button>
@@ -250,7 +250,7 @@ export default function BlogCommentsAdminPage() {
                           disabled={approvingId === comment.id || rejectingId === comment.id}
                         >
                           <X className="h-4 w-4 mr-2" />
-                          Rechazar
+                          {tBlog("comments.reject")}
                         </Button>
                       </div>
                     </TableCell>
@@ -266,13 +266,13 @@ export default function BlogCommentsAdminPage() {
       <AlertDialog open={!!rejectingId} onOpenChange={() => setRejectingId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Rechazar comentario?</AlertDialogTitle>
+            <AlertDialogTitle>{tBlog("comments.rejectCommentConfirm")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción marcará el comentario como rechazado. El comentario no será visible públicamente.
+              {tBlog("comments.rejectCommentDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel>{tBlog("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 const comment = pendingComments.find((c) => c.id === rejectingId);
@@ -282,7 +282,7 @@ export default function BlogCommentsAdminPage() {
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Rechazar
+              {tBlog("comments.reject")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

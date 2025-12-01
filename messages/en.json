@@ -1,4 +1,47 @@
 {
+  "auth": {
+    "createAccount": "Create an account",
+    "createAccountDescription": "Enter your email to create your account",
+    "signIn": "Sign In",
+    "signInDescription": "Enter your credentials to continue",
+    "email": "Email",
+    "emailPlaceholder": "name@company.com",
+    "password": "Password",
+    "passwordPlaceholder": "Minimum 8 characters",
+    "forgotPassword": "Forgot your password?",
+    "rememberMe": "Remember me",
+    "validating": "Validating...",
+    "orContinueWith": "Or continue with",
+    "createNewAccount": "Create new account",
+    "termsAndPrivacyStart": "By continuing, you agree to our",
+    "termsAndPrivacyAnd": "and",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "createAccountDialogDescription": "Join VioTech to manage your services.",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "John Doe",
+    "confirmPassword": "Repeat",
+    "confirmPasswordPlaceholder": "Confirm",
+    "cancel": "Cancel",
+    "creating": "Creating...",
+    "register": "Register",
+    "loading": "Loading...",
+    "emailSent": "Email sent!",
+    "emailSentDescriptionStart": "If an account exists for",
+    "emailSentDescriptionEnd": "you will receive a link to reset your password.",
+    "backToSignIn": "Back to sign in",
+    "recoverPassword": "Recover Password",
+    "recoverPasswordDescription": "Enter your email and we'll send you instructions.",
+    "sending": "Sending...",
+    "sendLink": "Send link",
+    "back": "Back",
+    "invalidToken": "Invalid token",
+    "invalidTokenDescription": "The recovery link is invalid or the token is missing.",
+    "newPassword": "New Password",
+    "newPasswordDescription": "Create a secure password for your account.",
+    "updating": "Updating...",
+    "reset": "Reset"
+  },
   "common": {
     "welcome": "Welcome",
     "loading": "Loading...",
@@ -20,7 +63,14 @@
     "yes": "Yes",
     "no": "No",
     "retry": "Retry",
-    "goBack": "Go back"
+    "goBack": "Go back",
+    "refresh": "Refresh",
+    "error": {
+      "occurred": "An error occurred"
+    },
+    "empty": {
+      "noResults": "No results"
+    }
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -68,8 +118,15 @@
     "kanban": "Kanban",
     "gantt": "Gantt",
     "error": {
-      "loadingFailed": "Error loading projects"
-    }
+      "loadingFailed": "Error loading projects",
+      "invalidId": "Invalid project ID"
+    },
+    "goBackToProjects": "Back to projects",
+    "created": "Created",
+    "timeline": "Timeline",
+    "details": "Details",
+    "detailsComingSoon": "Detailed project information coming soon...",
+    "notFound": "Project not found."
   },
   "tickets": {
     "title": "Tickets",
@@ -129,19 +186,313 @@
     },
     "validation": {
       "titleRequired": "Title is required"
+    },
+    "goBackToTickets": "Back to tickets",
+    "noTitle": "No title",
+    "noName": "No name",
+    "noDescription": "No description.",
+    "slaTarget": "SLA target",
+    "comments": "Comments",
+    "newComment": "New comment",
+    "commentPlaceholder": "Update the ticket...",
+    "sending": "Sending...",
+    "addComment": "Add comment",
+    "notFound": "Ticket not found.",
+    "error": {
+      "loadFailed": "Error loading ticket",
+      "commentFailed": "Error adding comment"
+    }
+  },
+  "kanban": {
+    "title": "Kanban Board",
+    "goBackToProject": "Back to project",
+    "filters": "Filters",
+    "search": "Search",
+    "searchPlaceholder": "Search tasks...",
+    "assignedTo": "Assigned to",
+    "priority": "Priority",
+    "category": "Category",
+    "all": "All",
+    "clearFilters": "Clear filters",
+    "projectNotFound": "Project not found",
+    "priority": {
+      "critical": "Critical",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "category": {
+      "technical": "Technical",
+      "functional": "Functional",
+      "consulting": "Consulting"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "unread": "unread",
+    "markAll": "Mark all",
+    "markAllAsRead": "Mark all as read",
+    "deleteRead": "Delete read",
+    "noNotifications": "No notifications",
+    "noUnread": "No unread notifications",
+    "viewAll": "View all notifications",
+    "filters": "Filters",
+    "filterPlaceholder": "Filter notifications",
+    "all": "All",
+    "new": "New",
+    "project": "Project",
+    "allRead": "All notifications read",
+    "unreadCountOne": "unread notification",
+    "unreadCountMany": "unread notifications",
+    "notificationCountOne": "1 notification",
+    "notificationCountMany": "notifications",
+    "types": {
+      "ticketCreated": "Tickets created",
+      "ticketUpdated": "Tickets updated",
+      "ticketAssigned": "Tickets assigned",
+      "projectCreated": "Projects created",
+      "projectUpdated": "Projects updated",
+      "system": "System"
+    }
+  },
+  "users": {
+    "title": "User Management",
+    "description": "Control sensitive access and account states. Filter by organization to apply targeted changes.",
+    "organization": "Organization",
+    "searchPlaceholder": "Search by name, email or role",
+    "searchLabel": "Search users by name, email or role",
+    "noResults": "No results",
+    "noResultsMessage": "No users found with that criteria or organization.",
+    "usersList": "Users",
+    "usersListDescription": "List of all system users",
+    "user": "User",
+    "role": "Role",
+    "tier": "Tier",
+    "state": "State",
+    "lastAccess": "Last Access",
+    "roles": {
+      "admin": "Admin",
+      "adminDescription": "Full access to panel and critical data.",
+      "agente": "Agent",
+      "agenteDescription": "Manages tickets from all users.",
+      "cliente": "Client",
+      "clienteDescription": "Only their own tickets."
+    },
+    "states": {
+      "activo": "Active",
+      "inactivo": "Inactive"
+    },
+    "unassigned": "Unassigned",
+    "noName": "No name",
+    "errors": {
+      "notAuthenticated": "Not authenticated",
+      "sessionExpired": "Session expired",
+      "loadError": "Could not load users",
+      "updateError": "Could not update user",
+      "updateTierError": "Could not update tier",
+      "updateStateError": "Could not update state",
+      "updateOrgError": "Could not update organization",
+      "genericUpdateError": "Error updating"
+    },
+    "feedback": {
+      "mockChanges": "Simulated changes in mock mode.",
+      "changesSaved": "Changes saved.",
+      "tierUpdated": "Tier updated.",
+      "stateUpdated": "State updated.",
+      "orgAssigned": "Organization assigned."
+    }
+  },
+  "admin": {
+    "title": "Administrative Panel",
+    "description": "Centralized supervision of users, tickets and services.",
+    "organization": "Organization",
+    "backendHealth": "Backend Health",
+    "systemStatus": "System status",
+    "aiModel": "AI Model",
+    "active": "Active",
+    "inactive": "Inactive",
+    "degraded": "Degraded",
+    "users": "Users",
+    "totalActiveUsers": "Total active users",
+    "tickets": "Tickets",
+    "openTickets": "Open tickets",
+    "services": "Services",
+    "activeServices": "Active services",
+    "quickAccess": "Quick Access",
+    "health": "Health",
+    "recentActivity": "Recent Activity",
+    "recentActivityDescription": "Audit and critical system alerts",
+    "recentActivityPlaceholder": "Integrate an audit list or critical alerts here. For now it's a placeholder.",
+    "errorLabel": "Error",
+    "error": {
+      "sessionExpired": "Session expired. Please log in again.",
+      "notAuthenticated": "Not authenticated",
+      "noConnection": "No connection",
+      "invalidResponse": "Invalid response",
+      "parseError": "Parse error",
+      "unauthorized": "Unauthorized",
+      "serverError": "Server error",
+      "summaryError": "Summary error"
+    }
+  },
+  "services": {
+    "title": "Services and Licenses",
+    "description": "Manage active and expired services by organization.",
+    "organization": "Organization",
+    "noServices": "No services",
+    "noServicesMessage": "No services for the selected organization.",
+    "services": "Services",
+    "servicesDescription": "List of all system services",
+    "service": "Service",
+    "type": "Type",
+    "status": "Status",
+    "purchaseDate": "Purchase Date",
+    "expirationDate": "Expiration Date",
+    "myServices": "My Services",
+    "myServicesDescription": "Manage your active licenses and subscriptions.",
+    "backToDashboard": "Back to Dashboard",
+    "hireNew": "Hire New",
+    "searchPlaceholder": "Search service...",
+    "all": "All",
+    "active": "Active",
+    "pending": "Pending",
+    "expired": "Expired",
+    "errorLoading": "Error loading",
+    "retry": "Retry",
+    "noServicesFound": "No services found",
+    "tryChangingFilters": "Try changing the search filters.",
+    "noServicesYet": "You don't have any services yet.",
+    "goToCatalog": "Go to Catalog",
+    "startDate": "Start",
+    "expires": "Expires",
+    "progress": "Progress",
+    "viewDetails": "View Details",
+    "catalog": {
+      "title": "Services Catalog",
+      "description": "Choose the perfect plan to scale your technological infrastructure with premium support.",
+      "backToServices": "Back to My Services",
+      "error": "Error",
+      "errorLoading": "Could not load catalog.",
+      "mostPopular": "Most Popular",
+      "days": "days",
+      "hireNow": "Hire Now"
+    }
+  },
+  "blog": {
+    "management": "Blog Management",
+    "managementDescription": "Manage blog articles",
+    "newArticle": "New Article",
+    "searchArticles": "Search Articles",
+    "searchPlaceholder": "Search by title...",
+    "articles": "Articles",
+    "noArticles": "No articles. Create your first article.",
+    "title": "Title",
+    "category": "Category",
+    "status": "Status",
+    "date": "Date",
+    "views": "Views",
+    "actions": "Actions",
+    "published": "Published",
+    "draft": "Draft",
+    "deleteArticleConfirm": "Delete article?",
+    "deleteArticleDescription": "This action cannot be undone. The article will be permanently deleted.",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "newArticleDescription": "Create a new blog article",
+    "form": {
+      "content": "Content",
+      "title": "Title",
+      "titlePlaceholder": "Article title",
+      "excerpt": "Excerpt",
+      "excerptPlaceholder": "Short article summary (150-200 characters)",
+      "contentPlaceholder": "Full article content in HTML",
+      "characters": "characters",
+      "minimum": "minimum",
+      "publication": "Publication",
+      "publishImmediately": "Publish immediately",
+      "publishImmediatelyDescription": "The article will be publicly visible",
+      "category": "Category",
+      "selectCategory": "Select a category",
+      "loadingCategories": "Loading categories...",
+      "noCategoriesAvailable": "No categories available. Create a category first.",
+      "error": "Error",
+      "errorLoadingCategories": "Error loading categories",
+      "loading": "Loading...",
+      "categoriesAvailable": "categories available",
+      "tags": "Tags",
+      "selectRelatedTags": "Select related tags",
+      "featuredImage": "Featured Image",
+      "imageUrl": "Image URL",
+      "saving": "Saving...",
+      "saveArticle": "Save Article"
+    },
+    "comments": {
+      "moderateComments": "Comment Moderation",
+      "moderateCommentsDescription": "Review and approve pending blog comments",
+      "viewPosts": "View Posts",
+      "pending": "Pending",
+      "waitingApproval": "Comments waiting for approval",
+      "total": "Total",
+      "totalComments": "Total comments",
+      "approved": "Approved",
+      "approvedComments": "Approved comments",
+      "pendingComments": "Pending Comments",
+      "endpointNotImplemented": "The pending comments endpoint is not yet implemented in the backend.",
+      "implementEndpoint": "Please implement GET /api/blog/comments/pending according to the documentation.",
+      "noPendingComments": "No pending comments for approval.",
+      "author": "Author",
+      "comment": "Comment",
+      "article": "Article",
+      "date": "Date",
+      "actions": "Actions",
+      "viewArticle": "View article",
+      "notAvailable": "N/A",
+      "approving": "Approving...",
+      "approve": "Approve",
+      "reject": "Reject",
+      "rejectCommentConfirm": "Reject comment?",
+      "rejectCommentDescription": "This action will mark the comment as rejected. The comment will not be publicly visible.",
+      "errorNoPostSlug": "Error: The comment does not have article information. Please contact the administrator."
     }
   },
   "resources": {
-    "title": "Resources",
-    "availability": "Availability",
+    "title": "Resources and Availability",
+    "management": "Resource Management",
+    "description": "Manage resources, availability, workload and assignments",
+    "calendar": "Calendar",
+    "calendarTitle": "Resource Calendar",
     "workload": "Workload",
+    "availability": "Availability",
     "skills": "Skills",
     "certifications": "Certifications",
-    "vacations": "Vacations"
+    "vacations": "Vacations",
+    "today": "Today",
+    "filterResources": "Filter resources",
+    "allResources": "All resources",
+    "resource": "Resource",
+    "noResourcesAvailable": "No resources available",
+    "workloadDescription": "Workload visualization by resource",
+    "previousWeek": "Previous week",
+    "nextWeek": "Next week",
+    "weekFrom": "Week from",
+    "weekTo": "to",
+    "total": "Total",
+    "hours": "hours",
+    "task": "task",
+    "tasks": "tasks",
+    "conflictsDetected": "Conflicts Detected",
+    "suggestion": "Suggestion",
+    "average": "Average",
+    "maximum": "Maximum",
+    "totalHours": "Total Hours",
+    "noWorkloadData": "No workload data available"
   },
   "reports": {
     "title": "Reports",
+    "executiveReports": "Executive Reports",
     "executive": "Executive Dashboard",
+    "description": "KPIs, metrics and business performance analysis",
+    "dashboard": "Dashboard",
     "automated": "Automated Reports",
     "export": "Export",
     "pdf": "PDF",
@@ -164,16 +515,257 @@
   },
   "onboarding": {
     "title": "Onboarding",
+    "initialSetup": "Initial Setup",
+    "description": "Complete the guided tours and checklist to get the most out of the platform",
     "checklist": "Configuration Checklist",
     "tours": "Guided Tours",
-    "progress": "Progress"
+    "progress": "Progress",
+    "managerTitle": "Onboarding",
+    "managerDescription": "Complete the tours and initial setup to get the most out of the platform",
+    "settings": "Settings",
+    "settingsTitle": "Onboarding Settings",
+    "settingsDescription": "Customize your onboarding experience",
+    "skipOnboarding": "Skip onboarding",
+    "showTips": "Show contextual tips",
+    "showChecklist": "Show checklist",
+    "startTour": "Start",
+    "repeat": "Repeat",
+    "skipTour": "Skip Tour",
+    "noTours": "No tours available",
+    "completed": "completed",
+    "inProgress": "In progress",
+    "notStarted": "Not started",
+    "checklistDescription": "Complete these steps to get the most out of the platform",
+    "required": "Required",
+    "goToSettings": "Go to settings",
+    "initialSetupCompleted": "Initial setup completed!",
+    "categories": {
+      "profile": "Profile",
+      "organization": "Organization",
+      "features": "Features",
+      "settings": "Settings",
+      "other": "Other"
+    },
+    "tour": {
+      "back": "Back",
+      "close": "Close",
+      "finish": "Finish",
+      "next": "Next",
+      "open": "Open"
+    }
   },
   "customization": {
     "title": "Customization",
+    "settings": "Settings",
+    "description": "Customize your experience on the platform",
     "preferences": "Preferences",
+    "userPreferences": "User Preferences",
     "savedViews": "Saved Views",
+    "savedViewsDescription": "Save and manage your custom views",
     "keyboardShortcuts": "Keyboard Shortcuts",
-    "branding": "Branding"
+    "branding": "Branding",
+    "appearance": "Appearance",
+    "notifications": "Notifications",
+    "regional": "Regional",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "emailNotifications": "Email Notifications",
+    "emailNotificationsDescription": "Receive important notifications by email",
+    "pushNotifications": "Push Notifications",
+    "pushNotificationsDescription": "Receive real-time notifications in your browser",
+    "inAppNotifications": "In-App Notifications",
+    "inAppNotificationsDescription": "Show notifications within the application",
+    "digestNotifications": "Daily Digest",
+    "digestNotificationsDescription": "Receive a daily summary of activities",
+    "timezone": "Timezone",
+    "dateFormat": "Date Format",
+    "timeFormat": "Time Format",
+    "timeFormat24h": "24 hours",
+    "timeFormat12h": "12 hours (AM/PM)",
+    "saveView": "Save View",
+    "editView": "Edit View",
+    "saveCurrentView": "Save Current View",
+    "saveViewDescription": "Save current filter, column and sorting configuration",
+    "viewName": "View Name",
+    "viewNamePlaceholder": "E.g: Urgent Tickets",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "updated": "Updated",
+    "noSavedViews": "No saved views. Save your first view to get started.",
+    "deleteViewConfirm": "Are you sure you want to delete this view?",
+    "active": "Active",
+    "inactive": "Inactive",
+    "shortcuts": {
+      "description": "Keyboard shortcuts available on the platform",
+      "searchPlaceholder": "Search shortcuts...",
+      "noResults": "No keyboard shortcuts found",
+      "categories": {
+        "navigation": "Navigation",
+        "actions": "Actions",
+        "views": "Views",
+        "custom": "Custom"
+      }
+    },
+    "organizationBranding": "Organization Branding",
+    "organizationBrandingDescription": "Customize your organization's appearance",
+    "branding": {
+      "notAvailable": "Organization branding is not available for your current plan",
+      "logo": "Logo",
+      "changeLogo": "Change Logo",
+      "uploadLogo": "Upload Logo",
+      "primaryColor": "Primary Color",
+      "secondaryColor": "Secondary Color",
+      "accentColor": "Accent Color",
+      "enableBranding": "Enable Branding",
+      "enableBrandingDescription": "Activate custom branding for your organization",
+      "editNote": "Note: Editing branding requires organization administrator permissions"
+    },
+    "dashboard": {
+      "widget": "Widget"
+    }
+  },
+  "marketing": {
+    "about": {
+      "title": "About VioTech Pro",
+      "description": "We transform companies with premium technology. Over 5 years helping SMEs and companies in Colombia scale without technical limits.",
+      "backToHome": "Back to home",
+      "stats": {
+        "projectsDelivered": "Projects Delivered",
+        "yearsExperience": "Years of Experience",
+        "uptimeAverage": "Average Uptime",
+        "clientSatisfaction": "Client Satisfaction"
+      },
+      "mission": {
+        "title": "Our Mission",
+        "description": "Accelerate the growth of Colombian companies by eliminating technical barriers. We offer strategic consulting, premium software development and cloud infrastructure that allows our clients to compete globally."
+      },
+      "values": {
+        "title": "Our Values",
+        "subtitle": "Principles that guide every project",
+        "results": {
+          "title": "Results-focused",
+          "description": "Every project has clear and measurable objectives. We focus on delivering real value."
+        },
+        "speed": {
+          "title": "Speed without sacrificing quality",
+          "description": "Fast time-to-market with clean code, solid architecture and best practices."
+        },
+        "security": {
+          "title": "Security first",
+          "description": "Compliance, audits and enterprise protocols from day one."
+        },
+        "global": {
+          "title": "Global thinking",
+          "description": "Architectures that scale internationally, designed for the global market."
+        }
+      },
+      "team": {
+        "title": "Our Team",
+        "subtitle": "Experts in technology, design and strategy",
+        "multidisciplinary": {
+          "title": "Multidisciplinary Team",
+          "description": "UX Designers, Tech Leads, QA Engineers, SREs and Product Managers working together",
+          "detail": "We have a hybrid team distributed between Colombia and LATAM, specialized in different areas but united by a common goal: deliver world-class technological solutions."
+        }
+      },
+      "cta": {
+        "title": "Want to work with us?",
+        "description": "Schedule a free consultation and discover how we can help you",
+        "button": "Schedule Free Consultation"
+      }
+    },
+    "contact": {
+      "title": "Let's start your project",
+      "description": "Schedule a free 45-minute consultation and discover how we can transform your business",
+      "backToHome": "Back to home",
+      "methods": {
+        "whatsapp": {
+          "title": "WhatsApp",
+          "description": "Response in less than 1 hour",
+          "action": "Send message"
+        },
+        "email": {
+          "title": "Email",
+          "description": "contacto@viotech.com.co",
+          "action": "Send email"
+        }
+      },
+      "info": {
+        "location": "Location",
+        "locationValue": "Bogotá, Colombia",
+        "schedule": "Schedule",
+        "scheduleValue": "Mon-Fri 8:00-18:00"
+      },
+      "form": {
+        "title": "Tell us about your project",
+        "description": "Priority response in less than 1 business hour",
+        "name": "Full name",
+        "namePlaceholder": "John Doe",
+        "email": "Email",
+        "emailPlaceholder": "john@company.com",
+        "company": "Company (optional)",
+        "companyPlaceholder": "My Company Inc.",
+        "projectType": "Project type",
+        "projectTypePlaceholder": "Select a type",
+        "message": "Message",
+        "messagePlaceholder": "What goal are you looking for? What timeline do you have?",
+        "submit": "Send briefing",
+        "submitting": "Sending...",
+        "success": "Message sent!",
+        "successDescription": "We will contact you very soon.",
+        "error": "Error sending",
+        "errorDescription": "Please try again or contact us via WhatsApp."
+      },
+      "validation": {
+        "nameMin": "Name must be at least 2 characters",
+        "emailInvalid": "Invalid email",
+        "projectTypeRequired": "Select a project type",
+        "messageMin": "Message must be at least 10 characters"
+      },
+      "availability": {
+        "title": "Availability",
+        "description": "Executive slots this week",
+        "discoveryCalls": "Discovery calls",
+        "strategyWorkshops": "Strategy workshops",
+        "calendarNote1": "Calendar with extended availability for global teams.",
+        "calendarNote2": "We sign NDA before each session if necessary.",
+        "scheduleDemo": "Schedule executive demo"
+      },
+      "trust": {
+        "freeConsultation": "100% free consultation",
+        "noCommitment": "No commitment",
+        "fastResponse": "Response in less than 1 hour"
+      },
+      "projectTypes": {
+        "software": "Software Development",
+        "consulting": "IT Consulting",
+        "webDesign": "Premium Web Design",
+        "cloud": "Cloud Infrastructure",
+        "digital": "Digital Transformation",
+        "other": "Other"
+      }
+    },
+    "blog": {
+      "title": "VioTech Blog",
+      "description": "Articles about IT consulting, digital transformation and technology best practices",
+      "backToHome": "Back to home",
+      "searchPlaceholder": "Search articles...",
+      "searchButton": "Search",
+      "categories": "Categories",
+      "allCategories": "All",
+      "popularTags": "Popular Tags",
+      "clearFilters": "Clear Filters",
+      "noArticles": "No articles found. Try with other filters.",
+      "pagination": {
+        "previous": "Previous",
+        "next": "Next",
+        "page": "Page",
+        "of": "of"
+      }
+    }
   },
   "ui": {
     "quickCreate": "Quick Create",

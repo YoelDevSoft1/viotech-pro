@@ -10,14 +10,7 @@ import { useOnboardingChecklist, useCompleteChecklistItem } from "@/lib/hooks/us
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import type { OnboardingChecklistItem } from "@/lib/types/onboarding";
-
-const categoryLabels: Record<string, string> = {
-  profile: "Perfil",
-  organization: "Organización",
-  features: "Funcionalidades",
-  settings: "Configuración",
-  other: "Otros",
-};
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 const categoryColors: Record<string, string> = {
   profile: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
@@ -30,12 +23,21 @@ const categoryColors: Record<string, string> = {
 export function OnboardingChecklist() {
   const { data: checklist, isLoading } = useOnboardingChecklist();
   const completeItem = useCompleteChecklistItem();
+  const tOnboarding = useTranslationsSafe("onboarding");
+
+  const categoryLabels: Record<string, string> = {
+    profile: tOnboarding("categories.profile"),
+    organization: tOnboarding("categories.organization"),
+    features: tOnboarding("categories.features"),
+    settings: tOnboarding("categories.settings"),
+    other: tOnboarding("categories.other"),
+  };
 
   if (isLoading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Configuración Inicial</CardTitle>
+          <CardTitle>{tOnboarding("initialSetup")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-32 w-full" />
@@ -71,13 +73,13 @@ export function OnboardingChecklist() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Configuración Inicial</CardTitle>
+            <CardTitle>{tOnboarding("initialSetup")}</CardTitle>
             <CardDescription>
-              Completa estos pasos para aprovechar al máximo la plataforma
+              {tOnboarding("checklistDescription")}
             </CardDescription>
           </div>
           <Badge variant="outline" className="text-sm">
-            {checklist.progress.toFixed(0)}% completado
+            {checklist.progress.toFixed(0)}% {tOnboarding("completed")}
           </Badge>
         </div>
         <Progress value={checklist.progress} className="mt-4" />
@@ -136,7 +138,7 @@ export function OnboardingChecklist() {
                           </div>
                           {item.required && !item.completed && (
                             <Badge variant="destructive" className="text-xs">
-                              Requerido
+                              {tOnboarding("required")}
                             </Badge>
                           )}
                         </div>
@@ -144,7 +146,7 @@ export function OnboardingChecklist() {
                           <div className="mt-2">
                             <Link href={item.actionUrl}>
                               <Button variant="outline" size="sm" className="text-xs">
-                                {item.actionLabel || "Ir a configuración"}
+                                {item.actionLabel || tOnboarding("goToSettings")}
                                 <ArrowRight className="h-3 w-3 ml-1" />
                               </Button>
                             </Link>
@@ -162,7 +164,7 @@ export function OnboardingChecklist() {
             <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
               <CheckCircle2 className="h-5 w-5" />
               <span className="text-sm font-medium">
-                ¡Configuración inicial completada!
+                {tOnboarding("initialSetupCompleted")}
               </span>
             </div>
           </div>

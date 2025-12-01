@@ -6,6 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 import { buildApiUrl } from "@/lib/api";
 import { getAccessToken, isTokenExpired, refreshAccessToken, logout } from "@/lib/auth";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 type Ticket = {
   id: string;
@@ -36,6 +37,8 @@ export default function InternalTicketDetail({ params }: { params: { id: string 
   const [error, setError] = useState<string | null>(null);
   const [comment, setComment] = useState("");
   const [commentLoading, setCommentLoading] = useState(false);
+  const tTickets = useTranslationsSafe("tickets");
+  const tCommon = useTranslationsSafe("common");
 
   const fetchTicket = useCallback(async () => {
     if (!ticketId) return;
@@ -63,12 +66,12 @@ export default function InternalTicketDetail({ params }: { params: { id: string 
       });
       const payload = await res.json().catch(() => null);
       if (!res.ok || !payload) {
-        throw new Error(payload?.error || payload?.message || "No se pudo cargar el ticket");
+        throw new Error(payload?.error || payload?.message || tTickets("error.loadFailed"));
       }
       const t = payload.data?.ticket || payload.data || payload;
       setTicket({
         id: String(t.id),
-        titulo: t.titulo || "Sin título",
+        titulo: t.titulo || tTickets("noTitle"),
         descripcion: t.descripcion || "",
         estado: t.estado || "abierto",
         prioridad: t.prioridad || "media",
@@ -79,7 +82,7 @@ export default function InternalTicketDetail({ params }: { params: { id: string 
         comentarios: t.comentarios || [],
       });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error al cargar el ticket";
+      const msg = err instanceof Error ? err.message : tTickets("error.loadFailed");
       setError(msg);
     } finally {
       setLoading(false);
@@ -115,12 +118,12 @@ export default function InternalTicketDetail({ params }: { params: { id: string 
       });
       const payload = await res.json().catch(() => null);
       if (!res.ok || !payload) {
-        throw new Error(payload?.error || payload?.message || "No se pudo agregar el comentario");
+        throw new Error(payload?.error || payload?.message || tTickets("error.commentFailed"));
       }
       setComment("");
       await fetchTicket();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al comentar");
+      setError(err instanceof Error ? err.message : tTickets("error.commentFailed"));
     } finally {
       setCommentLoading(false);
     }
@@ -139,7 +142,7 @@ export default function InternalTicketDetail({ params }: { params: { id: string 
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="w-4 h-4" />
-            Volver a tickets
+            {tTickets("goBackToTickets")}
           </Link>
         </div>
 
@@ -152,7 +155,7 @@ export default function InternalTicketDetail({ params }: { params: { id: string 
 
         {loading ? (
           <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
-            Cargando ticket...
+            {tTickets("loading")}
           </div>
         ) : ticket ? (
           <div className="rounded-3xl border border-border/70 bg-background/80 p-6 space-y-3">
@@ -164,7 +167,7 @@ export default function InternalTicketDetail({ params }: { params: { id: string 
                 <h1 className="text-2xl font-semibold text-foreground">{ticket.titulo}</h1>
                 {ticket.usuario?.email && (
                   <p className="text-xs text-muted-foreground">
-                    Usuario: {ticket.usuario.nombre || "Sin nombre"} ({ticket.usuario.email})
+                    {tTickets("user")}: {ticket.usuario.nombre || tTickets("noName")} ({ticket.usuario.email})
                   </p>
                 )}
               </div>
@@ -172,21 +175,21 @@ export default function InternalTicketDetail({ params }: { params: { id: string 
                 <span className="inline-flex rounded-full border border-border px-2 py-1 capitalize">
                   {ticket.estado}
                 </span>
-                <div>Prioridad: {ticket.prioridad}</div>
+                <div>{tTickets("priorityLabel")}: {ticket.prioridad}</div>
               </div>
             </div>
             <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-              {ticket.descripcion || "Sin descripción."}
+              {ticket.descripcion || tTickets("noDescription")}
             </p>
             {ticket.slaObjetivo && (
               <p className="text-xs text-muted-foreground">
-                SLA objetivo: {new Date(ticket.slaObjetivo).toLocaleString("es-CO")}
+                {tTickets("slaTarget")}: {new Date(ticket.slaObjetivo).toLocaleString("es-CO")}
               </p>
             )}
             {Array.isArray(ticket.comentarios) && ticket.comentarios.length > 0 && (
               <div className="space-y-2">
                 <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                  Comentarios
+                  {tTickets("comments")}
                 </p>
                 <div className="space-y-2">
                   {ticket.comentarios.map((c: any) => (
@@ -195,7 +198,7 @@ export default function InternalTicketDetail({ params }: { params: { id: string 
                       className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2 text-sm"
                     >
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>{c.autor?.nombre || c.autor?.email || "Usuario"}</span>
+                        <span>{c.autor?.nombre || c.autor?.email || tTickets("user")}</span>
                         <span>
                           {new Date(c.createdAt || c.created_at || "").toLocaleString("es-CO", {
                             day: "2-digit",
@@ -214,14 +217,14 @@ export default function InternalTicketDetail({ params }: { params: { id: string 
 
             <form className="space-y-2 pt-2" onSubmit={handleComment}>
               <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                Nuevo comentario
+                {tTickets("newComment")}
               </label>
               <textarea
                 className="w-full rounded-2xl border border-border bg-transparent px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/30"
                 rows={3}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder="Actualiza el ticket..."
+                placeholder={tTickets("commentPlaceholder")}
                 disabled={commentLoading}
               />
               <button
@@ -229,13 +232,13 @@ export default function InternalTicketDetail({ params }: { params: { id: string 
                 className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-xs font-medium text-background hover:scale-[1.02] transition-transform disabled:opacity-60"
                 disabled={commentLoading || !comment.trim()}
               >
-                {commentLoading ? "Enviando..." : "Agregar comentario"}
+                {commentLoading ? tTickets("sending") : tTickets("addComment")}
               </button>
             </form>
           </div>
         ) : (
           <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
-            No se encontró el ticket.
+            {tTickets("notFound")}
           </div>
         )}
       </div>

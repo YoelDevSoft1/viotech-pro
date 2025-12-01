@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from "@/components/ui/card";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import CheckoutModal from "@/components/payments/CheckoutModal";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 // Tipos locales (o mover a @/lib/types/services.ts)
 type ServicePlan = {
@@ -30,6 +31,7 @@ export function CatalogPageClient() {
   const router = useRouter();
   const [selectedPlan, setSelectedPlan] = useState<ServicePlan | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const t = useTranslationsSafe("services.catalog");
 
   // React Query para el catálogo
   const { data: plans = [], isLoading, isError, error } = useQuery({
@@ -54,11 +56,11 @@ export function CatalogPageClient() {
         {/* Header */}
         <div className="text-center space-y-4 py-8">
           <Link href="/services" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-4">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Volver a Mis Servicios
+            <ArrowLeft className="w-4 h-4 mr-2" /> {t("backToServices")}
           </Link>
-          <h1 className="text-4xl font-extrabold tracking-tight">Catálogo de Servicios</h1>
+          <h1 className="text-4xl font-extrabold tracking-tight">{t("title")}</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Elige el plan perfecto para escalar tu infraestructura tecnológica con soporte premium.
+            {t("description")}
           </p>
         </div>
 
@@ -66,9 +68,9 @@ export function CatalogPageClient() {
         {isError && (
           <Alert variant="destructive" className="max-w-md mx-auto">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
+            <AlertTitle>{t("error")}</AlertTitle>
             <AlertDescription>
-              {(error as Error)?.message || "No se pudo cargar el catálogo."}
+              {(error as Error)?.message || t("errorLoading")}
             </AlertDescription>
           </Alert>
         )}
@@ -97,7 +99,7 @@ export function CatalogPageClient() {
                   {isPopular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                       <Badge className="bg-primary text-primary-foreground hover:bg-primary px-3">
-                        <Sparkles className="w-3 h-3 mr-1" /> Más Popular
+                        <Sparkles className="w-3 h-3 mr-1" /> {t("mostPopular")}
                       </Badge>
                     </div>
                   )}
@@ -116,7 +118,7 @@ export function CatalogPageClient() {
                       </span>
                       {plan.durationDays > 0 && (
                         <span className="text-sm text-muted-foreground">
-                          / {plan.durationDays} días
+                          / {plan.durationDays} {t("days")}
                         </span>
                       )}
                     </div>
@@ -138,7 +140,7 @@ export function CatalogPageClient() {
                       variant={isPopular ? "default" : "outline"}
                       onClick={() => handleBuy(plan)}
                     >
-                      Contratar Ahora
+                      {t("hireNow")}
                     </Button>
                   </CardFooter>
                 </Card>

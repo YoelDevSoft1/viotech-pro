@@ -11,16 +11,18 @@ import { useOrganizationBranding } from "@/lib/hooks/useCustomization";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 export function OrganizationBranding() {
   const { orgId } = useOrg();
   const { data: branding, isLoading } = useOrganizationBranding(orgId || undefined);
+  const tCustomization = useTranslationsSafe("customization");
 
   if (isLoading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Branding de Organización</CardTitle>
+          <CardTitle>{tCustomization("organizationBranding")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-64 w-full" />
@@ -35,15 +37,15 @@ export function OrganizationBranding() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Palette className="h-5 w-5" />
-            Branding de Organización
+            {tCustomization("organizationBranding")}
           </CardTitle>
           <CardDescription>
-            Personaliza la apariencia de tu organización
+            {tCustomization("organizationBrandingDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center text-muted-foreground py-8">
-            El branding de organización no está disponible para tu plan actual
+            {tCustomization("branding.notAvailable")}
           </div>
         </CardContent>
       </Card>
@@ -64,20 +66,20 @@ export function OrganizationBranding() {
             </CardDescription>
           </div>
           <Badge variant={branding.enabled ? "default" : "secondary"}>
-            {branding.enabled ? "Activo" : "Inactivo"}
+            {branding.enabled ? tCustomization("active") : tCustomization("inactive")}
           </Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Logo */}
         <div className="space-y-2">
-          <Label>Logo</Label>
+          <Label>{tCustomization("branding.logo")}</Label>
           <div className="flex items-center gap-4">
             {branding.logo && (
               <div className="relative">
                 <img
                   src={branding.logo}
-                  alt="Logo"
+                  alt={tCustomization("branding.logo")}
                   className="h-16 w-16 object-contain border rounded"
                 />
                 <Button
@@ -91,7 +93,7 @@ export function OrganizationBranding() {
             )}
             <Button variant="outline" size="sm">
               <Upload className="h-4 w-4 mr-2" />
-              {branding.logo ? "Cambiar Logo" : "Subir Logo"}
+              {branding.logo ? tCustomization("branding.changeLogo") : tCustomization("branding.uploadLogo")}
             </Button>
           </div>
         </div>
@@ -99,7 +101,7 @@ export function OrganizationBranding() {
         {/* Colores */}
         <div className="grid grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="primary-color">Color Primario</Label>
+            <Label htmlFor="primary-color">{tCustomization("branding.primaryColor")}</Label>
             <div className="flex items-center gap-2">
               <Input
                 id="primary-color"
@@ -118,7 +120,7 @@ export function OrganizationBranding() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="secondary-color">Color Secundario</Label>
+            <Label htmlFor="secondary-color">{tCustomization("branding.secondaryColor")}</Label>
             <div className="flex items-center gap-2">
               <Input
                 id="secondary-color"
@@ -137,7 +139,7 @@ export function OrganizationBranding() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="accent-color">Color de Acento</Label>
+            <Label htmlFor="accent-color">{tCustomization("branding.accentColor")}</Label>
             <div className="flex items-center gap-2">
               <Input
                 id="accent-color"
@@ -159,9 +161,9 @@ export function OrganizationBranding() {
         {/* Estado */}
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <Label htmlFor="branding-enabled">Habilitar Branding</Label>
+            <Label htmlFor="branding-enabled">{tCustomization("branding.enableBranding")}</Label>
             <p className="text-xs text-muted-foreground">
-              Activa el branding personalizado para tu organización
+              {tCustomization("branding.enableBrandingDescription")}
             </p>
           </div>
           <Switch id="branding-enabled" checked={branding.enabled} disabled />
@@ -169,7 +171,7 @@ export function OrganizationBranding() {
 
         <div className="pt-4 border-t">
           <p className="text-xs text-muted-foreground">
-            Nota: La edición de branding requiere permisos de administrador de organización
+            {tCustomization("branding.editNote")}
           </p>
         </div>
       </CardContent>

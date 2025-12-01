@@ -28,6 +28,7 @@ import {
 } from "@/lib/hooks/useCustomization";
 import type { DashboardWidget, WidgetPosition } from "@/lib/types/customization";
 import { cn } from "@/lib/utils";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 interface DraggableWidgetProps {
   widget: DashboardWidget;
@@ -43,6 +44,7 @@ function DraggableWidget({ widget, onToggleVisibility }: DraggableWidgetProps) {
     transition,
     isDragging,
   } = useSortable({ id: widget.id });
+  const tCustomization = useTranslationsSafe("customization");
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -84,8 +86,8 @@ function DraggableWidget({ widget, onToggleVisibility }: DraggableWidgetProps) {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-sm text-muted-foreground">
-            Widget: {widget.type}
+            <div className="text-sm text-muted-foreground">
+            {tCustomization("dashboard.widget")}: {widget.type}
           </div>
         </CardContent>
       </Card>
@@ -106,6 +108,7 @@ export function DraggableDashboard({
 }: DraggableDashboardProps) {
   const { data: preferences } = useUserPreferences();
   const updatePreferences = useUpdateUserPreferences();
+  const tCustomization = useTranslationsSafe("customization");
 
   const visibleWidgets = useMemo(
     () => widgets.filter((w) => w.visible).sort((a, b) => a.order - b.order),

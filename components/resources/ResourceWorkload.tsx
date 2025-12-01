@@ -16,9 +16,10 @@ import {
 } from "@/components/ui/select";
 import { useResources, useResourceWorkload } from "@/lib/hooks/useResources";
 import { format, startOfWeek, endOfWeek, subWeeks, addWeeks } from "date-fns";
-import { es } from "date-fns/locale/es";
 import { cn } from "@/lib/utils";
 import type { Resource } from "@/lib/types/resources";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 
 interface ResourceWorkloadProps {
   organizationId?: string;
@@ -27,6 +28,8 @@ interface ResourceWorkloadProps {
 export function ResourceWorkload({ organizationId }: ResourceWorkloadProps) {
   const [selectedResource, setSelectedResource] = useState<string | null>(null);
   const [currentWeek, setCurrentWeek] = useState(new Date());
+  const tResources = useTranslationsSafe("resources");
+  const { formatDate } = useI18n();
 
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 1 });
@@ -55,7 +58,7 @@ export function ResourceWorkload({ organizationId }: ResourceWorkloadProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Carga de Trabajo</CardTitle>
+          <CardTitle>{tResources("workload")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-96 w-full" />
@@ -68,7 +71,7 @@ export function ResourceWorkload({ organizationId }: ResourceWorkloadProps) {
     return (
       <Card>
         <CardContent className="py-8 text-center text-muted-foreground">
-          No hay recursos disponibles
+          {tResources("noResourcesAvailable")}
         </CardContent>
       </Card>
     );
@@ -83,18 +86,18 @@ export function ResourceWorkload({ organizationId }: ResourceWorkloadProps) {
           <div>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              Carga de Trabajo
+              {tResources("workload")}
             </CardTitle>
             <CardDescription>
-              Visualización de carga de trabajo por recurso
+              {tResources("workloadDescription")}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={handlePreviousWeek}>
-              Semana anterior
+              {tResources("previousWeek")}
             </Button>
             <Button variant="outline" size="sm" onClick={handleNextWeek}>
-              Semana siguiente
+              {tResources("nextWeek")}
             </Button>
           </div>
         </div>
@@ -102,7 +105,7 @@ export function ResourceWorkload({ organizationId }: ResourceWorkloadProps) {
       <CardContent className="space-y-4">
         {/* Selector de recurso */}
         <div className="flex items-center gap-2">
-          <label className="text-sm text-muted-foreground">Recurso:</label>
+          <label className="text-sm text-muted-foreground">{tResources("resource")}:</label>
           <Select
             value={selectedResource || resources[0]?.id || ""}
             onValueChange={setSelectedResource}
@@ -154,11 +157,11 @@ export function ResourceWorkload({ organizationId }: ResourceWorkloadProps) {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h4 className="font-medium">
-                Semana del {format(weekStart, "PP", { locale: es })} al{" "}
-                {format(weekEnd, "PP", { locale: es })}
+                {tResources("weekFrom")} {formatDate(weekStart, "PP")} {tResources("weekTo")}{" "}
+                {formatDate(weekEnd, "PP")}
               </h4>
               <div className="text-sm text-muted-foreground">
-                Total: {workload.totalHours.toFixed(1)} horas
+                {tResources("total")}: {workload.totalHours.toFixed(1)} {tResources("hours")}
               </div>
             </div>
 
@@ -172,7 +175,7 @@ export function ResourceWorkload({ organizationId }: ResourceWorkloadProps) {
                   <div key={day.date} className="space-y-1">
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-medium">
-                        {format(new Date(day.date), "EEEE, d 'de' MMMM", { locale: es })}
+                        {formatDate(new Date(day.date), "EEEE, d 'de' MMMM")}
                       </span>
                       <div className="flex items-center gap-2">
                         <span className={cn(isOverloaded && "text-red-600 font-medium")}>
@@ -192,7 +195,7 @@ export function ResourceWorkload({ organizationId }: ResourceWorkloadProps) {
                     />
                     {day.tasks.length > 0 && (
                       <div className="text-xs text-muted-foreground ml-2">
-                        {day.tasks.length} tarea{day.tasks.length !== 1 ? "s" : ""}
+                        {day.tasks.length} {day.tasks.length !== 1 ? tResources("tasks") : tResources("task")}
                       </div>
                     )}
                   </div>
@@ -206,7 +209,7 @@ export function ResourceWorkload({ organizationId }: ResourceWorkloadProps) {
                 <div className="flex items-center gap-2 mb-2">
                   <AlertTriangle className="h-4 w-4 text-red-600" />
                   <h4 className="font-medium text-red-900 dark:text-red-100">
-                    Conflictos Detectados
+                    {tResources("conflictsDetected")}
                   </h4>
                 </div>
                 <div className="space-y-2">
@@ -216,11 +219,11 @@ export function ResourceWorkload({ organizationId }: ResourceWorkloadProps) {
                       className="text-sm text-red-800 dark:text-red-200"
                     >
                       <div className="font-medium">
-                        {format(new Date(conflict.date), "PP", { locale: es })}: {conflict.message}
+                        {formatDate(new Date(conflict.date), "PP")}: {conflict.message}
                       </div>
                       {conflict.suggestedResolution && (
                         <div className="text-xs text-red-600 dark:text-red-300 mt-1">
-                          Sugerencia: {conflict.suggestedResolution}
+                          {tResources("suggestion")}: {conflict.suggestedResolution}
                         </div>
                       )}
                     </div>
@@ -232,19 +235,19 @@ export function ResourceWorkload({ organizationId }: ResourceWorkloadProps) {
             {/* Estadísticas */}
             <div className="grid grid-cols-3 gap-4 mt-4">
               <div className="p-3 border rounded-lg">
-                <div className="text-xs text-muted-foreground mb-1">Promedio</div>
+                <div className="text-xs text-muted-foreground mb-1">{tResources("average")}</div>
                 <div className="text-lg font-semibold">
                   {workload.averageUtilization.toFixed(0)}%
                 </div>
               </div>
               <div className="p-3 border rounded-lg">
-                <div className="text-xs text-muted-foreground mb-1">Máximo</div>
+                <div className="text-xs text-muted-foreground mb-1">{tResources("maximum")}</div>
                 <div className="text-lg font-semibold">
                   {workload.maxUtilization.toFixed(0)}%
                 </div>
               </div>
               <div className="p-3 border rounded-lg">
-                <div className="text-xs text-muted-foreground mb-1">Total Horas</div>
+                <div className="text-xs text-muted-foreground mb-1">{tResources("totalHours")}</div>
                 <div className="text-lg font-semibold">
                   {workload.totalHours.toFixed(1)}h
                 </div>
@@ -253,7 +256,7 @@ export function ResourceWorkload({ organizationId }: ResourceWorkloadProps) {
           </div>
         ) : (
           <div className="py-8 text-center text-muted-foreground">
-            No hay datos de carga de trabajo disponibles
+            {tResources("noWorkloadData")}
           </div>
         )}
       </CardContent>

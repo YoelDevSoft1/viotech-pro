@@ -1,4 +1,47 @@
 {
+  "auth": {
+    "createAccount": "Crear una cuenta",
+    "createAccountDescription": "Ingresa tu correo electrónico para crear tu cuenta",
+    "signIn": "Iniciar Sesión",
+    "signInDescription": "Ingresa tus credenciales para continuar",
+    "email": "Correo Electrónico",
+    "emailPlaceholder": "nombre@empresa.com",
+    "password": "Contraseña",
+    "passwordPlaceholder": "Mínimo 8 caracteres",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "rememberMe": "Recordar mi sesión",
+    "validating": "Validando...",
+    "orContinueWith": "O continúa con",
+    "createNewAccount": "Crear cuenta nueva",
+    "termsAndPrivacyStart": "Al continuar, aceptas nuestros",
+    "termsAndPrivacyAnd": "y",
+    "termsOfService": "Términos de Servicio",
+    "privacyPolicy": "Política de Privacidad",
+    "createAccountDialogDescription": "Únete a VioTech para gestionar tus servicios.",
+    "fullName": "Nombre completo",
+    "fullNamePlaceholder": "Juan Pérez",
+    "confirmPassword": "Repetir",
+    "confirmPasswordPlaceholder": "Confirmar",
+    "cancel": "Cancelar",
+    "creating": "Creando...",
+    "register": "Registrarse",
+    "loading": "Cargando...",
+    "emailSent": "¡Correo enviado!",
+    "emailSentDescriptionStart": "Si existe una cuenta asociada a",
+    "emailSentDescriptionEnd": "recibirás un enlace para restablecer tu contraseña.",
+    "backToSignIn": "Volver al inicio de sesión",
+    "recoverPassword": "Recuperar Contraseña",
+    "recoverPasswordDescription": "Ingresa tu correo y te enviaremos las instrucciones.",
+    "sending": "Enviando...",
+    "sendLink": "Enviar enlace",
+    "back": "Volver",
+    "invalidToken": "Token inválido",
+    "invalidTokenDescription": "El enlace de recuperación es inválido o falta el token.",
+    "newPassword": "Nueva Contraseña",
+    "newPasswordDescription": "Crea una contraseña segura para tu cuenta.",
+    "updating": "Actualizando...",
+    "reset": "Restablecer"
+  },
   "common": {
     "welcome": "Bienvenido",
     "loading": "Cargando...",
@@ -20,7 +63,13 @@
     "yes": "Sí",
     "no": "No",
     "retry": "Reintentar",
-    "goBack": "Volver"
+    "goBack": "Volver",
+    "error": {
+      "occurred": "Ocurrió un error"
+    },
+    "empty": {
+      "noResults": "Sin resultados"
+    }
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -68,8 +117,15 @@
     "kanban": "Kanban",
     "gantt": "Gantt",
     "error": {
-      "loadingFailed": "Error al cargar proyectos"
-    }
+      "loadingFailed": "Error al cargar proyectos",
+      "invalidId": "ID de proyecto inválido"
+    },
+    "goBackToProjects": "Volver a proyectos",
+    "created": "Creado",
+    "timeline": "Timeline",
+    "details": "Detalles",
+    "detailsComingSoon": "Información detallada del proyecto próximamente...",
+    "notFound": "No se encontró el proyecto."
   },
   "tickets": {
     "title": "Tickets",
@@ -129,19 +185,313 @@
     },
     "validation": {
       "titleRequired": "El título es obligatorio"
+    },
+    "goBackToTickets": "Volver a tickets",
+    "noTitle": "Sin título",
+    "noName": "Sin nombre",
+    "noDescription": "Sin descripción.",
+    "slaTarget": "SLA objetivo",
+    "comments": "Comentarios",
+    "newComment": "Nuevo comentario",
+    "commentPlaceholder": "Actualiza el ticket...",
+    "sending": "Enviando...",
+    "addComment": "Agregar comentario",
+    "notFound": "No se encontró el ticket.",
+    "error": {
+      "loadFailed": "Error al cargar el ticket",
+      "commentFailed": "Error al agregar comentario"
+    }
+  },
+  "kanban": {
+    "title": "Kanban Board",
+    "goBackToProject": "Volver al proyecto",
+    "filters": "Filtros",
+    "search": "Búsqueda",
+    "searchPlaceholder": "Buscar tareas...",
+    "assignedTo": "Asignado a",
+    "priority": "Prioridad",
+    "category": "Categoría",
+    "all": "Todos",
+    "clearFilters": "Limpiar filtros",
+    "projectNotFound": "Proyecto no encontrado",
+    "priority": {
+      "critical": "Crítica",
+      "high": "Alta",
+      "medium": "Media",
+      "low": "Baja"
+    },
+    "category": {
+      "technical": "Técnico",
+      "functional": "Funcional",
+      "consulting": "Consultoría"
+    }
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "unread": "sin leer",
+    "markAll": "Marcar todas",
+    "markAllAsRead": "Marcar todas como leídas",
+    "deleteRead": "Eliminar leídas",
+    "noNotifications": "No hay notificaciones",
+    "noUnread": "No hay notificaciones sin leer",
+    "viewAll": "Ver todas las notificaciones",
+    "filters": "Filtros",
+    "filterPlaceholder": "Filtrar notificaciones",
+    "all": "Todas",
+    "new": "Nuevo",
+    "project": "Proyecto",
+    "allRead": "Todas las notificaciones leídas",
+    "unreadCountOne": "notificación sin leer",
+    "unreadCountMany": "notificaciones sin leer",
+    "notificationCountOne": "1 notificación",
+    "notificationCountMany": "notificaciones",
+    "types": {
+      "ticketCreated": "Tickets creados",
+      "ticketUpdated": "Tickets actualizados",
+      "ticketAssigned": "Tickets asignados",
+      "projectCreated": "Proyectos creados",
+      "projectUpdated": "Proyectos actualizados",
+      "system": "Sistema"
+    }
+  },
+  "users": {
+    "title": "Gestión de Usuarios",
+    "description": "Controla accesos sensibles y estados de cuentas. Filtra por organización para aplicar cambios puntuales.",
+    "organization": "Organización",
+    "searchPlaceholder": "Buscar por nombre, email o rol",
+    "searchLabel": "Buscar usuarios por nombre, email o rol",
+    "noResults": "Sin resultados",
+    "noResultsMessage": "No se encontraron usuarios con ese criterio u organización.",
+    "usersList": "Usuarios",
+    "usersListDescription": "Lista de todos los usuarios del sistema",
+    "user": "Usuario",
+    "role": "Rol",
+    "tier": "Tier",
+    "state": "Estado",
+    "lastAccess": "Último Acceso",
+    "roles": {
+      "admin": "Admin",
+      "adminDescription": "Acceso total al panel y datos críticos.",
+      "agente": "Agente",
+      "agenteDescription": "Gestiona tickets de todos los usuarios.",
+      "cliente": "Cliente",
+      "clienteDescription": "Solo sus propios tickets."
+    },
+    "states": {
+      "activo": "Activo",
+      "inactivo": "Inactivo"
+    },
+    "unassigned": "Sin asignar",
+    "noName": "Sin nombre",
+    "errors": {
+      "notAuthenticated": "No autenticado",
+      "sessionExpired": "Sesión expirada",
+      "loadError": "No se pudo cargar usuarios",
+      "updateError": "No se pudo actualizar el usuario",
+      "updateTierError": "No se pudo actualizar el tier",
+      "updateStateError": "No se pudo actualizar estado",
+      "updateOrgError": "No se pudo actualizar la organización",
+      "genericUpdateError": "Error al actualizar"
+    },
+    "feedback": {
+      "mockChanges": "Cambios simulados en modo mock.",
+      "changesSaved": "Cambios guardados.",
+      "tierUpdated": "Tier actualizado.",
+      "stateUpdated": "Estado actualizado.",
+      "orgAssigned": "Organización asignada."
+    }
+  },
+  "admin": {
+    "title": "Panel Administrativo",
+    "description": "Supervisión centralizada de usuarios, tickets y servicios.",
+    "organization": "Organización",
+    "backendHealth": "Salud Backend",
+    "systemStatus": "Estado del sistema",
+    "aiModel": "Modelo IA",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "degraded": "Degradado",
+    "users": "Usuarios",
+    "totalActiveUsers": "Total usuarios activos",
+    "tickets": "Tickets",
+    "openTickets": "Tickets abiertos",
+    "services": "Servicios",
+    "activeServices": "Servicios activos",
+    "quickAccess": "Accesos Rápidos",
+    "health": "Health",
+    "recentActivity": "Actividades Recientes",
+    "recentActivityDescription": "Auditoría y alertas críticas del sistema",
+    "recentActivityPlaceholder": "Integra aquí una lista de auditoría o alertas críticas. Por ahora es un placeholder.",
+    "errorLabel": "Error",
+    "error": {
+      "sessionExpired": "Sesión expirada. Inicia sesión nuevamente.",
+      "notAuthenticated": "No autenticado",
+      "noConnection": "Sin conexión",
+      "invalidResponse": "Respuesta inválida",
+      "parseError": "Error al parsear",
+      "unauthorized": "No autorizado",
+      "serverError": "Error del servidor",
+      "summaryError": "Error en resumen"
+    }
+  },
+  "services": {
+    "title": "Servicios y Licencias",
+    "description": "Gestiona servicios activos y expirados por organización.",
+    "organization": "Organización",
+    "noServices": "Sin servicios",
+    "noServicesMessage": "No hay servicios para la organización seleccionada.",
+    "services": "Servicios",
+    "servicesDescription": "Lista de todos los servicios del sistema",
+    "service": "Servicio",
+    "type": "Tipo",
+    "status": "Estado",
+    "purchaseDate": "Fecha de Compra",
+    "expirationDate": "Fecha de Expiración",
+    "myServices": "Mis Servicios",
+    "myServicesDescription": "Gestiona tus licencias y suscripciones activas.",
+    "backToDashboard": "Volver al Dashboard",
+    "hireNew": "Contratar Nuevo",
+    "searchPlaceholder": "Buscar servicio...",
+    "all": "Todos",
+    "active": "Activos",
+    "pending": "Pendientes",
+    "expired": "Expirados",
+    "errorLoading": "Error al cargar",
+    "retry": "Reintentar",
+    "noServicesFound": "No se encontraron servicios",
+    "tryChangingFilters": "Prueba cambiando los filtros de búsqueda.",
+    "noServicesYet": "Aún no tienes servicios contratados.",
+    "goToCatalog": "Ir al Catálogo",
+    "startDate": "Inicio",
+    "expires": "Vence",
+    "progress": "Progreso",
+    "viewDetails": "Ver Detalles",
+    "catalog": {
+      "title": "Catálogo de Servicios",
+      "description": "Elige el plan perfecto para escalar tu infraestructura tecnológica con soporte premium.",
+      "backToServices": "Volver a Mis Servicios",
+      "error": "Error",
+      "errorLoading": "No se pudo cargar el catálogo.",
+      "mostPopular": "Más Popular",
+      "days": "días",
+      "hireNow": "Contratar Ahora"
+    }
+  },
+  "blog": {
+    "management": "Gestión de Blog",
+    "managementDescription": "Administra los artículos del blog",
+    "newArticle": "Nuevo Artículo",
+    "searchArticles": "Buscar Artículos",
+    "searchPlaceholder": "Buscar por título...",
+    "articles": "Artículos",
+    "noArticles": "No hay artículos. Crea tu primer artículo.",
+    "title": "Título",
+    "category": "Categoría",
+    "status": "Estado",
+    "date": "Fecha",
+    "views": "Vistas",
+    "actions": "Acciones",
+    "published": "Publicado",
+    "draft": "Borrador",
+    "deleteArticleConfirm": "¿Eliminar artículo?",
+    "deleteArticleDescription": "Esta acción no se puede deshacer. El artículo será eliminado permanentemente.",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "newArticleDescription": "Crea un nuevo artículo para el blog",
+    "form": {
+      "content": "Contenido",
+      "title": "Título",
+      "titlePlaceholder": "Título del artículo",
+      "excerpt": "Resumen",
+      "excerptPlaceholder": "Resumen corto del artículo (150-200 caracteres)",
+      "contentPlaceholder": "Contenido completo del artículo en HTML",
+      "characters": "caracteres",
+      "minimum": "mínimo",
+      "publication": "Publicación",
+      "publishImmediately": "Publicar inmediatamente",
+      "publishImmediatelyDescription": "El artículo será visible públicamente",
+      "category": "Categoría",
+      "selectCategory": "Selecciona una categoría",
+      "loadingCategories": "Cargando categorías...",
+      "noCategoriesAvailable": "No hay categorías disponibles. Crea una categoría primero.",
+      "error": "Error",
+      "errorLoadingCategories": "Error al cargar categorías",
+      "loading": "Cargando...",
+      "categoriesAvailable": "categorías disponibles",
+      "tags": "Tags",
+      "selectRelatedTags": "Selecciona los tags relacionados",
+      "featuredImage": "Imagen Destacada",
+      "imageUrl": "URL de Imagen",
+      "saving": "Guardando...",
+      "saveArticle": "Guardar Artículo"
+    },
+    "comments": {
+      "moderateComments": "Moderación de Comentarios",
+      "moderateCommentsDescription": "Revisa y aprueba comentarios pendientes del blog",
+      "viewPosts": "Ver Posts",
+      "pending": "Pendientes",
+      "waitingApproval": "Comentarios esperando aprobación",
+      "total": "Total",
+      "totalComments": "Comentarios en total",
+      "approved": "Aprobados",
+      "approvedComments": "Comentarios aprobados",
+      "pendingComments": "Comentarios Pendientes",
+      "endpointNotImplemented": "El endpoint de comentarios pendientes aún no está implementado en el backend.",
+      "implementEndpoint": "Por favor, implementa GET /api/blog/comments/pending según la documentación.",
+      "noPendingComments": "No hay comentarios pendientes de aprobación.",
+      "author": "Autor",
+      "comment": "Comentario",
+      "article": "Artículo",
+      "date": "Fecha",
+      "actions": "Acciones",
+      "viewArticle": "Ver artículo",
+      "notAvailable": "N/A",
+      "approving": "Aprobando...",
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "rejectCommentConfirm": "¿Rechazar comentario?",
+      "rejectCommentDescription": "Esta acción marcará el comentario como rechazado. El comentario no será visible públicamente.",
+      "errorNoPostSlug": "Error: El comentario no tiene información del artículo. Por favor, contacta al administrador."
     }
   },
   "resources": {
-    "title": "Recursos",
-    "availability": "Disponibilidad",
+    "title": "Recursos y Disponibilidad",
+    "management": "Gestión de Recursos",
+    "description": "Gestiona recursos, disponibilidad, carga de trabajo y asignaciones",
+    "calendar": "Calendario",
+    "calendarTitle": "Calendario de Recursos",
     "workload": "Carga de Trabajo",
+    "availability": "Disponibilidad",
     "skills": "Skills",
     "certifications": "Certificaciones",
-    "vacations": "Vacaciones"
+    "vacations": "Vacaciones",
+    "today": "Hoy",
+    "filterResources": "Filtrar recursos",
+    "allResources": "Todos los recursos",
+    "resource": "Recurso",
+    "noResourcesAvailable": "No hay recursos disponibles",
+    "workloadDescription": "Visualización de carga de trabajo por recurso",
+    "previousWeek": "Semana anterior",
+    "nextWeek": "Semana siguiente",
+    "weekFrom": "Semana del",
+    "weekTo": "al",
+    "total": "Total",
+    "hours": "horas",
+    "task": "tarea",
+    "tasks": "tareas",
+    "conflictsDetected": "Conflictos Detectados",
+    "suggestion": "Sugerencia",
+    "average": "Promedio",
+    "maximum": "Máximo",
+    "totalHours": "Total Horas",
+    "noWorkloadData": "No hay datos de carga de trabajo disponibles"
   },
   "reports": {
     "title": "Reportes",
+    "executiveReports": "Reportes Ejecutivos",
     "executive": "Dashboard Ejecutivo",
+    "description": "KPIs, métricas y análisis de rendimiento del negocio",
+    "dashboard": "Dashboard",
     "automated": "Reportes Automáticos",
     "export": "Exportar",
     "pdf": "PDF",
@@ -164,16 +514,361 @@
   },
   "onboarding": {
     "title": "Onboarding",
+    "initialSetup": "Configuración Inicial",
+    "description": "Completa los tours guiados y la checklist para aprovechar al máximo la plataforma",
     "checklist": "Checklist de Configuración",
     "tours": "Tours Guiados",
-    "progress": "Progreso"
+    "progress": "Progreso",
+    "managerTitle": "Onboarding",
+    "managerDescription": "Completa los tours y la configuración inicial para aprovechar al máximo la plataforma",
+    "settings": "Configuración",
+    "settingsTitle": "Configuración de Onboarding",
+    "settingsDescription": "Personaliza tu experiencia de onboarding",
+    "skipOnboarding": "Saltar onboarding",
+    "showTips": "Mostrar tips contextuales",
+    "showChecklist": "Mostrar checklist",
+    "startTour": "Iniciar",
+    "repeat": "Repetir",
+    "skipTour": "Saltar Tour",
+    "noTours": "No hay tours disponibles",
+    "completed": "completado",
+    "inProgress": "En progreso",
+    "notStarted": "No iniciado",
+    "checklistDescription": "Completa estos pasos para aprovechar al máximo la plataforma",
+    "required": "Requerido",
+    "goToSettings": "Ir a configuración",
+    "initialSetupCompleted": "¡Configuración inicial completada!",
+    "categories": {
+      "profile": "Perfil",
+      "organization": "Organización",
+      "features": "Funcionalidades",
+      "settings": "Configuración",
+      "other": "Otros"
+    },
+    "tour": {
+      "back": "Atrás",
+      "close": "Cerrar",
+      "finish": "Finalizar",
+      "next": "Siguiente",
+      "open": "Abrir"
+    }
   },
   "customization": {
     "title": "Personalización",
+    "settings": "Configuración",
+    "description": "Personaliza tu experiencia en la plataforma",
     "preferences": "Preferencias",
+    "userPreferences": "Preferencias de Usuario",
     "savedViews": "Vistas Guardadas",
+    "savedViewsDescription": "Guarda y gestiona tus vistas personalizadas",
     "keyboardShortcuts": "Atajos de Teclado",
-    "branding": "Branding"
+    "branding": "Branding",
+    "appearance": "Apariencia",
+    "notifications": "Notificaciones",
+    "regional": "Regional",
+    "theme": "Tema",
+    "themeLight": "Claro",
+    "themeDark": "Oscuro",
+    "themeSystem": "Sistema",
+    "emailNotifications": "Notificaciones por Email",
+    "emailNotificationsDescription": "Recibe notificaciones importantes por correo electrónico",
+    "pushNotifications": "Notificaciones Push",
+    "pushNotificationsDescription": "Recibe notificaciones en tiempo real en tu navegador",
+    "inAppNotifications": "Notificaciones en App",
+    "inAppNotificationsDescription": "Muestra notificaciones dentro de la aplicación",
+    "digestNotifications": "Resumen Diario",
+    "digestNotificationsDescription": "Recibe un resumen diario de actividades",
+    "timezone": "Zona Horaria",
+    "dateFormat": "Formato de Fecha",
+    "timeFormat": "Formato de Hora",
+    "timeFormat24h": "24 horas",
+    "timeFormat12h": "12 horas (AM/PM)",
+    "saveView": "Guardar Vista",
+    "editView": "Editar Vista",
+    "saveCurrentView": "Guardar Vista Actual",
+    "saveViewDescription": "Guarda la configuración actual de filtros, columnas y ordenamiento",
+    "viewName": "Nombre de la Vista",
+    "viewNamePlaceholder": "Ej: Tickets Urgentes",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "updated": "Actualizada",
+    "noSavedViews": "No hay vistas guardadas. Guarda tu primera vista para comenzar.",
+    "deleteViewConfirm": "¿Estás seguro de que quieres eliminar esta vista?",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "shortcuts": {
+      "description": "Atajos de teclado disponibles en la plataforma",
+      "searchPlaceholder": "Buscar atajos...",
+      "noResults": "No se encontraron atajos de teclado",
+      "categories": {
+        "navigation": "Navegación",
+        "actions": "Acciones",
+        "views": "Vistas",
+        "custom": "Personalizados"
+      }
+    },
+    "organizationBranding": "Branding de Organización",
+    "organizationBrandingDescription": "Personaliza la apariencia de tu organización",
+    "branding": {
+      "notAvailable": "El branding de organización no está disponible para tu plan actual",
+      "logo": "Logo",
+      "changeLogo": "Cambiar Logo",
+      "uploadLogo": "Subir Logo",
+      "primaryColor": "Color Primario",
+      "secondaryColor": "Color Secundario",
+      "accentColor": "Color de Acento",
+      "enableBranding": "Habilitar Branding",
+      "enableBrandingDescription": "Activa el branding personalizado para tu organización",
+      "editNote": "Nota: La edición de branding requiere permisos de administrador de organización"
+    },
+    "dashboard": {
+      "widget": "Widget"
+    }
+  },
+  "marketing": {
+    "about": {
+      "title": "Sobre VioTech Pro",
+      "description": "Transformamos empresas con tecnología premium. Más de 5 años ayudando a PyMEs y empresas en Colombia a escalar sin límites técnicos.",
+      "backToHome": "Volver al inicio",
+      "stats": {
+        "projectsDelivered": "Proyectos Entregados",
+        "yearsExperience": "Años de Experiencia",
+        "uptimeAverage": "Uptime Promedio",
+        "clientSatisfaction": "Satisfacción Cliente"
+      },
+      "mission": {
+        "title": "Nuestra Misión",
+        "description": "Acelerar el crecimiento de empresas colombianas eliminando barreras técnicas. Ofrecemos consultoría estratégica, desarrollo de software premium e infraestructura cloud que permite a nuestros clientes competir a nivel global."
+      },
+      "values": {
+        "title": "Nuestros Valores",
+        "subtitle": "Principios que guían cada proyecto",
+        "results": {
+          "title": "Enfoque en resultados",
+          "description": "Cada proyecto tiene objetivos claros y medibles. Nos enfocamos en entregar valor real."
+        },
+        "speed": {
+          "title": "Velocidad sin sacrificar calidad",
+          "description": "Time-to-market rápido con código limpio, arquitectura sólida y mejores prácticas."
+        },
+        "security": {
+          "title": "Seguridad primero",
+          "description": "Cumplimiento, auditorías y protocolos enterprise desde el día uno."
+        },
+        "global": {
+          "title": "Pensamiento global",
+          "description": "Arquitecturas que escalan internacionalmente, pensadas para el mercado global."
+        }
+      },
+      "team": {
+        "title": "Nuestro Equipo",
+        "subtitle": "Expertos en tecnología, diseño y estrategia",
+        "multidisciplinary": {
+          "title": "Equipo Multidisciplinario",
+          "description": "UX Designers, Tech Leads, QA Engineers, SREs y Product Managers trabajando juntos",
+          "detail": "Contamos con un equipo híbrido distribuido entre Colombia y LATAM, especializado en diferentes áreas pero unidos por un objetivo común: entregar soluciones tecnológicas de clase mundial."
+        }
+      },
+      "cta": {
+        "title": "¿Quieres trabajar con nosotros?",
+        "description": "Agenda una consultoría gratuita y descubre cómo podemos ayudarte",
+        "button": "Agendar Consultoría Gratuita"
+      }
+    },
+    "contact": {
+      "title": "Comencemos tu proyecto",
+      "description": "Agenda una consultoría gratuita de 45 minutos y descubre cómo podemos transformar tu negocio",
+      "backToHome": "Volver al inicio",
+      "methods": {
+        "whatsapp": {
+          "title": "WhatsApp",
+          "description": "Respuesta en menos de 1 hora",
+          "action": "Enviar mensaje"
+        },
+        "email": {
+          "title": "Email",
+          "description": "contacto@viotech.com.co",
+          "action": "Enviar correo"
+        }
+      },
+      "info": {
+        "location": "Ubicación",
+        "locationValue": "Bogotá, Colombia",
+        "schedule": "Horario",
+        "scheduleValue": "Lun-Vie 8:00-18:00"
+      },
+      "form": {
+        "title": "Cuéntanos sobre tu proyecto",
+        "description": "Respuesta prioritaria en menos de 1 hora hábil",
+        "name": "Nombre completo",
+        "namePlaceholder": "Juan Pérez",
+        "email": "Correo electrónico",
+        "emailPlaceholder": "juan@empresa.com",
+        "company": "Empresa (opcional)",
+        "companyPlaceholder": "Mi Empresa S.A.S",
+        "projectType": "Tipo de proyecto",
+        "projectTypePlaceholder": "Selecciona un tipo",
+        "message": "Mensaje",
+        "messagePlaceholder": "¿Qué objetivo buscas? ¿Qué timeline manejas?",
+        "submit": "Enviar briefing",
+        "submitting": "Enviando...",
+        "success": "¡Mensaje enviado!",
+        "successDescription": "Te contactaremos muy pronto.",
+        "error": "Error al enviar",
+        "errorDescription": "Por favor intenta nuevamente o contáctanos por WhatsApp."
+      },
+      "validation": {
+        "nameMin": "El nombre debe tener al menos 2 caracteres",
+        "emailInvalid": "Email inválido",
+        "projectTypeRequired": "Selecciona un tipo de proyecto",
+        "messageMin": "El mensaje debe tener al menos 10 caracteres"
+      },
+      "availability": {
+        "title": "Disponibilidad",
+        "description": "Slots ejecutivos esta semana",
+        "discoveryCalls": "Discovery calls",
+        "strategyWorkshops": "Workshops estrategia",
+        "calendarNote1": "Calendario con disponibilidad extendida para equipos globales.",
+        "calendarNote2": "Firmamos NDA antes de cada sesión si es necesario.",
+        "scheduleDemo": "Agendar demo ejecutiva"
+      },
+      "trust": {
+        "freeConsultation": "Consultoría 100% gratuita",
+        "noCommitment": "Sin compromiso",
+        "fastResponse": "Respuesta en menos de 1 hora"
+      },
+      "projectTypes": {
+        "software": "Desarrollo de Software",
+        "consulting": "Consultoría TI",
+        "webDesign": "Diseño Web Premium",
+        "cloud": "Infraestructura Cloud",
+        "digital": "Transformación Digital",
+        "other": "Otro"
+      }
+    },
+    "blog": {
+      "title": "Blog VioTech",
+      "description": "Artículos sobre consultoría TI, transformación digital y mejores prácticas tecnológicas",
+      "backToHome": "Volver al inicio",
+      "searchPlaceholder": "Buscar artículos...",
+      "searchButton": "Buscar",
+      "categories": "Categorías",
+      "allCategories": "Todas",
+      "popularTags": "Tags Populares",
+      "clearFilters": "Limpiar Filtros",
+      "noArticles": "No se encontraron artículos. Intenta con otros filtros.",
+      "pagination": {
+        "previous": "Anterior",
+        "next": "Siguiente",
+        "page": "Página",
+        "of": "de"
+      },
+      "post": {
+        "backToBlog": "Volver al blog",
+        "readingTime": "min de lectura",
+        "share": "Compartir:",
+        "facebook": "Facebook",
+        "twitter": "Twitter",
+        "linkedin": "LinkedIn",
+        "copy": "Copiar",
+        "copied": "Copiado",
+        "linkCopied": "Enlace copiado al portapapeles",
+        "linkCopyError": "Error al copiar enlace",
+        "tags": "Tags:",
+        "relatedArticles": "Artículos Relacionados"
+      }
+    },
+    "caseStudies": {
+      "title": "Casos de Éxito",
+      "description": "Transformaciones digitales medibles que impulsan el crecimiento empresarial",
+      "backToHome": "Volver al inicio",
+      "challenge": "Desafío",
+      "solution": "Solución",
+      "results": "Resultados",
+      "cta": {
+        "title": "¿Listo para ser nuestro próximo caso de éxito?",
+        "description": "Agenda una consultoría gratuita y descubre cómo podemos transformar tu negocio",
+        "button": "Agendar Consultoría Gratuita"
+      }
+    },
+    "industries": {
+      "backToHome": "Volver al inicio",
+      "scheduleConsultation": "Agendar Consultoría Gratuita",
+      "viewCaseStudies": "Ver Casos de Éxito",
+      "commonChallenges": "Desafíos comunes en",
+      "commonChallengesDescription": "Problemas que resolvemos todos los días",
+      "ourSolutions": "Nuestras soluciones",
+      "ourSolutionsDescription": "Tecnología que resuelve problemas reales",
+      "caseStudy": "Caso de Éxito",
+      "viewFullCase": "Ver caso completo",
+      "cta": {
+        "title": "¿Listo para transformar tu",
+        "description": "Agenda una consultoría gratuita y descubre cómo podemos ayudarte",
+        "button": "Agendar Consultoría Gratuita"
+      }
+    },
+    "services": {
+      "detail": {
+        "backToServices": "Volver a Servicios",
+        "whatIncludes": "¿Qué incluye este servicio?",
+        "whatIncludesDescription": "Todo lo que necesitas para transformar tu negocio",
+        "measurableBenefits": "Beneficios medibles",
+        "measurableBenefitsDescription": "Resultados reales para empresas reales",
+        "readyToStart": "¿Listo para comenzar?",
+        "readyToStartDescription": "Agenda una consultoría gratuita de 45 minutos y descubre cómo podemos ayudarte",
+        "scheduleConsultation": "Agendar Consultoría Gratuita",
+        "viewPlans": "Ver Planes y Precios"
+      }
+    },
+    "home": {
+      "newVersion": "🚀 Nueva versión 2.0 disponible",
+      "heroTitle": "Digitaliza tu PyME",
+      "heroTitleLine2": "con tecnología premium.",
+      "heroDescription": "Desarrollo web de alto impacto, infraestructura cloud segura y consultoría estratégica. Ayudamos a empresas colombianas a escalar sin límites técnicos.",
+      "scheduleConsultation": "Agendar Consultoría Gratuita",
+      "viewPlans": "Ver Planes y Precios",
+      "featuresTitle": "Todo lo que necesitas para crecer",
+      "featuresSubtitle": "Tecnología enterprise adaptada a tu escala.",
+      "features": {
+        "ultraFast": {
+          "title": "Ultra Rápido",
+          "description": "Sitios optimizados para Core Web Vitals. Carga en milisegundos, no segundos."
+        },
+        "bankSecurity": {
+          "title": "Seguridad Bancaria",
+          "description": "Protección DDoS, certificados SSL y encriptación de datos end-to-end."
+        },
+        "analytics": {
+          "title": "Analytics Integrado",
+          "description": "Paneles de control en tiempo real para tomar decisiones basadas en datos."
+        },
+        "globalDomain": {
+          "title": "Dominio Global",
+          "description": "Infraestructura desplegada en el borde (Edge) para acceso mundial instantáneo."
+        },
+        "support24x7": {
+          "title": "Soporte 24/7",
+          "description": "Equipo de ingeniería dedicado. Resolvemos incidencias antes de que las notes."
+        },
+        "scalability": {
+          "title": "Escalabilidad",
+          "description": "Arquitectura serverless que crece automáticamente con tu tráfico."
+        }
+      },
+      "stats": {
+        "projectsDelivered": "Proyectos Entregados",
+        "uptimeGuaranteed": "Uptime Garantizado",
+        "supportTime": "Tiempo de Soporte",
+        "usersImpacted": "Usuarios Impactados"
+      },
+      "cta": {
+        "title": "¿Listo para transformar tu negocio?",
+        "description": "Agenda una consultoría gratuita de 30 minutos y descubre cómo podemos acelerar tu crecimiento digital hoy mismo.",
+        "scheduleConsultation": "Agendar Consultoría Gratuita",
+        "viewCaseStudies": "Ver Casos de Éxito"
+      }
+    }
   },
   "ui": {
     "quickCreate": "Quick Create",

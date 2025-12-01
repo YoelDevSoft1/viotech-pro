@@ -17,6 +17,7 @@ import OrgSelector, { type Org } from "@/components/common/OrgSelector";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 export default function AdminDashboardPage() {
   const { orgId, setOrgId } = useOrg();
@@ -29,6 +30,8 @@ export default function AdminDashboardPage() {
   const [usersCount, setUsersCount] = useState<string>("N/D");
   const [loading, setLoading] = useState(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
+  const tAdmin = useTranslationsSafe("admin");
+  const tCommon = useTranslationsSafe("common");
 
   const combinedLoading = loading || servicesLoading || ticketsLoading || metricsLoading || modelLoading;
   const totalServices =
@@ -54,14 +57,14 @@ export default function AdminDashboardPage() {
       if (refreshed) token = refreshed;
       else {
         await logout();
-        setSummaryError("Sesión expirada. Inicia sesión nuevamente.");
+        setSummaryError(tAdmin("error.sessionExpired"));
         setLoading(false);
         return;
       }
     }
 
     if (!token) {
-      setSummaryError("No autenticado");
+      setSummaryError(tAdmin("error.notAuthenticated"));
       setLoading(false);
       return;
     }
@@ -75,7 +78,7 @@ export default function AdminDashboardPage() {
         }).catch((err) => {
           // Manejar errores de red
           console.error("Error al conectar con /health:", err);
-          return { ok: false, status: 0, statusText: err.message || "Error de conexión" } as Response;
+          return { ok: false, status: 0, statusText: err.message || tAdmin("error.noConnection") } as Response;
         }),
         fetch(buildApiUrl("/users"), { 
           headers: { Authorization: `Bearer ${token}` }, 
@@ -101,23 +104,23 @@ export default function AdminDashboardPage() {
               setHealthError(null);
             } else {
               setHealthStatus("N/D");
-              setHealthError("Respuesta inválida");
+              setHealthError(tAdmin("error.invalidResponse"));
             }
           }
         } catch (parseError) {
           setHealthStatus("N/D");
-          setHealthError(parseError instanceof Error ? parseError.message : "Error al parsear");
+          setHealthError(parseError instanceof Error ? parseError.message : tAdmin("error.parseError"));
         }
       } else {
         // Manejar errores HTTP
         const statusText = healthRes.statusText || `HTTP ${healthRes.status}`;
         setHealthStatus("N/D");
         if (healthRes.status === 0) {
-          setHealthError("Sin conexión");
+          setHealthError(tAdmin("error.noConnection"));
         } else if (healthRes.status === 401 || healthRes.status === 403) {
-          setHealthError("No autorizado");
+          setHealthError(tAdmin("error.unauthorized"));
         } else if (healthRes.status >= 500) {
-          setHealthError(`Error del servidor (${healthRes.status})`);
+          setHealthError(`${tAdmin("error.serverError")} (${healthRes.status})`);
         } else {
           setHealthError(statusText);
         }
@@ -131,7 +134,7 @@ export default function AdminDashboardPage() {
         setUsersCount("N/D");
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error en resumen";
+      const msg = err instanceof Error ? err.message : tAdmin("error.summaryError");
       setSummaryError(msg);
     } finally {
       setLoading(false);
@@ -159,13 +162,13 @@ export default function AdminDashboardPage() {
       {/* Header */}
       <div className="space-y-2">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Panel Administrativo</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{tAdmin("title")}</h1>
           <p className="text-muted-foreground">
-            Supervisión centralizada de usuarios, tickets y servicios.
+            {tAdmin("description")}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <OrgSelector onChange={(org: Org | null) => setOrgId(org?.id || "")} label="Organización" />
+          <OrgSelector onChange={(org: Org | null) => setOrgId(org?.id || "")} label={tAdmin("organization")} />
           <Button
             variant="outline"
             size="sm"
@@ -174,7 +177,7 @@ export default function AdminDashboardPage() {
             className="gap-2"
           >
             <RefreshCcw className={`h-4 w-4 ${combinedLoading ? "animate-spin" : ""}`} />
-            Actualizar
+            {tCommon("refresh")}
           </Button>
         </div>
       </div>
@@ -192,7 +195,7 @@ export default function AdminDashboardPage() {
         {/* Health Status */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Salud Backend</CardTitle>
+            <CardTitle className="text-sm font-medium">{tAdmin("backendHealth")}</CardTitle>
             <HeartPulse className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -202,7 +205,7 @@ export default function AdminDashboardPage() {
               <>
                 <div className="text-2xl font-bold">{healthLabel}</div>
                 <p className="text-xs text-muted-foreground">
-                  {healthError ? `Error: ${healthError}` : "Estado del sistema"}
+                  {healthError ? `${tAdmin("errorLabel")}: ${healthError}` : tAdmin("systemStatus")}
                 </p>
               </>
             )}
@@ -212,7 +215,7 @@ export default function AdminDashboardPage() {
         {/* Model Status */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Modelo IA</CardTitle>
+            <CardTitle className="text-sm font-medium">{tAdmin("aiModel")}</CardTitle>
             <Cpu className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -221,11 +224,11 @@ export default function AdminDashboardPage() {
             ) : modelStatus ? (
               <>
                 <div className="text-2xl font-bold">
-                  {modelStatus.enabled ? "Activo" : "Inactivo"}
+                  {modelStatus.enabled ? tAdmin("active") : tAdmin("inactive")}
                 </div>
                 <div className="flex items-center gap-2 mt-1">
                   <Badge variant={modelStatus.healthy ? "default" : "destructive"}>
-                    {modelStatus.healthy ? "OK" : "Degradado"}
+                    {modelStatus.healthy ? "OK" : tAdmin("degraded")}
                   </Badge>
                   <span className="text-xs text-muted-foreground">
                     v{modelStatus.modelVersion || "N/D"}
@@ -241,7 +244,7 @@ export default function AdminDashboardPage() {
         {/* Users Count */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Usuarios</CardTitle>
+            <CardTitle className="text-sm font-medium">{tAdmin("users")}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -250,7 +253,7 @@ export default function AdminDashboardPage() {
             ) : (
               <>
                 <div className="text-2xl font-bold">{usersCount}</div>
-                <p className="text-xs text-muted-foreground">Total usuarios activos</p>
+                <p className="text-xs text-muted-foreground">{tAdmin("totalActiveUsers")}</p>
               </>
             )}
           </CardContent>
@@ -259,7 +262,7 @@ export default function AdminDashboardPage() {
         {/* Tickets */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tickets</CardTitle>
+            <CardTitle className="text-sm font-medium">{tAdmin("tickets")}</CardTitle>
             <Ticket className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -268,7 +271,7 @@ export default function AdminDashboardPage() {
             ) : (
               <>
                 <div className="text-2xl font-bold">{totalTickets}</div>
-                <p className="text-xs text-muted-foreground">Tickets abiertos</p>
+                <p className="text-xs text-muted-foreground">{tAdmin("openTickets")}</p>
               </>
             )}
           </CardContent>
@@ -277,7 +280,7 @@ export default function AdminDashboardPage() {
         {/* Services */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Servicios</CardTitle>
+            <CardTitle className="text-sm font-medium">{tAdmin("services")}</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -286,7 +289,7 @@ export default function AdminDashboardPage() {
             ) : (
               <>
                 <div className="text-2xl font-bold">{totalServices}</div>
-                <p className="text-xs text-muted-foreground">Servicios activos</p>
+                <p className="text-xs text-muted-foreground">{tAdmin("activeServices")}</p>
               </>
             )}
           </CardContent>
@@ -295,7 +298,7 @@ export default function AdminDashboardPage() {
         {/* Quick Actions */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Accesos Rápidos</CardTitle>
+            <CardTitle className="text-sm font-medium">{tAdmin("quickAccess")}</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -303,25 +306,25 @@ export default function AdminDashboardPage() {
               <Button asChild variant="outline" size="sm" className="h-auto flex-col gap-1 py-2">
                 <Link href="/admin/health">
                   <HeartPulse className="h-4 w-4" />
-                  <span className="text-xs">Health</span>
+                  <span className="text-xs">{tAdmin("health")}</span>
                 </Link>
               </Button>
               <Button asChild variant="outline" size="sm" className="h-auto flex-col gap-1 py-2">
                 <Link href="/admin/users">
                   <Users className="h-4 w-4" />
-                  <span className="text-xs">Usuarios</span>
+                  <span className="text-xs">{tAdmin("users")}</span>
                 </Link>
               </Button>
               <Button asChild variant="outline" size="sm" className="h-auto flex-col gap-1 py-2">
                 <Link href="/admin/tickets">
                   <Ticket className="h-4 w-4" />
-                  <span className="text-xs">Tickets</span>
+                  <span className="text-xs">{tAdmin("tickets")}</span>
                 </Link>
               </Button>
               <Button asChild variant="outline" size="sm" className="h-auto flex-col gap-1 py-2">
                 <Link href="/admin/services">
                   <Package className="h-4 w-4" />
-                  <span className="text-xs">Servicios</span>
+                  <span className="text-xs">{tAdmin("services")}</span>
                 </Link>
               </Button>
             </div>
@@ -334,15 +337,15 @@ export default function AdminDashboardPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Activity className="h-5 w-5" />
-            Actividades Recientes
+            {tAdmin("recentActivity")}
           </CardTitle>
           <CardDescription>
-            Auditoría y alertas críticas del sistema
+            {tAdmin("recentActivityDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            Integra aquí una lista de auditoría o alertas críticas. Por ahora es un placeholder.
+            {tAdmin("recentActivityPlaceholder")}
           </p>
         </CardContent>
       </Card>

@@ -23,6 +23,7 @@ import {
   useCompleteTour,
 } from "@/lib/hooks/useOnboarding";
 import { useOnboardingProgress } from "@/lib/hooks/useOnboarding";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 export function OnboardingManager() {
   const [activeTour, setActiveTour] = useState<string | null>(null);
@@ -32,6 +33,7 @@ export function OnboardingManager() {
   const { data: tours = [] } = useOnboardingTours(config?.role);
   const updateConfig = useUpdateOnboardingConfig();
   const completeTour = useCompleteTour();
+  const tOnboarding = useTranslationsSafe("onboarding");
 
   const availableTours = tours.filter((tour) => tour.enabled);
   const activeTourData = tours.find((t) => t.id === activeTour);
@@ -65,29 +67,28 @@ export function OnboardingManager() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Onboarding</CardTitle>
+              <CardTitle>{tOnboarding("managerTitle")}</CardTitle>
               <CardDescription>
-                Completa los tours y la configuración inicial para aprovechar al máximo la
-                plataforma
+                {tOnboarding("managerDescription")}
               </CardDescription>
             </div>
             <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm">
                   <Settings className="h-4 w-4 mr-2" />
-                  Configuración
+                  {tOnboarding("settings")}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Configuración de Onboarding</DialogTitle>
+                  <DialogTitle>{tOnboarding("settingsTitle")}</DialogTitle>
                   <DialogDescription>
-                    Personaliza tu experiencia de onboarding
+                    {tOnboarding("settingsDescription")}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="skip-onboarding">Saltar onboarding</Label>
+                    <Label htmlFor="skip-onboarding">{tOnboarding("skipOnboarding")}</Label>
                     <Switch
                       id="skip-onboarding"
                       checked={config?.skipOnboarding || false}
@@ -95,7 +96,7 @@ export function OnboardingManager() {
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="show-tips">Mostrar tips contextuales</Label>
+                    <Label htmlFor="show-tips">{tOnboarding("showTips")}</Label>
                     <Switch
                       id="show-tips"
                       checked={config?.showTips !== false}
@@ -103,7 +104,7 @@ export function OnboardingManager() {
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="show-checklist">Mostrar checklist</Label>
+                    <Label htmlFor="show-checklist">{tOnboarding("showChecklist")}</Label>
                     <Switch
                       id="show-checklist"
                       checked={config?.showChecklist !== false}
@@ -119,7 +120,7 @@ export function OnboardingManager() {
           {/* Tours disponibles */}
           {availableTours.length > 0 && (
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold">Tours Guiados</h3>
+              <h3 className="text-sm font-semibold">{tOnboarding("tours")}</h3>
               <div className="grid gap-2">
                 {availableTours.map((tour) => {
                   const isCompleted = progress?.toursCompleted.includes(tour.id);
@@ -155,12 +156,12 @@ export function OnboardingManager() {
                         {isCompleted ? (
                           <>
                             <Play className="h-4 w-4 mr-2" />
-                            Repetir
+                            {tOnboarding("repeat")}
                           </>
                         ) : (
                           <>
                             <Play className="h-4 w-4 mr-2" />
-                            Iniciar
+                            {tOnboarding("startTour")}
                           </>
                         )}
                       </Button>

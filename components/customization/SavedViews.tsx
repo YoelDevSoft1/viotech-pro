@@ -22,12 +22,15 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import type { SavedView } from "@/lib/types/customization";
 import { format } from "date-fns";
-import { es } from "date-fns/locale/es";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 
 export function SavedViews() {
   const { data: preferences, isLoading } = useUserPreferences();
   const saveView = useSaveView();
   const deleteView = useDeleteView();
+  const tCustomization = useTranslationsSafe("customization");
+  const { formatDate } = useI18n();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingView, setEditingView] = useState<SavedView | null>(null);
   const [viewName, setViewName] = useState("");
@@ -36,7 +39,7 @@ export function SavedViews() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Vistas Guardadas</CardTitle>
+          <CardTitle>{tCustomization("savedViews")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-32 w-full" />
@@ -74,7 +77,7 @@ export function SavedViews() {
   };
 
   const handleDelete = (viewId: string) => {
-    if (confirm("¿Estás seguro de que quieres eliminar esta vista?")) {
+    if (confirm(tCustomization("deleteViewConfirm"))) {
       deleteView.mutate(viewId);
     }
   };
@@ -84,9 +87,9 @@ export function SavedViews() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Vistas Guardadas</CardTitle>
+            <CardTitle>{tCustomization("savedViews")}</CardTitle>
             <CardDescription>
-              Guarda y gestiona tus vistas personalizadas
+              {tCustomization("savedViewsDescription")}
             </CardDescription>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -99,26 +102,26 @@ export function SavedViews() {
                 }}
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Guardar Vista
+                {tCustomization("saveView")}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
-                  {editingView ? "Editar Vista" : "Guardar Vista Actual"}
+                  {editingView ? tCustomization("editView") : tCustomization("saveCurrentView")}
                 </DialogTitle>
                 <DialogDescription>
-                  Guarda la configuración actual de filtros, columnas y ordenamiento
+                  {tCustomization("saveViewDescription")}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="view-name">Nombre de la Vista</Label>
+                  <Label htmlFor="view-name">{tCustomization("viewName")}</Label>
                   <Input
                     id="view-name"
                     value={viewName}
                     onChange={(e) => setViewName(e.target.value)}
-                    placeholder="Ej: Tickets Urgentes"
+                    placeholder={tCustomization("viewNamePlaceholder")}
                   />
                 </div>
                 <div className="flex justify-end gap-2">
@@ -130,11 +133,11 @@ export function SavedViews() {
                       setEditingView(null);
                     }}
                   >
-                    Cancelar
+                    {tCustomization("cancel")}
                   </Button>
                   <Button onClick={handleSave} disabled={!viewName.trim()}>
                     <Save className="h-4 w-4 mr-2" />
-                    Guardar
+                    {tCustomization("save")}
                   </Button>
                 </div>
               </div>
@@ -145,7 +148,7 @@ export function SavedViews() {
       <CardContent>
         {views.length === 0 ? (
           <div className="text-center text-muted-foreground py-8">
-            No hay vistas guardadas. Guarda tu primera vista para comenzar.
+            {tCustomization("noSavedViews")}
           </div>
         ) : (
           <div className="space-y-2">
@@ -163,7 +166,7 @@ export function SavedViews() {
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Actualizada: {format(new Date(view.updatedAt), "PP", { locale: es })}
+                    {tCustomization("updated")}: {formatDate(new Date(view.updatedAt), "PP")}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -176,7 +179,7 @@ export function SavedViews() {
                       setDialogOpen(true);
                     }}
                   >
-                    Editar
+                    {tCustomization("edit")}
                   </Button>
                   <Button
                     variant="ghost"

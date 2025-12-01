@@ -12,18 +12,20 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import type { KeyboardShortcut } from "@/lib/types/customization";
 import { cn } from "@/lib/utils";
-
-const categoryLabels: Record<string, string> = {
-  navigation: "Navegación",
-  actions: "Acciones",
-  views: "Vistas",
-  custom: "Personalizados",
-};
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 export function KeyboardShortcuts() {
   const { data: shortcuts = [], isLoading } = useKeyboardShortcuts();
   const [searchQuery, setSearchQuery] = useState("");
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
+  const tCustomization = useTranslationsSafe("customization");
+
+  const categoryLabels: Record<string, string> = {
+    navigation: tCustomization("shortcuts.categories.navigation"),
+    actions: tCustomization("shortcuts.categories.actions"),
+    views: tCustomization("shortcuts.categories.views"),
+    custom: tCustomization("shortcuts.categories.custom"),
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -53,7 +55,7 @@ export function KeyboardShortcuts() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Atajos de Teclado</CardTitle>
+          <CardTitle>{tCustomization("keyboardShortcuts")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-64 w-full" />
@@ -101,14 +103,14 @@ export function KeyboardShortcuts() {
           Atajos de Teclado
         </CardTitle>
         <CardDescription>
-          Atajos de teclado disponibles en la plataforma
+          {tCustomization("shortcuts.description")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Buscar atajos..."
+            placeholder={tCustomization("shortcuts.searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -148,7 +150,7 @@ export function KeyboardShortcuts() {
 
         {filteredShortcuts.length === 0 && (
           <div className="text-center text-muted-foreground py-8">
-            No se encontraron atajos de teclado
+            {tCustomization("shortcuts.noResults")}
           </div>
         )}
       </CardContent>

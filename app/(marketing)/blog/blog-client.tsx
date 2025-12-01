@@ -12,8 +12,13 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NewsletterSubscription } from "@/components/blog/NewsletterSubscription";
 import type { BlogFilters } from "@/lib/types/blog";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 
 export function BlogPageClient() {
+  const t = useTranslationsSafe("marketing.blog");
+  const { formatDate } = useI18n();
+  
   const [filters, setFilters] = useState<BlogFilters>({
     page: 1,
     limit: 12,
@@ -67,15 +72,15 @@ export function BlogPageClient() {
               href="/"
               className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-4"
             >
-              <ArrowRight className="w-4 h-4 mr-2 rotate-180" /> Volver al inicio
+              <ArrowRight className="w-4 h-4 mr-2 rotate-180" /> {t("backToHome")}
             </Link>
             
             <h1 className="text-4xl font-extrabold tracking-tight sm:text-6xl md:text-7xl">
-              Blog VioTech
+              {t("title")}
             </h1>
             
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Artículos sobre consultoría TI, transformación digital y mejores prácticas tecnológicas
+              {t("description")}
             </p>
 
             {/* Search Bar */}
@@ -85,13 +90,13 @@ export function BlogPageClient() {
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="text"
-                    placeholder="Buscar artículos..."
+                    placeholder={t("searchPlaceholder")}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10"
                   />
                 </div>
-                <Button type="submit">Buscar</Button>
+                <Button type="submit">{t("searchButton")}</Button>
               </div>
             </form>
           </div>
@@ -107,7 +112,7 @@ export function BlogPageClient() {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <FolderOpen className="w-5 h-5" />
-                  Categorías
+                  {t("categories")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -123,7 +128,7 @@ export function BlogPageClient() {
                           : "hover:bg-muted"
                       }`}
                     >
-                      Todas
+                      {t("allCategories")}
                     </button>
                     {categories?.map((category) => (
                       <button
@@ -153,7 +158,7 @@ export function BlogPageClient() {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Tag className="w-5 h-5" />
-                  Tags Populares
+                  {t("popularTags")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -184,7 +189,7 @@ export function BlogPageClient() {
             {/* Clear Filters */}
             {hasActiveFilters && (
               <Button variant="outline" onClick={clearFilters} className="w-full">
-                Limpiar Filtros
+                {t("clearFilters")}
               </Button>
             )}
 
@@ -210,7 +215,7 @@ export function BlogPageClient() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <p className="text-muted-foreground">
-                    No se encontraron artículos. Intenta con otros filtros.
+                    {t("noArticles")}
                   </p>
                 </CardContent>
               </Card>
@@ -236,11 +241,7 @@ export function BlogPageClient() {
                           <Badge variant="secondary">{post.category.name}</Badge>
                           <span className="flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
-                            {new Date(post.publishedAt).toLocaleDateString("es-CO", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })}
+                            {formatDate(new Date(post.publishedAt), "PP")}
                           </span>
                         </div>
                         <CardTitle className="text-xl">
@@ -294,10 +295,10 @@ export function BlogPageClient() {
                         setFilters((prev) => ({ ...prev, page: (prev.page || 1) - 1 }))
                       }
                     >
-                      Anterior
+                      {t("pagination.previous")}
                     </Button>
                     <span className="flex items-center px-4 text-sm text-muted-foreground">
-                      Página {postsData.page} de {postsData.totalPages}
+                      {t("pagination.page")} {postsData.page} {t("pagination.of")} {postsData.totalPages}
                     </span>
                     <Button
                       variant="outline"
@@ -306,7 +307,7 @@ export function BlogPageClient() {
                         setFilters((prev) => ({ ...prev, page: (prev.page || 1) + 1 }))
                       }
                     >
-                      Siguiente
+                      {t("pagination.next")}
                     </Button>
                   </div>
                 )}

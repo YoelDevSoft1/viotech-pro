@@ -5,6 +5,7 @@ import { ArrowRight, Check, Code2, Brain, Headphones } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 const iconMap = {
   Code2,
@@ -25,6 +26,7 @@ interface ServicePageClientProps {
 
 export function ServicePageClient({ service, slug }: ServicePageClientProps) {
   const Icon = iconMap[service.icon] || Code2;
+  const t = useTranslationsSafe("marketing.services.detail");
 
   return (
     <div className="min-h-screen">
@@ -36,7 +38,7 @@ export function ServicePageClient({ service, slug }: ServicePageClientProps) {
               href="/services"
               className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-4"
             >
-              <ArrowRight className="w-4 h-4 mr-2 rotate-180" /> Volver a Servicios
+              <ArrowRight className="w-4 h-4 mr-2 rotate-180" /> {t("backToServices")}
             </Link>
             
             <div className="flex items-center justify-center mb-6">
@@ -56,13 +58,13 @@ export function ServicePageClient({ service, slug }: ServicePageClientProps) {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild>
                 <Link href="/contact">
-                  Agendar Consultoría Gratuita
+                  {t("scheduleConsultation")}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
                 <Link href="/services/catalog">
-                  Ver Planes y Precios
+                  {t("viewPlans")}
                 </Link>
               </Button>
             </div>
@@ -76,10 +78,10 @@ export function ServicePageClient({ service, slug }: ServicePageClientProps) {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold tracking-tight mb-4">
-                ¿Qué incluye este servicio?
+                {t("whatIncludes")}
               </h2>
               <p className="text-muted-foreground">
-                Todo lo que necesitas para transformar tu negocio
+                {t("whatIncludesDescription")}
               </p>
             </div>
             
@@ -107,10 +109,10 @@ export function ServicePageClient({ service, slug }: ServicePageClientProps) {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold tracking-tight mb-4">
-                Beneficios medibles
+                {t("measurableBenefits")}
               </h2>
               <p className="text-muted-foreground">
-                Resultados reales para empresas reales
+                {t("measurableBenefitsDescription")}
               </p>
             </div>
             
@@ -133,16 +135,16 @@ export function ServicePageClient({ service, slug }: ServicePageClientProps) {
           <Card className="bg-primary text-primary-foreground border-none max-w-4xl mx-auto">
             <CardHeader className="text-center">
               <CardTitle className="text-3xl mb-4">
-                ¿Listo para comenzar?
+                {t("readyToStart")}
               </CardTitle>
               <CardDescription className="text-primary-foreground/90">
-                Agenda una consultoría gratuita de 45 minutos y descubre cómo podemos ayudarte
+                {t("readyToStartDescription")}
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
               <Button size="lg" variant="secondary" asChild>
                 <Link href="/contact">
-                  Agendar Consultoría Gratuita
+                  {t("scheduleConsultation")}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>

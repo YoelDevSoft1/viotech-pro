@@ -19,60 +19,69 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
-// Schema de validación con Zod
-const contactFormSchema = z.object({
-  name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
-  email: z.string().email("Email inválido"),
-  company: z.string().optional(),
-  projectType: z.string().min(1, "Selecciona un tipo de proyecto"),
-  message: z.string().min(10, "El mensaje debe tener al menos 10 caracteres"),
-});
-
-type ContactFormValues = z.infer<typeof contactFormSchema>;
-
-const contactMethods = [
-  {
-    icon: MessageSquare,
-    title: "WhatsApp",
-    description: "Respuesta en menos de 1 hora",
-    action: "Enviar mensaje",
-    href: "https://wa.link/1r4ul7",
-    primary: true,
-  },
-  {
-    icon: Mail,
-    title: "Email",
-    description: "contacto@viotech.com.co",
-    action: "Enviar correo",
-    href: "mailto:contacto@viotech.com.co",
-    primary: false,
-  },
-];
-
-const info = [
-  {
-    icon: MapPin,
-    label: "Ubicación",
-    value: "Bogotá, Colombia",
-  },
-  {
-    icon: Clock,
-    label: "Horario",
-    value: "Lun-Vie 8:00-18:00",
-  },
-];
-
-const projectTypes = [
-  "Desarrollo de Software",
-  "Consultoría TI",
-  "Diseño Web Premium",
-  "Infraestructura Cloud",
-  "Transformación Digital",
-  "Otro",
-];
+type ContactFormValues = {
+  name: string;
+  email: string;
+  company?: string;
+  projectType: string;
+  message: string;
+};
 
 export function ContactPageClient() {
+  const t = useTranslationsSafe("marketing.contact");
+
+  // Schema de validación con Zod usando traducciones
+  const contactFormSchema = z.object({
+    name: z.string().min(2, t("validation.nameMin")),
+    email: z.string().email(t("validation.emailInvalid")),
+    company: z.string().optional(),
+    projectType: z.string().min(1, t("validation.projectTypeRequired")),
+    message: z.string().min(10, t("validation.messageMin")),
+  });
+
+  const contactMethods = [
+    {
+      icon: MessageSquare,
+      title: t("methods.whatsapp.title"),
+      description: t("methods.whatsapp.description"),
+      action: t("methods.whatsapp.action"),
+      href: "https://wa.link/1r4ul7",
+      primary: true,
+    },
+    {
+      icon: Mail,
+      title: t("methods.email.title"),
+      description: t("methods.email.description"),
+      action: t("methods.email.action"),
+      href: "mailto:contacto@viotech.com.co",
+      primary: false,
+    },
+  ];
+
+  const info = [
+    {
+      icon: MapPin,
+      label: t("info.location"),
+      value: t("info.locationValue"),
+    },
+    {
+      icon: Clock,
+      label: t("info.schedule"),
+      value: t("info.scheduleValue"),
+    },
+  ];
+
+  const projectTypes = [
+    t("projectTypes.software"),
+    t("projectTypes.consulting"),
+    t("projectTypes.webDesign"),
+    t("projectTypes.cloud"),
+    t("projectTypes.digital"),
+    t("projectTypes.other"),
+  ];
+
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
@@ -90,14 +99,14 @@ export function ContactPageClient() {
       // Por ahora simulamos el envío
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
-      toast.success("¡Mensaje enviado!", {
-        description: "Te contactaremos muy pronto.",
+      toast.success(t("form.success"), {
+        description: t("form.successDescription"),
       });
       
       form.reset();
     } catch (error) {
-      toast.error("Error al enviar", {
-        description: "Por favor intenta nuevamente o contáctanos por WhatsApp.",
+      toast.error(t("form.error"), {
+        description: t("form.errorDescription"),
       });
     }
   };
@@ -113,11 +122,10 @@ export function ContactPageClient() {
           className="text-center mb-16"
         >
           <h1 className="text-3xl sm:text-4xl md:text-6xl font-medium tracking-tight text-foreground mb-6 leading-[1.1]">
-            Comencemos tu proyecto
+            {t("title")}
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Agenda una consultoría gratuita de 45 minutos y descubre cómo
-            podemos transformar tu negocio
+            {t("description")}
           </p>
         </motion.div>
 
@@ -207,9 +215,9 @@ export function ContactPageClient() {
         >
           <Card>
             <CardHeader>
-              <CardTitle>Cuéntanos sobre tu proyecto</CardTitle>
+              <CardTitle>{t("form.title")}</CardTitle>
               <CardDescription>
-                Respuesta prioritaria en menos de 1 hora hábil
+                {t("form.description")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -221,9 +229,9 @@ export function ContactPageClient() {
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nombre completo</FormLabel>
+                          <FormLabel>{t("form.name")}</FormLabel>
                           <FormControl>
-                            <Input placeholder="Juan Pérez" {...field} />
+                            <Input placeholder={t("form.namePlaceholder")} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -234,9 +242,9 @@ export function ContactPageClient() {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Correo electrónico</FormLabel>
+                          <FormLabel>{t("form.email")}</FormLabel>
                           <FormControl>
-                            <Input type="email" placeholder="juan@empresa.com" {...field} />
+                            <Input type="email" placeholder={t("form.emailPlaceholder")} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -250,9 +258,9 @@ export function ContactPageClient() {
                       name="company"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Empresa (opcional)</FormLabel>
+                          <FormLabel>{t("form.company")}</FormLabel>
                           <FormControl>
-                            <Input placeholder="Mi Empresa S.A.S" {...field} />
+                            <Input placeholder={t("form.companyPlaceholder")} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -263,11 +271,11 @@ export function ContactPageClient() {
                       name="projectType"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Tipo de proyecto</FormLabel>
+                          <FormLabel>{t("form.projectType")}</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Selecciona un tipo" />
+                                <SelectValue placeholder={t("form.projectTypePlaceholder")} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -289,10 +297,10 @@ export function ContactPageClient() {
                     name="message"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Mensaje</FormLabel>
+                        <FormLabel>{t("form.message")}</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="¿Qué objetivo buscas? ¿Qué timeline manejas?"
+                            placeholder={t("form.messagePlaceholder")}
                             className="min-h-[140px]"
                             {...field}
                           />
@@ -310,11 +318,11 @@ export function ContactPageClient() {
                     {form.formState.isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Enviando...
+                        {t("form.submitting")}
                       </>
                     ) : (
                       <>
-                        Enviar briefing
+                        {t("form.submit")}
                         <Send className="ml-2 h-4 w-4" />
                       </>
                     )}
@@ -326,9 +334,9 @@ export function ContactPageClient() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Disponibilidad</CardTitle>
+              <CardTitle>{t("availability.title")}</CardTitle>
               <CardDescription>
-                Slots ejecutivos esta semana
+                {t("availability.description")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -336,19 +344,19 @@ export function ContactPageClient() {
                 <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
                   <p className="text-3xl font-medium text-foreground">4</p>
                   <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                    Discovery calls
+                    {t("availability.discoveryCalls")}
                   </p>
                 </div>
                 <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
                   <p className="text-3xl font-medium text-foreground">2</p>
                   <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                    Workshops estrategia
+                    {t("availability.strategyWorkshops")}
                   </p>
                 </div>
               </div>
               <div className="space-y-3 text-sm text-muted-foreground">
-                <p>Calendario con disponibilidad extendida para equipos globales.</p>
-                <p>Firmamos NDA antes de cada sesión si es necesario.</p>
+                <p>{t("availability.calendarNote1")}</p>
+                <p>{t("availability.calendarNote2")}</p>
               </div>
               <Button
                 variant="outline"
@@ -360,7 +368,7 @@ export function ContactPageClient() {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Agendar demo ejecutiva
+                  {t("availability.scheduleDemo")}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </a>
               </Button>
@@ -378,15 +386,15 @@ export function ContactPageClient() {
           <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-green-500" />
-              <span>Consultoría 100% gratuita</span>
+              <span>{t("trust.freeConsultation")}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-green-500" />
-              <span>Sin compromiso</span>
+              <span>{t("trust.noCommitment")}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-green-500" />
-              <span>Respuesta en menos de 1 hora</span>
+              <span>{t("trust.fastResponse")}</span>
             </div>
           </div>
         </motion.div>
