@@ -117,7 +117,7 @@ export function TicketComments({
         setUploadingFiles(new Set());
       }
 
-      toast.success("Comentario enviado");
+      toast.success(tTickets("commentSent"));
       setMessage("");
       setFiles([]);
       if (fileInputRef.current) {
@@ -184,7 +184,7 @@ export function TicketComments({
                         </div>
                         <div>
                           <p className="text-sm font-medium">
-                            {c.autor?.nombre || c.autor?.email || "Usuario anónimo"}
+                            {c.autor?.nombre || c.autor?.email || tTickets("anonymousUser")}
                           </p>
                           {c.autor?.email && c.autor?.nombre && (
                             <p className="text-xs text-muted-foreground">{c.autor.email}</p>
@@ -272,7 +272,7 @@ export function TicketComments({
               rows={4}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Escribe tu comentario aquí... Puedes incluir detalles, actualizaciones o preguntas."
+              placeholder={tTickets("commentPlaceholder")}
               disabled={submitting}
               className="resize-none"
             />

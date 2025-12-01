@@ -207,7 +207,9 @@
     "slaTarget": "SLA target",
     "comments": "Comments",
     "newComment": "New comment",
-    "commentPlaceholder": "Update the ticket...",
+    "commentPlaceholder": "Write your comment here... You can include details, updates or questions.",
+    "commentSent": "Comment sent",
+    "anonymousUser": "Anonymous user",
     "sending": "Sending...",
     "addComment": "Add comment",
     "notFound": "Ticket not found.",
@@ -502,7 +504,17 @@
       "rejectCommentConfirm": "Reject comment?",
       "rejectCommentDescription": "This action will mark the comment as rejected. The comment will not be publicly visible.",
       "errorNoPostSlug": "Error: The comment does not have article information. Please contact the administrator.",
-      "send": "Send"
+      "send": "Send",
+      "save": "Save",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "delete": "Delete",
+      "reply": "Reply",
+      "namePlaceholder": "Your name",
+      "namePlaceholderRequired": "Your name *",
+      "emailPlaceholder": "Your email (optional)",
+      "replyPlaceholder": "Write your reply...",
+      "commentPlaceholder": "Write your comment..."
     }
   },
   "resources": {

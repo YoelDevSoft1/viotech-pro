@@ -23,38 +23,42 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useResource, useAddResourceSkill, useAddResourceCertification } from "@/lib/hooks/useResources";
-import { format } from "date-fns";
-import { es } from "date-fns/locale/es";
 import type { ResourceSkill, ResourceCertification } from "@/lib/types/resources";
 import { cn } from "@/lib/utils";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 
 interface ResourceSkillsProps {
   resourceId: string;
 }
 
-const skillSchema = z.object({
-  name: z.string().min(1, "El nombre es requerido"),
-  category: z.string().min(1, "La categoría es requerida"),
+// Esquemas de validación - se actualizarán dinámicamente con traducciones
+const getSkillSchema = (t: (key: string) => string) => z.object({
+  name: z.string().min(1, t("validation.nameRequired")),
+  category: z.string().min(1, t("validation.categoryRequired")),
   level: z.enum(["beginner", "intermediate", "advanced", "expert"]),
   yearsOfExperience: z.number().optional(),
 });
 
-const certificationSchema = z.object({
-  name: z.string().min(1, "El nombre es requerido"),
-  issuer: z.string().min(1, "El emisor es requerido"),
-  issueDate: z.string().min(1, "La fecha de emisión es requerida"),
+const getCertificationSchema = (t: (key: string) => string) => z.object({
+  name: z.string().min(1, t("validation.nameRequired")),
+  issuer: z.string().min(1, t("validation.issuerRequired")),
+  issueDate: z.string().min(1, t("validation.issueDateRequired")),
   expiryDate: z.string().optional(),
   credentialId: z.string().optional(),
   credentialUrl: z.string().url().optional().or(z.literal("")),
 });
 
-type SkillFormValues = z.infer<typeof skillSchema>;
-type CertificationFormValues = z.infer<typeof certificationSchema>;
+type SkillFormValues = z.infer<ReturnType<typeof getSkillSchema>>;
+type CertificationFormValues = z.infer<ReturnType<typeof getCertificationSchema>>;
 
 export function ResourceSkills({ resourceId }: ResourceSkillsProps) {
+  const tResources = useTranslationsSafe("resources");
+  const { formatDate } = useI18n();
+
   const [skillDialogOpen, setSkillDialogOpen] = useState(false);
   const [certDialogOpen, setCertDialogOpen] = useState(false);
 
@@ -63,7 +67,7 @@ export function ResourceSkills({ resourceId }: ResourceSkillsProps) {
   const addCertification = useAddResourceCertification();
 
   const skillForm = useForm<SkillFormValues>({
-    resolver: zodResolver(skillSchema),
+    resolver: zodResolver(getSkillSchema(tResources)),
     defaultValues: {
       name: "",
       category: "",
@@ -73,7 +77,7 @@ export function ResourceSkills({ resourceId }: ResourceSkillsProps) {
   });
 
   const certForm = useForm<CertificationFormValues>({
-    resolver: zodResolver(certificationSchema),
+    resolver: zodResolver(getCertificationSchema(tResources)),
     defaultValues: {
       name: "",
       issuer: "",
@@ -156,12 +160,12 @@ export function ResourceSkills({ resourceId }: ResourceSkillsProps) {
               <DialogTrigger asChild>
                 <Button size="sm">
                   <Plus className="h-4 w-4 mr-2" />
-                  Agregar Skill
+                  {tResources("addSkill")}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Agregar Skill</DialogTitle>
+                  <DialogTitle>{tResources("addSkill")}</DialogTitle>
                   <DialogDescription>
                     Agrega una nueva skill al recurso
                   </DialogDescription>
@@ -227,10 +231,10 @@ export function ResourceSkills({ resourceId }: ResourceSkillsProps) {
                       variant="outline"
                       onClick={() => setSkillDialogOpen(false)}
                     >
-                      Cancelar
+                      {tResources("cancel")}
                     </Button>
                     <Button type="submit" disabled={addSkill.isPending}>
-                      Agregar
+                      {tResources("add")}
                     </Button>
                   </div>
                 </form>
@@ -290,12 +294,12 @@ export function ResourceSkills({ resourceId }: ResourceSkillsProps) {
               <DialogTrigger asChild>
                 <Button size="sm">
                   <Plus className="h-4 w-4 mr-2" />
-                  Agregar Certificación
+                  {tResources("addCertification")}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Agregar Certificación</DialogTitle>
+                  <DialogTitle>{tResources("addCertification")}</DialogTitle>
                   <DialogDescription>
                     Agrega una nueva certificación al recurso
                   </DialogDescription>
@@ -378,10 +382,10 @@ export function ResourceSkills({ resourceId }: ResourceSkillsProps) {
                       variant="outline"
                       onClick={() => setCertDialogOpen(false)}
                     >
-                      Cancelar
+                      {tResources("cancel")}
                     </Button>
                     <Button type="submit" disabled={addCertification.isPending}>
-                      Agregar
+                      {tResources("add")}
                     </Button>
                   </div>
                 </form>
@@ -414,9 +418,9 @@ export function ResourceSkills({ resourceId }: ResourceSkillsProps) {
                         )}
                       </div>
                       <div className="text-sm text-muted-foreground mt-1">
-                        {cert.issuer} · Emitida: {format(new Date(cert.issueDate), "PP", { locale: es })}
+                        {cert.issuer} · Emitida: {formatDate(cert.issueDate, "PP")}
                         {cert.expiryDate &&
-                          ` · Vence: ${format(new Date(cert.expiryDate), "PP", { locale: es })}`}
+                          ` · Vence: ${formatDate(cert.expiryDate, "PP")}`}
                       </div>
                       {cert.credentialId && (
                         <div className="text-xs text-muted-foreground mt-1">

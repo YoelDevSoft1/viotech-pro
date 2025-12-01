@@ -181,7 +181,7 @@ export function BlogComments({ postSlug }: BlogCommentsProps) {
                       onClick={() => handleEdit(comment.id)}
                       disabled={updateComment.isPending}
                     >
-                      Guardar
+                      {tBlog("save")}
                     </Button>
                     <Button
                       size="sm"
@@ -191,7 +191,7 @@ export function BlogComments({ postSlug }: BlogCommentsProps) {
                         setEditContent("");
                       }}
                     >
-                      Cancelar
+                      {tBlog("cancel")}
                     </Button>
                   </div>
                 </div>
@@ -221,7 +221,7 @@ export function BlogComments({ postSlug }: BlogCommentsProps) {
                     className="gap-1"
                   >
                     <Reply className="h-4 w-4" />
-                    Responder
+                    {tBlog("reply")}
                   </Button>
                 )}
 
@@ -237,7 +237,7 @@ export function BlogComments({ postSlug }: BlogCommentsProps) {
                       className="gap-1"
                     >
                       <Edit className="h-4 w-4" />
-                      Editar
+                      {tBlog("edit")}
                     </Button>
                     <Button
                       variant="ghost"
@@ -246,7 +246,7 @@ export function BlogComments({ postSlug }: BlogCommentsProps) {
                       className="gap-1 text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />
-                      Eliminar
+                      {tBlog("delete")}
                     </Button>
                   </>
                 )}
@@ -259,21 +259,21 @@ export function BlogComments({ postSlug }: BlogCommentsProps) {
                       {!currentUser && (
                         <div className="grid grid-cols-2 gap-2">
                           <Input
-                            placeholder="Tu nombre"
+                            placeholder={tBlog("namePlaceholder")}
                             value={authorName}
                             onChange={(e) => setAuthorName(e.target.value)}
                             required
                           />
                           <Input
                             type="email"
-                            placeholder="Tu email (opcional)"
+                            placeholder={tBlog("emailPlaceholder")}
                             value={authorEmail}
                             onChange={(e) => setAuthorEmail(e.target.value)}
                           />
                         </div>
                       )}
                       <Textarea
-                        placeholder="Escribe tu respuesta..."
+                        placeholder={tBlog("replyPlaceholder")}
                         value={replyContent}
                         onChange={(e) => setReplyContent(e.target.value)}
                         rows={3}
@@ -301,7 +301,7 @@ export function BlogComments({ postSlug }: BlogCommentsProps) {
                             setReplyContent("");
                           }}
                         >
-                          Cancelar
+                          {tBlog("cancel")}
                         </Button>
                       </div>
                     </form>
@@ -337,21 +337,21 @@ export function BlogComments({ postSlug }: BlogCommentsProps) {
               {!currentUser && (
                 <div className="grid grid-cols-2 gap-2">
                   <Input
-                    placeholder="Tu nombre *"
+                    placeholder={tBlog("namePlaceholderRequired")}
                     value={authorName}
                     onChange={(e) => setAuthorName(e.target.value)}
                     required
                   />
                   <Input
                     type="email"
-                    placeholder="Tu email (opcional)"
+                    placeholder={tBlog("emailPlaceholder")}
                     value={authorEmail}
                     onChange={(e) => setAuthorEmail(e.target.value)}
                   />
                 </div>
               )}
               <Textarea
-                placeholder="Escribe tu comentario..."
+                placeholder={tBlog("commentPlaceholder")}
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 rows={4}

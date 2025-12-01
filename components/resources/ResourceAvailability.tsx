@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Calendar, Plus, X, Clock, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,37 +24,44 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useResource, useCreateVacation, useUpdateResourceAvailability } from "@/lib/hooks/useResources";
-import { format } from "date-fns";
-import { es } from "date-fns/locale/es";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import type { Vacation, Resource } from "@/lib/types/resources";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 
 interface ResourceAvailabilityProps {
   resourceId: string;
 }
 
-const vacationSchema = z.object({
-  startDate: z.string().min(1, "La fecha de inicio es requerida"),
-  endDate: z.string().min(1, "La fecha de fin es requerida"),
+// Esquema de validación - se actualizará dinámicamente con traducciones
+const getVacationSchema = (t: (key: string) => string) => z.object({
+  startDate: z.string().min(1, t("validation.startDateRequired")),
+  endDate: z.string().min(1, t("validation.endDateRequired")),
   type: z.enum(["vacation", "sick_leave", "personal", "other"]),
   description: z.string().optional(),
 });
 
-type VacationFormValues = z.infer<typeof vacationSchema>;
-
-const dayLabels: Record<number, string> = {
-  0: "Domingo",
-  1: "Lunes",
-  2: "Martes",
-  3: "Miércoles",
-  4: "Jueves",
-  5: "Viernes",
-  6: "Sábado",
-};
+type VacationFormValues = z.infer<ReturnType<typeof getVacationSchema>>;
 
 export function ResourceAvailability({ resourceId }: ResourceAvailabilityProps) {
+  const tResources = useTranslationsSafe("resources");
+  const { formatDate } = useI18n();
+
+  // Crear labels de días usando traducciones
+  const dayLabels = useMemo(() => {
+    return {
+      0: tResources("days.sunday"),
+      1: tResources("days.monday"),
+      2: tResources("days.tuesday"),
+      3: tResources("days.wednesday"),
+      4: tResources("days.thursday"),
+      5: tResources("days.friday"),
+      6: tResources("days.saturday"),
+    } as Record<number, string>;
+  }, [tResources]);
+
   const [vacationDialogOpen, setVacationDialogOpen] = useState(false);
 
   const { data: resource, isLoading } = useResource(resourceId);
@@ -62,7 +69,7 @@ export function ResourceAvailability({ resourceId }: ResourceAvailabilityProps) 
   const updateAvailability = useUpdateResourceAvailability();
 
   const vacationForm = useForm<VacationFormValues>({
-    resolver: zodResolver(vacationSchema),
+    resolver: zodResolver(getVacationSchema(tResources)),
     defaultValues: {
       startDate: "",
       endDate: "",
@@ -267,12 +274,12 @@ export function ResourceAvailability({ resourceId }: ResourceAvailabilityProps) 
               <DialogTrigger asChild>
                 <Button size="sm">
                   <Plus className="h-4 w-4 mr-2" />
-                  Agregar Vacación
+                  {tResources("addVacation")}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Agregar Vacación</DialogTitle>
+                  <DialogTitle>{tResources("addVacation")}</DialogTitle>
                   <DialogDescription>
                     Registra un período de vacaciones o ausencia
                   </DialogDescription>
@@ -342,10 +349,10 @@ export function ResourceAvailability({ resourceId }: ResourceAvailabilityProps) 
                       variant="outline"
                       onClick={() => setVacationDialogOpen(false)}
                     >
-                      Cancelar
+                      {tResources("cancel")}
                     </Button>
                     <Button type="submit" disabled={createVacation.isPending}>
-                      Agregar
+                      {tResources("add")}
                     </Button>
                   </div>
                 </form>
@@ -364,8 +371,7 @@ export function ResourceAvailability({ resourceId }: ResourceAvailabilityProps) 
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">
-                        {format(new Date(vacation.startDate), "PP", { locale: es })} -{" "}
-                        {format(new Date(vacation.endDate), "PP", { locale: es })}
+                        {formatDate(vacation.startDate, "PP")} - {formatDate(vacation.endDate, "PP")}
                       </span>
                       <Badge
                         variant={vacation.approved ? "default" : "secondary"}

@@ -206,7 +206,9 @@
     "slaTarget": "SLA objetivo",
     "comments": "Comentarios",
     "newComment": "Nuevo comentario",
-    "commentPlaceholder": "Actualiza el ticket...",
+    "commentPlaceholder": "Escribe tu comentario aquí... Puedes incluir detalles, actualizaciones o preguntas.",
+    "commentSent": "Comentario enviado",
+    "anonymousUser": "Usuario anónimo",
     "sending": "Enviando...",
     "addComment": "Agregar comentario",
     "notFound": "No se encontró el ticket.",
@@ -501,7 +503,17 @@
       "rejectCommentConfirm": "¿Rechazar comentario?",
       "rejectCommentDescription": "Esta acción marcará el comentario como rechazado. El comentario no será visible públicamente.",
       "errorNoPostSlug": "Error: El comentario no tiene información del artículo. Por favor, contacta al administrador.",
-      "send": "Enviar"
+      "send": "Enviar",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "reply": "Responder",
+      "namePlaceholder": "Tu nombre",
+      "namePlaceholderRequired": "Tu nombre *",
+      "emailPlaceholder": "Tu email (opcional)",
+      "replyPlaceholder": "Escribe tu respuesta...",
+      "commentPlaceholder": "Escribe tu comentario..."
     }
   },
   "resources": {
@@ -534,7 +546,29 @@
     "average": "Promedio",
     "maximum": "Máximo",
     "totalHours": "Total Horas",
-    "noWorkloadData": "No hay datos de carga de trabajo disponibles"
+    "noWorkloadData": "No hay datos de carga de trabajo disponibles",
+    "cancel": "Cancelar",
+    "add": "Agregar",
+    "days": {
+      "sunday": "Domingo",
+      "monday": "Lunes",
+      "tuesday": "Martes",
+      "wednesday": "Miércoles",
+      "thursday": "Jueves",
+      "friday": "Viernes",
+      "saturday": "Sábado"
+    },
+    "validation": {
+      "startDateRequired": "La fecha de inicio es requerida",
+      "endDateRequired": "La fecha de fin es requerida",
+      "nameRequired": "El nombre es requerido",
+      "categoryRequired": "La categoría es requerida",
+      "issuerRequired": "El emisor es requerido",
+      "issueDateRequired": "La fecha de emisión es requerida"
+    },
+    "addVacation": "Agregar Vacación",
+    "addSkill": "Agregar Skill",
+    "addCertification": "Agregar Certificación"
   },
   "reports": {
     "title": "Reportes",

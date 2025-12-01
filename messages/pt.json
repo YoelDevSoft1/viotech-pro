@@ -207,7 +207,9 @@
     "slaTarget": "Meta SLA",
     "comments": "Comentários",
     "newComment": "Novo comentário",
-    "commentPlaceholder": "Atualize o ticket...",
+    "commentPlaceholder": "Escreva seu comentário aqui... Você pode incluir detalhes, atualizações ou perguntas.",
+    "commentSent": "Comentário enviado",
+    "anonymousUser": "Usuário anônimo",
     "sending": "Enviando...",
     "addComment": "Adicionar comentário",
     "notFound": "Ticket não encontrado.",
@@ -455,7 +457,17 @@
       "rejectCommentConfirm": "Rejeitar comentário?",
       "rejectCommentDescription": "Esta ação marcará o comentário como rejeitado. O comentário não será visível publicamente.",
       "errorNoPostSlug": "Erro: O comentário não tem informações do artigo. Por favor, entre em contato com o administrador.",
-      "send": "Enviar"
+      "send": "Enviar",
+      "save": "Salvar",
+      "cancel": "Cancelar",
+      "edit": "Editar",
+      "delete": "Excluir",
+      "reply": "Responder",
+      "namePlaceholder": "Seu nome",
+      "namePlaceholderRequired": "Seu nome *",
+      "emailPlaceholder": "Seu email (opcional)",
+      "replyPlaceholder": "Escreva sua resposta...",
+      "commentPlaceholder": "Escreva seu comentário..."
     }
   },
   "resources": {
