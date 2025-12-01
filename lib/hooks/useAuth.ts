@@ -73,7 +73,7 @@ export function useResetPassword() {
   const router = useRouter();
   return useMutation({
     mutationFn: async ({ token, password }: any) => {
-      const { data } = await apiClient.post("/auth/reset-password", { token, password });
+      const { data } = await apiClient.post("/auth/reset-password", { token, newPassword: password });
       return data;
     },
     onSuccess: () => {

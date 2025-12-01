@@ -43,62 +43,70 @@ function ResetPasswordPageContent() {
 
   if (!token) {
     return (
-      <Alert variant="destructive">
-        <AlertTitle>{tAuth("invalidToken")}</AlertTitle>
-        <AlertDescription>{tAuth("invalidTokenDescription")}</AlertDescription>
-      </Alert>
+      <div className="container flex items-center justify-center min-h-screen p-4">
+        <Card className="w-full max-w-md border-border/60 shadow-xl">
+          <CardContent className="pt-6">
+            <Alert variant="destructive">
+              <AlertTitle>{tAuth("invalidToken")}</AlertTitle>
+              <AlertDescription>{tAuth("invalidTokenDescription")}</AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <Card className="border-border/60 shadow-xl">
-      <CardHeader>
-        <CardTitle className="text-xl">{tAuth("newPassword")}</CardTitle>
-        <CardDescription>{tAuth("newPasswordDescription")}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{tAuth("newPassword")}</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input type="password" placeholder="••••••••" className="pl-9" {...field} />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{tAuth("confirmPassword")}</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input type="password" placeholder="••••••••" className="pl-9" {...field} />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isPending ? tAuth("updating") : tAuth("reset")}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+    <div className="container flex items-center justify-center min-h-screen p-4">
+      <Card className="w-full max-w-md border-border/60 shadow-xl">
+        <CardHeader>
+          <CardTitle className="text-xl">{tAuth("newPassword")}</CardTitle>
+          <CardDescription>{tAuth("newPasswordDescription")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{tAuth("newPassword")}</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input type="password" placeholder="••••••••" className="pl-9" {...field} />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{tAuth("confirmPassword")}</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input type="password" placeholder="••••••••" className="pl-9" {...field} />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="w-full" disabled={isPending}>
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isPending ? tAuth("updating") : tAuth("reset")}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
