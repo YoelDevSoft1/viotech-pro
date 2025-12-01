@@ -360,6 +360,9 @@
     "anonymousUser": "Usuário anônimo",
     "sending": "Enviando...",
     "addComment": "Adicionar comentário",
+    "addCommentOrFile": "Adicione um comentário ou arquivo",
+    "uploadError": "Erro ao enviar {fileName}",
+    "sendError": "Erro ao enviar comentário",
     "notFound": "Ticket não encontrado.",
     "error": {
       "loadFailed": "Erro ao carregar ticket",
@@ -735,7 +738,10 @@
     "average": "Média",
     "maximum": "Máximo",
     "totalHours": "Total de Horas",
-    "noWorkloadData": "Nenhum dado de carga de trabalho disponível"
+    "noWorkloadData": "Nenhum dado de carga de trabalho disponível",
+    "vacationDescription": "Descrição (opcional)",
+    "vacationDescriptionPlaceholder": "Motivo da ausência",
+    "timezonePlaceholder": "America/Bogota"
   },
   "reports": {
     "title": "Relatórios",
@@ -850,7 +856,12 @@
       "passwordPlaceholder": "Digite sua senha",
       "disabling": "Desabilitando...",
       "activeSessions": "Sessões Ativas",
-      "activeSessionsDescription": "Gerencie suas sessões ativas e feche aquelas que você não reconhece."
+      "activeSessionsDescription": "Gerencie suas sessões ativas e feche aquelas que você não reconhece.",
+      "mfaEnabledSuccess": "MFA Habilitado com Sucesso",
+      "backupCodes": "Códigos de Backup",
+      "backupCodesDescription": "Guarde estes códigos de backup em um lugar seguro. Eles serão mostrados apenas uma vez.",
+      "copyCodes": "Copiar códigos",
+      "downloadCodes": "Baixar códigos"
     },
     "notificationsTab": {
       "preferences": "Preferências de Notificações",

@@ -771,7 +771,10 @@
     "average": "Average",
     "maximum": "Maximum",
     "totalHours": "Total Hours",
-    "noWorkloadData": "No workload data available"
+    "noWorkloadData": "No workload data available",
+    "vacationDescription": "Description (optional)",
+    "vacationDescriptionPlaceholder": "Reason for absence",
+    "timezonePlaceholder": "America/Bogota"
   },
   "reports": {
     "title": "Reports",
