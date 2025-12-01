@@ -127,6 +127,16 @@
     "detailsComingSoon": "Información detallada del proyecto próximamente...",
     "notFound": "No se encontró el proyecto."
   },
+  "aiAssistant": {
+    "welcomeMessage": "Soy tu asistente para redactar tickets claros. Describe el problema y sugeriré título, prioridad y detalles.",
+    "inputPlaceholder": "Describe el issue, impacto y urgencia...",
+    "thinking": "Pensando...",
+    "send": "Enviar",
+    "clear": "Limpiar",
+    "creating": "Creando...",
+    "createTicket": "Crear ticket",
+    "ticketCreated": "Ticket creado: #{id}"
+  },
   "tickets": {
     "title": "Tickets",
     "create": "Crear Ticket",
@@ -251,6 +261,42 @@
       "ticketAssigned": "Tickets asignados",
       "projectCreated": "Proyectos creados",
       "projectUpdated": "Proyectos actualizados",
+      "system": "Sistema"
+    }
+  },
+  "auditLog": {
+    "title": "Historial de Cambios",
+    "description": "Registro de todas las acciones realizadas en el sistema",
+    "search": "Búsqueda",
+    "searchPlaceholder": "Buscar en descripción...",
+    "searchButton": "Buscar",
+    "action": "Acción",
+    "allActions": "Todas las acciones",
+    "entityType": "Tipo de Entidad",
+    "allTypes": "Todos los tipos",
+    "noRecords": "No hay registros de cambios",
+    "actions": {
+      "create": "Creado",
+      "update": "Actualizado",
+      "delete": "Eliminado",
+      "assign": "Asignado",
+      "status_change": "Cambio de estado",
+      "comment": "Comentado",
+      "approve": "Aprobado",
+      "reject": "Rechazado",
+      "login": "Inicio de sesión",
+      "logout": "Cierre de sesión",
+      "permission_change": "Cambio de permisos"
+    },
+    "entityTypes": {
+      "ticket": "Ticket",
+      "project": "Proyecto",
+      "user": "Usuario",
+      "organization": "Organización",
+      "comment": "Comentario",
+      "blog_post": "Post del Blog",
+      "blog_comment": "Comentario del Blog",
+      "notification": "Notificación",
       "system": "Sistema"
     }
   },
@@ -870,10 +916,61 @@
       }
     }
   },
+  "internal": {
+    "title": "Panel interno",
+    "pageTitle": "Operaciones y soporte",
+    "description": "Accede a tickets de todos los clientes, proyectos y alertas críticas.",
+    "breadcrumb": {
+      "internal": "Interno",
+      "controlPanel": "Panel de Control"
+    },
+    "organization": {
+      "title": "Organización",
+      "description": "Selecciona organización (se guarda localmente). Si la API no responde, se usan orgs mock."
+    },
+    "cards": {
+      "globalTickets": {
+        "title": "Tickets globales",
+        "description": "Visualiza y gestiona tickets de todos los clientes."
+      },
+      "usersRoles": {
+        "title": "Usuarios/roles",
+        "description": "Cambia roles y verifica cuentas."
+      },
+      "projects": {
+        "title": "Proyectos",
+        "description": "Ver proyectos activos y sus tickets."
+      },
+      "adminTickets": {
+        "title": "Admin · Tickets",
+        "description": "Vista global admin con edición rápida."
+      }
+    },
+    "alerts": {
+      "title": "Alertas críticas (SLA, salud, IA, pagos)",
+      "noAlerts": "No hay alertas activas en este momento.",
+      "severity": {
+        "critical": "Crítico",
+        "warning": "Alerta",
+        "info": "Info"
+      },
+      "errors": {
+        "loadFailed": "No se pudo cargar alertas",
+        "feedFailed": "No se pudo cargar el feed de alertas"
+      },
+      "mock": {
+        "slaTitle": "SLA crítico en Ticket #123",
+        "slaDetail": "Ticket con vencimiento en 1h.",
+        "iaTitle": "Modelo IA en modo heurístico",
+        "iaDetail": "Revisar estado del predictor en Render."
+      }
+    }
+  },
   "ui": {
     "quickCreate": "Quick Create",
     "refresh": "Actualizar",
-    "noItemsAvailable": "No hay items disponibles"
+    "noItemsAvailable": "No hay items disponibles",
+    "changeLanguage": "Cambiar idioma"
   },
   "sidebar": {
     "administration": "Administración",

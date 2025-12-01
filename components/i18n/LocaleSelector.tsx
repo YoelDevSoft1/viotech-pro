@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useLocaleContext } from "@/lib/contexts/LocaleContext";
 import { locales, type Locale } from "@/i18n";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 const localeNames: Record<Locale, string> = {
   es: "Español",
@@ -27,6 +28,7 @@ const localeFlags: Record<Locale, string> = {
 export function LocaleSelector() {
   const { locale, setLocale } = useLocaleContext();
   const [mounted, setMounted] = useState(false);
+  const t = useTranslationsSafe("ui");
 
   // Detectar cuando el componente está montado
   useEffect(() => {
@@ -57,7 +59,7 @@ export function LocaleSelector() {
     return (
       <Button variant="ghost" size="icon" className="h-9 w-9" disabled>
         <Globe className="h-[1.2rem] w-[1.2rem]" />
-        <span className="sr-only">Cambiar idioma</span>
+        <span className="sr-only">{t("changeLanguage")}</span>
       </Button>
     );
   }
@@ -67,7 +69,7 @@ export function LocaleSelector() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="h-9 w-9">
           <Globe className="h-[1.2rem] w-[1.2rem]" />
-          <span className="sr-only">Cambiar idioma</span>
+          <span className="sr-only">{t("changeLanguage")}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

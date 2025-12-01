@@ -128,6 +128,16 @@
     "detailsComingSoon": "Detailed project information coming soon...",
     "notFound": "Project not found."
   },
+  "aiAssistant": {
+    "welcomeMessage": "I'm your assistant for writing clear tickets. Describe the problem and I'll suggest title, priority and details.",
+    "inputPlaceholder": "Describe the issue, impact and urgency...",
+    "thinking": "Thinking...",
+    "send": "Send",
+    "clear": "Clear",
+    "creating": "Creating...",
+    "createTicket": "Create ticket",
+    "ticketCreated": "Ticket created: #{id}"
+  },
   "tickets": {
     "title": "Tickets",
     "create": "Create Ticket",
@@ -252,6 +262,42 @@
       "ticketAssigned": "Tickets assigned",
       "projectCreated": "Projects created",
       "projectUpdated": "Projects updated",
+      "system": "System"
+    }
+  },
+  "auditLog": {
+    "title": "Change History",
+    "description": "Record of all actions performed in the system",
+    "search": "Search",
+    "searchPlaceholder": "Search in description...",
+    "searchButton": "Search",
+    "action": "Action",
+    "allActions": "All actions",
+    "entityType": "Entity Type",
+    "allTypes": "All types",
+    "noRecords": "No change records",
+    "actions": {
+      "create": "Created",
+      "update": "Updated",
+      "delete": "Deleted",
+      "assign": "Assigned",
+      "status_change": "Status change",
+      "comment": "Commented",
+      "approve": "Approved",
+      "reject": "Rejected",
+      "login": "Login",
+      "logout": "Logout",
+      "permission_change": "Permission change"
+    },
+    "entityTypes": {
+      "ticket": "Ticket",
+      "project": "Project",
+      "user": "User",
+      "organization": "Organization",
+      "comment": "Comment",
+      "blog_post": "Blog Post",
+      "blog_comment": "Blog Comment",
+      "notification": "Notification",
       "system": "System"
     }
   },
@@ -871,10 +917,61 @@
       }
     }
   },
+  "internal": {
+    "title": "Internal Panel",
+    "pageTitle": "Operations and Support",
+    "description": "Access tickets from all clients, projects and critical alerts.",
+    "breadcrumb": {
+      "internal": "Internal",
+      "controlPanel": "Control Panel"
+    },
+    "organization": {
+      "title": "Organization",
+      "description": "Select organization (saved locally). If the API doesn't respond, mock orgs are used."
+    },
+    "cards": {
+      "globalTickets": {
+        "title": "Global Tickets",
+        "description": "View and manage tickets from all clients."
+      },
+      "usersRoles": {
+        "title": "Users/Roles",
+        "description": "Change roles and verify accounts."
+      },
+      "projects": {
+        "title": "Projects",
+        "description": "View active projects and their tickets."
+      },
+      "adminTickets": {
+        "title": "Admin · Tickets",
+        "description": "Global admin view with quick editing."
+      }
+    },
+    "alerts": {
+      "title": "Critical Alerts (SLA, Health, AI, Payments)",
+      "noAlerts": "No active alerts at this time.",
+      "severity": {
+        "critical": "Critical",
+        "warning": "Warning",
+        "info": "Info"
+      },
+      "errors": {
+        "loadFailed": "Could not load alerts",
+        "feedFailed": "Could not load alerts feed"
+      },
+      "mock": {
+        "slaTitle": "Critical SLA on Ticket #123",
+        "slaDetail": "Ticket expiring in 1h.",
+        "iaTitle": "AI Model in heuristic mode",
+        "iaDetail": "Check predictor status on Render."
+      }
+    }
+  },
   "ui": {
     "quickCreate": "Quick Create",
     "refresh": "Refresh",
-    "noItemsAvailable": "No items available"
+    "noItemsAvailable": "No items available",
+    "changeLanguage": "Change language"
   },
   "sidebar": {
     "administration": "Administration",

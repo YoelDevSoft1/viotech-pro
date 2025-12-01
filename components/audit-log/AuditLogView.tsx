@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { History, User, Calendar, FileText, Search, Filter } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,34 +17,9 @@ import {
 import { useAuditLog, useAuditLogStats } from "@/lib/hooks/useAuditLog";
 import type { AuditLog, AuditLogFilters, AuditLogAction, AuditLogEntityType } from "@/lib/types/audit-log";
 import { formatDistanceToNow, format } from "date-fns";
-import { es } from "date-fns/locale/es";
 import { cn } from "@/lib/utils";
-
-const actionLabels: Record<AuditLogAction, string> = {
-  create: "Creado",
-  update: "Actualizado",
-  delete: "Eliminado",
-  assign: "Asignado",
-  status_change: "Cambio de estado",
-  comment: "Comentado",
-  approve: "Aprobado",
-  reject: "Rechazado",
-  login: "Inicio de sesión",
-  logout: "Cierre de sesión",
-  permission_change: "Cambio de permisos",
-};
-
-const entityTypeLabels: Record<AuditLogEntityType, string> = {
-  ticket: "Ticket",
-  project: "Proyecto",
-  user: "Usuario",
-  organization: "Organización",
-  comment: "Comentario",
-  blog_post: "Post del Blog",
-  blog_comment: "Comentario del Blog",
-  notification: "Notificación",
-  system: "Sistema",
-};
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 
 const actionColors: Record<AuditLogAction, string> = {
   create: "bg-green-500/10 text-green-700 dark:text-green-400",
@@ -61,6 +36,12 @@ const actionColors: Record<AuditLogAction, string> = {
 };
 
 function AuditLogItem({ log }: { log: AuditLog }) {
+  const tAuditLog = useTranslationsSafe("auditLog");
+  const { formatDate, formatRelativeTime, locale } = useI18n();
+
+  const actionLabel = tAuditLog(`actions.${log.action}`);
+  const entityTypeLabel = tAuditLog(`entityTypes.${log.entityType}`);
+
   return (
     <div className="flex gap-4 p-4 border-b last:border-b-0 hover:bg-muted/50 transition-colors">
       <div className="flex-shrink-0">
@@ -72,10 +53,10 @@ function AuditLogItem({ log }: { log: AuditLog }) {
         <div className="flex items-start justify-between gap-2 mb-1">
           <div className="flex items-center gap-2 flex-wrap">
             <Badge className={cn("text-xs", actionColors[log.action])}>
-              {actionLabels[log.action]}
+              {actionLabel}
             </Badge>
             <Badge variant="outline" className="text-xs">
-              {entityTypeLabels[log.entityType]}
+              {entityTypeLabel}
             </Badge>
             {log.entityName && (
               <span className="text-sm font-medium text-foreground truncate">
@@ -84,10 +65,7 @@ function AuditLogItem({ log }: { log: AuditLog }) {
             )}
           </div>
           <span className="text-xs text-muted-foreground shrink-0">
-            {formatDistanceToNow(new Date(log.createdAt), {
-              addSuffix: true,
-              locale: es,
-            })}
+            {formatRelativeTime(log.createdAt)}
           </span>
         </div>
         <p className="text-sm text-muted-foreground mb-2">{log.description}</p>
@@ -120,7 +98,7 @@ function AuditLogItem({ log }: { log: AuditLog }) {
           </div>
         )}
         <div className="mt-2 text-xs text-muted-foreground">
-          {format(new Date(log.createdAt), "PPpp", { locale: es })}
+          {formatDate(log.createdAt, "PPpp")}
         </div>
       </div>
     </div>
@@ -141,9 +119,33 @@ export function AuditLogView({
     entityId: entityId,
   });
   const [search, setSearch] = useState("");
+  const tAuditLog = useTranslationsSafe("auditLog");
 
   const { data: logs = [], isLoading } = useAuditLog(filters);
   const { data: stats } = useAuditLogStats();
+
+  // Crear labels dinámicos usando traducciones
+  const actionLabels = useMemo(() => {
+    const actions: AuditLogAction[] = [
+      "create", "update", "delete", "assign", "status_change",
+      "comment", "approve", "reject", "login", "logout", "permission_change"
+    ];
+    return actions.reduce((acc, action) => {
+      acc[action] = tAuditLog(`actions.${action}`);
+      return acc;
+    }, {} as Record<AuditLogAction, string>);
+  }, [tAuditLog]);
+
+  const entityTypeLabels = useMemo(() => {
+    const types: AuditLogEntityType[] = [
+      "ticket", "project", "user", "organization", "comment",
+      "blog_post", "blog_comment", "notification", "system"
+    ];
+    return types.reduce((acc, type) => {
+      acc[type] = tAuditLog(`entityTypes.${type}`);
+      return acc;
+    }, {} as Record<AuditLogEntityType, string>);
+  }, [tAuditLog]);
 
   const handleFilterChange = (key: keyof AuditLogFilters, value: string | undefined) => {
     setFilters((prev) => ({
@@ -164,10 +166,10 @@ export function AuditLogView({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <History className="h-5 w-5" />
-          Historial de Cambios
+          {tAuditLog("title")}
         </CardTitle>
         <CardDescription>
-          Registro de todas las acciones realizadas en el sistema
+          {tAuditLog("description")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -175,12 +177,12 @@ export function AuditLogView({
           <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <label className="text-xs text-muted-foreground">Búsqueda</label>
+                <label className="text-xs text-muted-foreground">{tAuditLog("search")}</label>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Buscar en descripción..."
+                      placeholder={tAuditLog("searchPlaceholder")}
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -188,13 +190,13 @@ export function AuditLogView({
                     />
                   </div>
                   <Button size="sm" onClick={handleSearch}>
-                    Buscar
+                    {tAuditLog("searchButton")}
                   </Button>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs text-muted-foreground">Acción</label>
+                <label className="text-xs text-muted-foreground">{tAuditLog("action")}</label>
                 <Select
                   value={filters.action || "all"}
                   onValueChange={(value) =>
@@ -202,10 +204,10 @@ export function AuditLogView({
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Todas las acciones" />
+                    <SelectValue placeholder={tAuditLog("allActions")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todas las acciones</SelectItem>
+                    <SelectItem value="all">{tAuditLog("allActions")}</SelectItem>
                     {Object.entries(actionLabels).map(([value, label]) => (
                       <SelectItem key={value} value={value}>
                         {label}
@@ -216,7 +218,7 @@ export function AuditLogView({
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs text-muted-foreground">Tipo de Entidad</label>
+                <label className="text-xs text-muted-foreground">{tAuditLog("entityType")}</label>
                 <Select
                   value={filters.entityType || "all"}
                   onValueChange={(value) =>
@@ -224,10 +226,10 @@ export function AuditLogView({
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Todos los tipos" />
+                    <SelectValue placeholder={tAuditLog("allTypes")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos los tipos</SelectItem>
+                    <SelectItem value="all">{tAuditLog("allTypes")}</SelectItem>
                     {Object.entries(entityTypeLabels).map(([value, label]) => (
                       <SelectItem key={value} value={value}>
                         {label}
@@ -256,7 +258,7 @@ export function AuditLogView({
         ) : logs.length === 0 ? (
           <div className="py-12 text-center">
             <History className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <p className="text-sm text-muted-foreground">No hay registros de cambios</p>
+            <p className="text-sm text-muted-foreground">{tAuditLog("noRecords")}</p>
           </div>
         ) : (
           <div className="space-y-0 border rounded-lg overflow-hidden">

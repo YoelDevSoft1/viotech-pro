@@ -15,6 +15,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 
 type AlertItem = {
   id: string;
@@ -29,6 +31,8 @@ export default function InternalHome() {
   const router = useRouter();
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [alertsError, setAlertsError] = useState<string | null>(null);
+  const tInternal = useTranslationsSafe("internal");
+  const { formatDate } = useI18n();
 
   useEffect(() => {
     const loadAlerts = async () => {
@@ -50,7 +54,7 @@ export default function InternalHome() {
           cache: "no-store",
         });
         const payload = await res.json().catch(() => null);
-        if (!res.ok || !payload) throw new Error("No se pudo cargar alertas");
+        if (!res.ok || !payload) throw new Error(tInternal("alerts.errors.loadFailed"));
         const data = payload.data || payload;
         const list = Array.isArray(data.alerts)
           ? data.alerts
@@ -60,7 +64,7 @@ export default function InternalHome() {
         const mapped = list.map((a: any, idx: number): AlertItem => ({
           id: String(a.id || idx),
           type: a.type || "health",
-          title: a.title || "Alerta",
+          title: a.title || tInternal("alerts.title"),
           severity: (a.severity || a.level || "warn").toLowerCase() as AlertItem["severity"],
           detail: a.detail || a.description || "",
           createdAt: a.createdAt || a.created_at || new Date().toISOString(),
@@ -68,23 +72,23 @@ export default function InternalHome() {
         setAlerts(mapped);
       } catch (err) {
         setAlertsError(
-          err instanceof Error ? err.message : "No se pudo cargar el feed de alertas",
+          err instanceof Error ? err.message : tInternal("alerts.errors.feedFailed"),
         );
         // Fallback mock
         setAlerts([
           {
             id: "mock-sla",
             type: "sla",
-            title: "SLA crítico en Ticket #123",
+            title: tInternal("alerts.mock.slaTitle"),
             severity: "crit",
-            detail: "Ticket con vencimiento en 1h.",
+            detail: tInternal("alerts.mock.slaDetail"),
           },
           {
             id: "mock-ia",
             type: "ia",
-            title: "Modelo IA en modo heurístico",
+            title: tInternal("alerts.mock.iaTitle"),
             severity: "warn",
-            detail: "Revisar estado del predictor en Render.",
+            detail: tInternal("alerts.mock.iaDetail"),
           },
         ]);
       }
@@ -99,9 +103,15 @@ export default function InternalHome() {
         : sev === "warn"
           ? "bg-amber-500/15 text-amber-700 border-amber-500/40"
           : "bg-foreground/10 text-foreground border-foreground/30";
+    const label =
+      sev === "crit"
+        ? tInternal("alerts.severity.critical")
+        : sev === "warn"
+          ? tInternal("alerts.severity.warning")
+          : tInternal("alerts.severity.info");
     return (
       <span className={`text-[11px] rounded-full px-2 py-0.5 border ${tone}`}>
-        {sev === "crit" ? "Crítico" : sev === "warn" ? "Alerta" : "Info"}
+        {label}
       </span>
     );
   };
@@ -113,21 +123,21 @@ export default function InternalHome() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="/internal">Interno</BreadcrumbLink>
+                <BreadcrumbLink href="/internal">{tInternal("breadcrumb.internal")}</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Panel de Control</BreadcrumbPage>
+                <BreadcrumbPage>{tInternal("breadcrumb.controlPanel")}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
           <div className="space-y-2">
           <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-            Panel interno
+            {tInternal("title")}
           </p>
-          <h1 className="text-3xl font-medium text-foreground">Operaciones y soporte</h1>
+          <h1 className="text-3xl font-medium text-foreground">{tInternal("pageTitle")}</h1>
           <p className="text-sm text-muted-foreground">
-            Accede a tickets de todos los clientes, proyectos y alertas críticas.
+            {tInternal("description")}
           </p>
           </div>
         </div>
@@ -136,10 +146,10 @@ export default function InternalHome() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                Organización
+                {tInternal("organization.title")}
               </p>
               <p className="text-sm text-muted-foreground">
-                Selecciona organización (se guarda localmente). Si la API no responde, se usan orgs mock.
+                {tInternal("organization.description")}
               </p>
             </div>
             <ShieldCheck className="w-5 h-5 text-muted-foreground" />
@@ -154,10 +164,10 @@ export default function InternalHome() {
           >
             <div className="flex items-center gap-2 text-sm font-medium text-foreground">
               <Ticket className="w-4 h-4" />
-              Tickets globales
+              {tInternal("cards.globalTickets.title")}
             </div>
             <p className="text-xs text-muted-foreground">
-              Visualiza y gestiona tickets de todos los clientes.
+              {tInternal("cards.globalTickets.description")}
             </p>
           </Link>
           <Link
@@ -166,9 +176,9 @@ export default function InternalHome() {
           >
             <div className="flex items-center gap-2 text-sm font-medium text-foreground">
               <Users className="w-4 h-4" />
-              Usuarios/roles
+              {tInternal("cards.usersRoles.title")}
             </div>
-            <p className="text-xs text-muted-foreground">Cambia roles y verifica cuentas.</p>
+            <p className="text-xs text-muted-foreground">{tInternal("cards.usersRoles.description")}</p>
           </Link>
           <Link
             href="/internal/projects"
@@ -176,9 +186,9 @@ export default function InternalHome() {
           >
             <div className="flex items-center gap-2 text-sm font-medium text-foreground">
               <FolderKanban className="w-4 h-4" />
-              Proyectos
+              {tInternal("cards.projects.title")}
             </div>
-            <p className="text-xs text-muted-foreground">Ver proyectos activos y sus tickets.</p>
+            <p className="text-xs text-muted-foreground">{tInternal("cards.projects.description")}</p>
           </Link>
           <Link
             href="/admin/tickets"
@@ -186,9 +196,9 @@ export default function InternalHome() {
           >
             <div className="flex items-center gap-2 text-sm font-medium text-foreground">
               <Radar className="w-4 h-4" />
-              Admin · Tickets
+              {tInternal("cards.adminTickets.title")}
             </div>
-            <p className="text-xs text-muted-foreground">Vista global admin con edición rápida.</p>
+            <p className="text-xs text-muted-foreground">{tInternal("cards.adminTickets.description")}</p>
           </Link>
         </section>
 
@@ -196,7 +206,7 @@ export default function InternalHome() {
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-sm font-medium text-amber-800">
               <AlertTriangle className="w-4 h-4" />
-              Alertas críticas (SLA, salud, IA, pagos)
+              {tInternal("alerts.title")}
             </div>
             {alertsError && (
               <span className="text-[11px] text-amber-700">{alertsError}</span>
@@ -204,7 +214,7 @@ export default function InternalHome() {
           </div>
           {alerts.length === 0 ? (
             <p className="text-sm text-amber-800">
-              No hay alertas activas en este momento.
+              {tInternal("alerts.noAlerts")}
             </p>
           ) : (
             <div className="space-y-2">
@@ -225,12 +235,7 @@ export default function InternalHome() {
                   </div>
                   {a.createdAt && (
                     <p className="text-[11px] text-muted-foreground">
-                      {new Date(a.createdAt).toLocaleString("es-CO", {
-                        day: "2-digit",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {formatDate(a.createdAt, "PPp")}
                     </p>
                   )}
                 </div>

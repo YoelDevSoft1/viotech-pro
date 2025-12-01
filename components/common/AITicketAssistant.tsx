@@ -12,6 +12,7 @@ import {
   PlusCircle,
   CheckCircle2,
 } from "lucide-react";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 type Message = { role: "user" | "assistant"; content: string };
 
@@ -61,11 +62,11 @@ export default function AITicketAssistant({
   organizationId,
 }: AssistantProps) {
   const apiBase = useMemo(() => getApiBase(), []);
+  const tAI = useTranslationsSafe("aiAssistant");
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content:
-        "Soy tu asistente para redactar tickets claros. Describe el problema y sugeriré título, prioridad y detalles.",
+      content: tAI("welcomeMessage"),
     },
   ]);
   const [input, setInput] = useState("");
@@ -362,7 +363,7 @@ export default function AITicketAssistant({
         <textarea
           className="w-full rounded-2xl border border-border bg-transparent px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/30"
           rows={3}
-          placeholder="Describe el issue, impacto y urgencia..."
+          placeholder={tAI("inputPlaceholder")}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={loading}
@@ -383,11 +384,11 @@ export default function AITicketAssistant({
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Pensando...
+                {tAI("thinking")}
               </>
             ) : (
               <>
-                Enviar
+                {tAI("send")}
                 <Send className="w-4 h-4" />
               </>
             )}
@@ -398,7 +399,7 @@ export default function AITicketAssistant({
             className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:text-foreground"
           >
             <RefreshCcw className="w-4 h-4" />
-            Limpiar
+            {tAI("clear")}
           </button>
           <button
             type="button"
@@ -409,12 +410,12 @@ export default function AITicketAssistant({
             {creating ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Creando...
+                {tAI("creating")}
               </>
             ) : (
               <>
                 <PlusCircle className="w-4 h-4" />
-                Crear ticket
+                {tAI("createTicket")}
               </>
             )}
           </button>
@@ -429,7 +430,7 @@ export default function AITicketAssistant({
         {createdTicketId && (
           <div className="flex items-center gap-2 text-xs text-green-700">
             <CheckCircle2 className="w-4 h-4" />
-            Ticket creado: #{createdTicketId}
+            {tAI("ticketCreated").replace("#{id}", createdTicketId)}
           </div>
         )}
       </div>
