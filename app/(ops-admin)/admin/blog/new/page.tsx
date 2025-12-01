@@ -33,23 +33,23 @@ import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
-const postSchema = z.object({
-  title: z.string().min(3, "Mínimo 3 caracteres").max(500, "Máximo 500 caracteres"),
-  excerpt: z.string().min(50, "Mínimo 50 caracteres").max(300, "Máximo 300 caracteres"),
-  content: z.string().min(500, "Mínimo 500 caracteres"),
-  categoryId: z.string().min(1, "Selecciona una categoría"),
+const getPostSchema = (t: (key: string) => string) => z.object({
+  title: z.string().min(3, t("form.validation.titleMin")).max(500, t("form.validation.titleMax")),
+  excerpt: z.string().min(50, t("form.validation.excerptMin")).max(300, t("form.validation.excerptMax")),
+  content: z.string().min(500, t("form.validation.contentMin")),
+  categoryId: z.string().min(1, t("form.validation.categoryRequired")),
   tagIds: z.array(z.string()).optional(),
-  featuredImage: z.string().url("URL inválida").optional().or(z.literal("")),
+  featuredImage: z.string().url(t("form.validation.invalidUrl")).optional().or(z.literal("")),
   isPublished: z.boolean(),
   publishedAt: z.string().optional(),
   seo: z.object({
-    metaDescription: z.string().max(160, "Máximo 160 caracteres").optional(),
+    metaDescription: z.string().max(160, t("form.validation.metaDescriptionMax")).optional(),
     metaKeywords: z.array(z.string()).optional(),
-    ogImage: z.string().url("URL inválida").optional().or(z.literal("")),
+    ogImage: z.string().url(t("form.validation.invalidUrl")).optional().or(z.literal("")),
   }).optional(),
 });
 
-type PostFormValues = z.infer<typeof postSchema>;
+type PostFormValues = z.infer<ReturnType<typeof getPostSchema>>;
 
 export default function NewBlogPostPage() {
   const router = useRouter();
@@ -57,6 +57,7 @@ export default function NewBlogPostPage() {
   const { data: categories, isLoading: categoriesLoading, error: categoriesError } = useBlogCategoriesAdmin();
   const { data: tags, isLoading: tagsLoading, error: tagsError } = useBlogTagsAdmin();
   const tBlog = useTranslationsSafe("blog");
+  const postSchema = getPostSchema(tBlog);
 
   // Debug: Ver qué datos tenemos
   console.log("🔍 Categories:", categories);

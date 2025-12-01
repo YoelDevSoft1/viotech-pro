@@ -40,6 +40,9 @@ Tanto el **frontend** como el **backend** han completado la implementación del 
   - Visualización compacta
 - `components/onboarding/OnboardingProvider.tsx` - Provider global
   - Auto-inicio de tours según configuración
+  - **Fallback inteligente:** Inicia primer tour disponible para usuarios nuevos si no hay `autoStartTour` configurado
+  - Verifica progreso para evitar iniciar tours ya completados/saltados
+  - Protección contra múltiples inicios con `useRef`
   - Gestión de estado global
 - `components/onboarding/ContextualTip.tsx` - Tooltips contextuales
   - Soporte para hover, click y manual
@@ -152,11 +155,15 @@ Tanto el **frontend** como el **backend** han completado la implementación del 
 5. Backend actualiza progreso
 6. Frontend actualiza UI
 
-✅ **Flujo de Auto-inicio:**
-1. Frontend verifica `GET /api/onboarding/config`
-2. Si `autoStartTour` está configurado y el tour no está completado
-3. Frontend espera 1 segundo y inicia tour automáticamente
+✅ **Flujo de Auto-inicio (Mejorado):**
+1. Frontend verifica `GET /api/onboarding/config` y `GET /api/onboarding/progress`
+2. **Prioridad 1:** Si `autoStartTour` está configurado y el tour no está completado/saltado:
+   - Frontend espera 1.5 segundos y inicia tour automáticamente
+3. **Prioridad 2 (Fallback):** Si NO hay `autoStartTour` configurado Y el usuario es nuevo (sin tours completados/saltados):
+   - Frontend inicia automáticamente el primer tour disponible para su rol
+   - Esto asegura que usuarios nuevos siempre vean el tour, incluso si el backend no configuró `autoStartTour`
 4. Tour se muestra con react-joyride
+5. Protección: No inicia si el usuario saltó el onboarding (`skipOnboarding: true`)
 
 ---
 
@@ -190,7 +197,10 @@ Tanto el **frontend** como el **backend** han completado la implementación del 
 3. ✅ Verificar que el tour se inicia correctamente
 4. ✅ Verificar que al completar se actualiza el progreso
 5. ✅ Verificar que al saltar se marca como saltado
-6. ✅ Verificar auto-inicio si está configurado
+6. ✅ Verificar auto-inicio si `autoStartTour` está configurado
+7. ✅ **NUEVO:** Verificar que usuarios nuevos sin `autoStartTour` reciben el primer tour automáticamente
+8. ✅ Verificar que no inicia tours ya completados o saltados
+9. ✅ Verificar que respeta `skipOnboarding: true`
 
 ### **Configuración:**
 1. ✅ Verificar que se puede saltar el onboarding
@@ -217,6 +227,28 @@ Tanto el **frontend** como el **backend** han completado la implementación del 
 
 ---
 
+---
+
+## 🆕 Mejoras Recientes (Diciembre 2024)
+
+### **Auto-inicio Inteligente de Tours**
+
+✅ **Problema resuelto:** Los tours no se iniciaban automáticamente para usuarios nuevos si el backend no configuraba `autoStartTour`.
+
+✅ **Solución implementada:**
+- Lógica de fallback en `OnboardingProvider` que inicia automáticamente el primer tour disponible para usuarios nuevos
+- Verificación de progreso para evitar iniciar tours ya completados/saltados
+- Protección contra múltiples inicios simultáneos
+- Respeta la preferencia `skipOnboarding`
+
+✅ **Beneficios:**
+- Usuarios nuevos siempre ven el tour guiado, incluso sin configuración del backend
+- Mejor experiencia de usuario sin necesidad de configuración manual
+- Compatible con la configuración existente (`autoStartTour` tiene prioridad)
+
+---
+
 **Última actualización:** Diciembre 2024  
-**Estado:** ✅ Integración Completa - Sistema funcional y listo para producción
+**Estado:** ✅ Integración Completa - Sistema funcional y listo para producción  
+**Mejoras:** ✅ Auto-inicio inteligente de tours implementado
 
