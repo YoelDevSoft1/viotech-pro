@@ -1613,6 +1613,87 @@
         "paidCommissions": "Paid",
         "close": "Close"
       }
+    },
+    "leads": {
+      "title": "Lead Management",
+      "description": "Manage and track your generated leads",
+      "createLead": "Create Lead",
+      "createLeadDescription": "Register a new lead in the system",
+      "searchPlaceholder": "Search by name, email or company...",
+      "filters": {
+        "allStatuses": "All statuses",
+        "allSources": "All sources"
+      },
+      "status": {
+        "new": "New",
+        "contacted": "Contacted",
+        "qualified": "Qualified",
+        "converted": "Converted",
+        "lost": "Lost"
+      },
+      "source": {
+        "referral": "Referral",
+        "direct": "Direct",
+        "campaign": "Campaign"
+      },
+      "leadsList": "Leads List",
+      "totalLeads": "Total: {count} leads",
+      "noLeads": "No leads registered",
+      "table": {
+        "name": "Name",
+        "email": "Email",
+        "company": "Company",
+        "source": "Source",
+        "status": "Status",
+        "value": "Value",
+        "created": "Created"
+      },
+      "form": {
+        "name": "Name",
+        "namePlaceholder": "Full name",
+        "email": "Email",
+        "emailPlaceholder": "email@example.com",
+        "company": "Company",
+        "companyPlaceholder": "Company name",
+        "phone": "Phone",
+        "phonePlaceholder": "+1 234 567 8900",
+        "source": "Source",
+        "selectSource": "Select source",
+        "cancel": "Cancel",
+        "create": "Create",
+        "creating": "Creating..."
+      }
+    },
+    "commissions": {
+      "title": "Commissions",
+      "description": "View and manage your commissions",
+      "stats": {
+        "total": "Total",
+        "pending": "Pending",
+        "paid": "Paid"
+      },
+      "filters": {
+        "allStatuses": "All statuses",
+        "allPeriods": "All periods"
+      },
+      "status": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "paid": "Paid",
+        "cancelled": "Cancelled"
+      },
+      "commissionsList": "Commissions List",
+      "totalCommissions": "Total: {count} commissions",
+      "noCommissions": "No commissions registered",
+      "export": "Export",
+      "table": {
+        "amount": "Amount",
+        "rate": "Rate",
+        "status": "Status",
+        "period": "Period",
+        "paidAt": "Paid At",
+        "created": "Created"
+      }
     }
   }
 }

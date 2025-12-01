@@ -1620,6 +1620,87 @@
         "paidCommissions": "Pagadas",
         "close": "Cerrar"
       }
+    },
+    "leads": {
+      "title": "Gestión de Leads",
+      "description": "Administra y rastrea tus leads generados",
+      "createLead": "Crear Lead",
+      "createLeadDescription": "Registra un nuevo lead en el sistema",
+      "searchPlaceholder": "Buscar por nombre, email o empresa...",
+      "filters": {
+        "allStatuses": "Todos los estados",
+        "allSources": "Todas las fuentes"
+      },
+      "status": {
+        "new": "Nuevo",
+        "contacted": "Contactado",
+        "qualified": "Calificado",
+        "converted": "Convertido",
+        "lost": "Perdido"
+      },
+      "source": {
+        "referral": "Referido",
+        "direct": "Directo",
+        "campaign": "Campaña"
+      },
+      "leadsList": "Lista de Leads",
+      "totalLeads": "Total: {count} leads",
+      "noLeads": "No hay leads registrados",
+      "table": {
+        "name": "Nombre",
+        "email": "Email",
+        "company": "Empresa",
+        "source": "Fuente",
+        "status": "Estado",
+        "value": "Valor",
+        "created": "Creado"
+      },
+      "form": {
+        "name": "Nombre",
+        "namePlaceholder": "Nombre completo",
+        "email": "Email",
+        "emailPlaceholder": "email@ejemplo.com",
+        "company": "Empresa",
+        "companyPlaceholder": "Nombre de la empresa",
+        "phone": "Teléfono",
+        "phonePlaceholder": "+57 300 123 4567",
+        "source": "Fuente",
+        "selectSource": "Seleccionar fuente",
+        "cancel": "Cancelar",
+        "create": "Crear",
+        "creating": "Creando..."
+      }
+    },
+    "commissions": {
+      "title": "Comisiones",
+      "description": "Visualiza y gestiona tus comisiones",
+      "stats": {
+        "total": "Total",
+        "pending": "Pendiente",
+        "paid": "Pagado"
+      },
+      "filters": {
+        "allStatuses": "Todos los estados",
+        "allPeriods": "Todos los períodos"
+      },
+      "status": {
+        "pending": "Pendiente",
+        "approved": "Aprobada",
+        "paid": "Pagada",
+        "cancelled": "Cancelada"
+      },
+      "commissionsList": "Lista de Comisiones",
+      "totalCommissions": "Total: {count} comisiones",
+      "noCommissions": "No hay comisiones registradas",
+      "export": "Exportar",
+      "table": {
+        "amount": "Monto",
+        "rate": "Tasa",
+        "status": "Estado",
+        "period": "Período",
+        "paidAt": "Pagado el",
+        "created": "Creado"
+      }
     }
   }
 }
