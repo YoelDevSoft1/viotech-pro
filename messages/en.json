@@ -80,7 +80,13 @@
       "users": "Users",
       "operations": "Operations",
       "projects": "Projects",
-      "client": "Client"
+      "client": "Client",
+      "login": "Login",
+      "openMenu": "Open menu",
+      "whatsapp": "WhatsApp",
+      "scheduleDemo": "Schedule demo",
+      "portals": "Portals",
+      "logout": "Logout"
     },
     "sessions": {
       "title": "Active Sessions",
@@ -153,6 +159,18 @@
     "error": {
       "loadingFailed": "We couldn't load your information",
       "checkConnection": "Check your connection and try again"
+    },
+    "roadmap": {
+      "title": "Roadmap",
+      "description": "Upcoming milestones and renewals",
+      "loading": "Loading immediate roadmap...",
+      "noServices": "No services yet",
+      "noServicesMessage": "Activate your first project to see milestones and renewals.",
+      "noMilestones": "No scheduled milestones",
+      "noMilestonesMessage": "Define upcoming releases with your PM.",
+      "renewal": "Renewal",
+      "kickoff": "Kickoff",
+      "toBeDefined": "To be defined"
     }
   },
   "projects": {
@@ -328,6 +346,9 @@
     "anonymousUser": "Anonymous user",
     "sending": "Sending...",
     "addComment": "Add comment",
+    "addCommentOrFile": "Add a comment or file",
+    "uploadError": "Error uploading {fileName}",
+    "sendError": "Error sending comment",
     "notFound": "Ticket not found.",
     "error": {
       "loadFailed": "Error loading ticket",

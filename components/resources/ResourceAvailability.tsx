@@ -257,7 +257,7 @@ export function ResourceAvailability({ resourceId }: ResourceAvailabilityProps) 
                   },
                 })
               }
-              placeholder="America/Bogota"
+              placeholder={tResources("timezonePlaceholder")}
             />
           </div>
         </CardContent>
@@ -337,11 +337,11 @@ export function ResourceAvailability({ resourceId }: ResourceAvailabilityProps) 
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="vacation-description">Descripción (opcional)</Label>
+                    <Label htmlFor="vacation-description">{tResources("vacationDescription")}</Label>
                     <Input
                       id="vacation-description"
                       {...vacationForm.register("description")}
-                      placeholder="Motivo de la ausencia"
+                      placeholder={tResources("vacationDescriptionPlaceholder")}
                     />
                   </div>
                   <div className="flex justify-end gap-2">

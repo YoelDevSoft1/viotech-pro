@@ -93,7 +93,7 @@ export function TicketComments({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim() && files.length === 0) {
-      toast.error("Agrega un comentario o archivo");
+      toast.error(tTickets("comments.addCommentOrFile"));
       return;
     }
     setLoading(true);
@@ -112,7 +112,7 @@ export function TicketComments({
             await uploadTicketAttachment(ticketId, file, token);
           } catch (err) {
             console.error(`Error subiendo ${file.name}:`, err);
-            toast.error(`Error al subir ${file.name}`);
+            toast.error(tTickets("comments.uploadError").replace("{fileName}", file.name));
           }
         }
         setUploadingFiles(new Set());
@@ -126,7 +126,7 @@ export function TicketComments({
       }
       onRefresh?.();
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Error al enviar comentario";
+      const errorMessage = error instanceof Error ? error.message : tTickets("comments.sendError");
       toast.error(errorMessage);
     } finally {
       setLoading(false);

@@ -15,18 +15,21 @@ import { useCurrentUser } from "@/lib/hooks/useResources";
 import { apiClient } from "@/lib/apiClient";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
-const profileSchema = z.object({
-  nombre: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
-  email: z.string().email("Ingresa un correo válido"),
+const getProfileSchema = (t: (key: string) => string) => z.object({
+  nombre: z.string().min(2, t("validation.nameMin")),
+  email: z.string().email(t("validation.emailInvalid")),
 });
 
-type ProfileFormValues = z.infer<typeof profileSchema>;
+type ProfileFormValues = z.infer<ReturnType<typeof getProfileSchema>>;
 
 export default function ProfilePage() {
   const { data: user, isLoading, refetch } = useCurrentUser();
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState(false);
+  const tProfile = useTranslationsSafe("profile");
+  const profileSchema = getProfileSchema(tProfile);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -45,12 +48,12 @@ export default function ProfilePage() {
     setSuccess(false);
     try {
       await apiClient.put("/auth/me", values);
-      toast.success("Perfil actualizado correctamente");
+      toast.success(tProfile("success.updated"));
       setSuccess(true);
       refetch();
       setTimeout(() => setSuccess(false), 3000);
     } catch (error: any) {
-      toast.error(error.message || "Error al actualizar el perfil");
+      toast.error(error.message || tProfile("error.updateFailed"));
     } finally {
       setIsSaving(false);
     }
@@ -112,7 +115,7 @@ export default function ProfilePage() {
           <CardContent>
             <AvatarUploader
               currentAvatar={user?.avatar}
-              userName={user?.nombre || "Usuario"}
+              userName={user?.nombre || tProfile("user")}
               initials={initials}
               size="md"
             />
@@ -137,13 +140,13 @@ export default function ProfilePage() {
                     <FormItem>
                       <FormLabel className="flex items-center gap-2">
                         <User className="h-4 w-4" />
-                        Nombre Completo
+                        {tProfile("fullName")}
                       </FormLabel>
                       <FormControl>
-                        <Input placeholder="Juan Pérez" {...field} />
+                        <Input placeholder={tProfile("fullNamePlaceholder")} {...field} />
                       </FormControl>
                       <FormDescription>
-                        Este es tu nombre completo que se mostrará en tu perfil.
+                        {tProfile("fullNameDescription")}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

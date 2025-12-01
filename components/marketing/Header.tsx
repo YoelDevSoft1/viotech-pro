@@ -176,7 +176,7 @@ export default function Header() {
                 aria-label={tHeader("login")}
               >
                 <LogIn className="w-4 h-4" />
-                Ingresar
+                {tHeader("login")}
               </Link>
               <a
                 href="https://wa.link/1r4ul7"
@@ -184,7 +184,7 @@ export default function Header() {
                 target="_blank"
                 rel="noreferrer"
               >
-                WhatsApp
+                {tHeader("whatsapp")}
               </a>
               <a
                 href="https://calendly.com/viotech/demo"
@@ -192,13 +192,13 @@ export default function Header() {
                 target="_blank"
                 rel="noreferrer"
               >
-                Agendar demo
+                {tHeader("scheduleDemo")}
               </a>
             </>
           ) : (
             <>
               <div className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-1.5 text-xs text-muted-foreground">
-                <span>Portales</span>
+                <span>{tHeader("portals")}</span>
                 <div className="flex items-center gap-1">
                   {portalShortcuts.map((p) => (
                     <Link
@@ -218,7 +218,7 @@ export default function Header() {
                 className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
-                Cerrar sesión
+                {tHeader("logout")}
               </button>
             </>
           )}
@@ -227,7 +227,7 @@ export default function Header() {
         <button
           className="md:hidden inline-flex items-center justify-center p-2 rounded-full border border-border text-foreground"
           onClick={() => setIsMenuOpen((prev) => !prev)}
-          aria-label="Abrir menú"
+          aria-label={tHeader("openMenu")}
         >
           {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
@@ -244,7 +244,7 @@ export default function Header() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 <User className="w-4 h-4" />
-                Ingresar
+                {tHeader("login")}
               </Link>
             ) : (
               <button
@@ -256,12 +256,12 @@ export default function Header() {
                 className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-medium text-muted-foreground"
               >
                 <LogOut className="w-4 h-4" />
-                Cerrar sesión
+                {tHeader("logout")}
               </button>
             )}
             {isAuthenticated && (
               <div className="space-y-2">
-                <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Portales</p>
+                <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{tHeader("portals")}</p>
                 <div className="grid grid-cols-2 gap-2">
                   {portalShortcuts.map((p) => (
                     <Link
@@ -284,7 +284,7 @@ export default function Header() {
               rel="noreferrer"
               onClick={() => setIsMenuOpen(false)}
             >
-              WhatsApp
+              {tHeader("whatsapp")}
             </a>
             <a
               href="https://calendly.com/viotech/demo"
@@ -293,7 +293,7 @@ export default function Header() {
               rel="noreferrer"
               onClick={() => setIsMenuOpen(false)}
             >
-              Agendar demo
+              {tHeader("scheduleDemo")}
             </a>
           </div>
         </div>

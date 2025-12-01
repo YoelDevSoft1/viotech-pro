@@ -80,7 +80,13 @@
       "users": "Usuarios",
       "operations": "Operaciones",
       "projects": "Proyectos",
-      "client": "Cliente"
+      "client": "Cliente",
+      "login": "Ingresar",
+      "openMenu": "Abrir menú",
+      "whatsapp": "WhatsApp",
+      "scheduleDemo": "Agendar demo",
+      "portals": "Portales",
+      "logout": "Cerrar sesión"
     },
     "sessions": {
       "title": "Sesiones Activas",
@@ -152,6 +158,18 @@
     "error": {
       "loadingFailed": "No pudimos cargar tu información",
       "checkConnection": "Verifica tu conexión e intenta nuevamente"
+    },
+    "roadmap": {
+      "title": "Roadmap",
+      "description": "Próximos hitos y renovaciones",
+      "loading": "Cargando roadmap inmediato...",
+      "noServices": "Sin servicios aún",
+      "noServicesMessage": "Activa tu primer proyecto para ver hitos y renovaciones.",
+      "noMilestones": "Sin hitos calendarizados",
+      "noMilestonesMessage": "Define próximos releases con tu PM.",
+      "renewal": "Renovación",
+      "kickoff": "Kickoff",
+      "toBeDefined": "Por definir"
     }
   },
   "projects": {
@@ -275,6 +293,9 @@
     "anonymousUser": "Usuario anónimo",
     "sending": "Enviando...",
     "addComment": "Agregar comentario",
+    "addCommentOrFile": "Agrega un comentario o archivo",
+    "uploadError": "Error al subir {fileName}",
+    "sendError": "Error al enviar comentario",
     "notFound": "No se encontró el ticket.",
     "error": {
       "loadFailed": "Error al cargar el ticket",
@@ -718,6 +739,9 @@
       "issueDateRequired": "La fecha de emisión es requerida"
     },
     "addVacation": "Agregar Vacación",
+    "vacationDescription": "Descripción (opcional)",
+    "vacationDescriptionPlaceholder": "Motivo de la ausencia",
+    "timezonePlaceholder": "America/Bogota",
     "addSkill": "Agregar Skill",
     "addCertification": "Agregar Certificación"
   },
@@ -829,7 +853,12 @@
       "passwordPlaceholder": "Ingresa tu contraseña",
       "disabling": "Deshabilitando...",
       "activeSessions": "Sesiones Activas",
-      "activeSessionsDescription": "Gestiona tus sesiones activas y cierra las que no reconozcas."
+      "activeSessionsDescription": "Gestiona tus sesiones activas y cierra las que no reconozcas.",
+      "mfaEnabledSuccess": "MFA Habilitado Exitosamente",
+      "backupCodes": "Códigos de Respaldo",
+      "backupCodesDescription": "Guarda estos códigos de respaldo en un lugar seguro. Solo se mostrarán una vez.",
+      "copyCodes": "Copiar códigos",
+      "downloadCodes": "Descargar códigos"
     },
     "notificationsTab": {
       "preferences": "Preferencias de Notificaciones",

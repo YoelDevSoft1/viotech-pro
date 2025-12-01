@@ -80,7 +80,13 @@
       "users": "Usuários",
       "operations": "Operações",
       "projects": "Projetos",
-      "client": "Cliente"
+      "client": "Cliente",
+      "login": "Entrar",
+      "openMenu": "Abrir menu",
+      "whatsapp": "WhatsApp",
+      "scheduleDemo": "Agendar demo",
+      "portals": "Portais",
+      "logout": "Sair"
     },
     "sessions": {
       "title": "Sessões Ativas",
@@ -153,6 +159,18 @@
     "error": {
       "loadingFailed": "Não conseguimos carregar suas informações",
       "checkConnection": "Verifique sua conexão e tente novamente"
+    },
+    "roadmap": {
+      "title": "Roadmap",
+      "description": "Próximos marcos e renovações",
+      "loading": "Carregando roadmap imediato...",
+      "noServices": "Sem serviços ainda",
+      "noServicesMessage": "Ative seu primeiro projeto para ver marcos e renovações.",
+      "noMilestones": "Sem marcos agendados",
+      "noMilestonesMessage": "Defina próximos releases com seu PM.",
+      "renewal": "Renovação",
+      "kickoff": "Kickoff",
+      "toBeDefined": "A definir"
     }
   },
   "projects": {

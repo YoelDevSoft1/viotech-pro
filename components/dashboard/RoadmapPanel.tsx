@@ -5,6 +5,8 @@ import { Compass } from "lucide-react";
 import { useServices } from "@/lib/hooks/useServices";
 import { LoadingState, ErrorState, EmptyState } from "@/components/ui/state";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 
 type TimelineEvent = {
   id: string;
@@ -13,15 +15,17 @@ type TimelineEvent = {
   type: "renovacion" | "kickoff";
 };
 
-const formatDate = (value?: string | null) => {
-  if (!value) return "Por definir";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Por definir";
-  return date.toLocaleDateString("es-CO", { year: "numeric", month: "short", day: "numeric" });
-};
-
 export function RoadmapPanel() {
   const { services, loading, error } = useServices();
+  const tDashboard = useTranslationsSafe("dashboard.roadmap");
+  const { formatDate: formatDateI18n, locale } = useI18n();
+
+  const formatDate = (value?: string | null) => {
+    if (!value) return tDashboard("toBeDefined");
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return tDashboard("toBeDefined");
+    return formatDateI18n(date, "PP");
+  };
 
   const upcoming = useMemo<TimelineEvent[]>(() => {
     const events = services.flatMap((service) => {
@@ -44,17 +48,17 @@ export function RoadmapPanel() {
       .slice(0, 3);
   }, [services]);
 
-  if (loading) return <LoadingState title="Cargando roadmap inmediato..." />;
+  if (loading) return <LoadingState title={tDashboard("loading")} />;
   if (error) return <ErrorState message={error} />;
-  if (!services.length) return <EmptyState title="Sin servicios aún" message="Activa tu primer proyecto para ver hitos y renovaciones." />;
+  if (!services.length) return <EmptyState title={tDashboard("noServices")} message={tDashboard("noServicesMessage")} />;
 
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Roadmap</CardTitle>
-            <CardDescription>Próximos hitos y renovaciones</CardDescription>
+            <CardTitle>{tDashboard("title")}</CardTitle>
+            <CardDescription>{tDashboard("description")}</CardDescription>
           </div>
           <Compass className="w-5 h-5 text-muted-foreground" />
         </div>
@@ -66,7 +70,7 @@ export function RoadmapPanel() {
               <div key={item.id} className="flex items-start justify-between p-3 rounded-lg border bg-card">
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                    {item.type === "renovacion" ? "Renovación" : "Kickoff"}
+                    {item.type === "renovacion" ? tDashboard("renewal") : tDashboard("kickoff")}
                   </p>
                   <p className="text-sm font-medium">{item.title}</p>
                   <p className="text-xs text-muted-foreground">{formatDate(item.date)}</p>
@@ -76,8 +80,8 @@ export function RoadmapPanel() {
           </div>
         ) : (
           <EmptyState
-            title="Sin hitos calendarizados"
-            message="Define próximos releases con tu PM."
+            title={tDashboard("noMilestones")}
+            message={tDashboard("noMilestonesMessage")}
           />
         )}
       </CardContent>

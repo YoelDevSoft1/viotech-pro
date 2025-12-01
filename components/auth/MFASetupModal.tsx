@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { X, Shield, CheckCircle, AlertCircle, Copy, Download, Loader2 } from "lucide-react";
 import { useMFASetup, useMFAVerify } from "@/lib/hooks/useMFA";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 interface MFASetupModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ export default function MFASetupModal({ isOpen, onClose, onSuccess }: MFASetupMo
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
   const queryClient = useQueryClient();
+  const tSettings = useTranslationsSafe("settings.securityTab");
   
   const setupMFA = useMFASetup();
   const verifyMFA = useMFAVerify();
@@ -198,29 +200,29 @@ export default function MFASetupModal({ isOpen, onClose, onSuccess }: MFASetupMo
                   <CheckCircle className="w-8 h-8 text-green-500" />
                 </div>
               </div>
-              <h2 className="text-xl font-medium">MFA Habilitado Exitosamente</h2>
+              <h2 className="text-xl font-medium">{tSettings("mfaEnabledSuccess")}</h2>
               <p className="text-sm text-muted-foreground">
-                Guarda estos códigos de respaldo en un lugar seguro. Solo se mostrarán una vez.
+                {tSettings("backupCodesDescription")}
               </p>
             </div>
 
             <div className="rounded-xl border border-border/60 bg-background/70 p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                  Códigos de Respaldo
+                  {tSettings("backupCodes")}
                 </p>
                 <div className="flex gap-2">
                   <button
                     onClick={handleCopyCodes}
                     className="p-2 rounded-lg hover:bg-muted transition-colors"
-                    title="Copiar códigos"
+                    title={tSettings("copyCodes")}
                   >
                     <Copy className="w-4 h-4" />
                   </button>
                   <button
                     onClick={handleDownloadCodes}
                     className="p-2 rounded-lg hover:bg-muted transition-colors"
-                    title="Descargar códigos"
+                    title={tSettings("downloadCodes")}
                   >
                     <Download className="w-4 h-4" />
                   </button>
