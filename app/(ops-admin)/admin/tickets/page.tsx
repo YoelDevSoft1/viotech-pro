@@ -913,7 +913,7 @@ export default function AdminTicketsPage() {
                             className="gap-2"
                           >
                             <Eye className="h-3 w-3" />
-                            Ver
+                            {tTickets("view")}
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -926,11 +926,11 @@ export default function AdminTicketsPage() {
                               <DropdownMenuSeparator />
                               <DropdownMenuItem onClick={() => router.push(`/admin/tickets/${t.id}`)}>
                                 <Edit className="h-4 w-4 mr-2" />
-                                Editar completo
+                                {tTickets("editFull")}
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => navigator.clipboard.writeText(t.id)}>
                                 <Copy className="h-4 w-4 mr-2" />
-                                Copiar ID
+                                {tTickets("copyId")}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
@@ -938,7 +938,7 @@ export default function AdminTicketsPage() {
                                 disabled={t.estado === "resuelto"}
                               >
                                 <CheckCircle2 className="h-4 w-4 mr-2" />
-                                Marcar resuelto
+                                {tTickets("markAsResolved")}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -953,7 +953,7 @@ export default function AdminTicketsPage() {
             {pagination.totalPages > 1 && (
               <div className="flex items-center justify-between mt-4">
                 <div className="text-sm text-muted-foreground">
-                  Página {currentPage} de {pagination.totalPages}
+                  {tTickets("admin.pageInfo").replace("{current}", String(currentPage)).replace("{total}", String(pagination.totalPages))}
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
@@ -962,7 +962,7 @@ export default function AdminTicketsPage() {
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
                   >
-                    Anterior
+                    {tTickets("admin.previous")}
                   </Button>
                   <Button
                     variant="outline"
@@ -970,7 +970,7 @@ export default function AdminTicketsPage() {
                     onClick={() => setCurrentPage((p) => Math.min(pagination.totalPages, p + 1))}
                     disabled={currentPage === pagination.totalPages}
                   >
-                    Siguiente
+                    {tTickets("admin.next")}
                   </Button>
                 </div>
               </div>
@@ -983,9 +983,9 @@ export default function AdminTicketsPage() {
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Detalle del Ticket</DialogTitle>
+            <DialogTitle>{tTickets("admin.ticketDetail")}</DialogTitle>
             <DialogDescription>
-              {selectedTicket?.titulo || "Cargando..."}
+              {selectedTicket?.titulo || tTickets("loading")}
             </DialogDescription>
           </DialogHeader>
           {selectedTicket && (
