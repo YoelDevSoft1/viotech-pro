@@ -1562,15 +1562,19 @@
       "actions": {
         "view": "View",
         "activate": "Activate",
-        "suspend": "Suspend"
+        "suspend": "Suspend",
+        "makePartner": "Make Partner"
       },
       "confirm": {
         "activateTitle": "Activate partner?",
         "activateDescription": "Are you sure you want to activate this partner?",
         "suspendTitle": "Suspend partner?",
         "suspendDescription": "Are you sure you want to suspend this partner?",
+        "makePartnerTitle": "Register as Partner?",
+        "makePartnerDescription": "Are you sure you want to register this user as a partner? It will be created with Bronze tier and 10% commission.",
         "activate": "Activate",
         "suspend": "Suspend",
+        "makePartner": "Register",
         "cancel": "Cancel"
       },
       "register": {

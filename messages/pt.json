@@ -1572,15 +1572,19 @@
       "actions": {
         "view": "Ver",
         "activate": "Ativar",
-        "suspend": "Suspender"
+        "suspend": "Suspender",
+        "makePartner": "Tornar Parceiro"
       },
       "confirm": {
         "activateTitle": "Ativar parceiro?",
         "activateDescription": "Tem certeza de que deseja ativar este parceiro?",
         "suspendTitle": "Suspender parceiro?",
         "suspendDescription": "Tem certeza de que deseja suspender este parceiro?",
+        "makePartnerTitle": "Registrar como Parceiro?",
+        "makePartnerDescription": "Tem certeza de que deseja registrar este usuário como parceiro? Será criado com tier Bronze e 10% de comissão.",
         "activate": "Ativar",
         "suspend": "Suspender",
+        "makePartner": "Registrar",
         "cancel": "Cancelar"
       },
       "register": {

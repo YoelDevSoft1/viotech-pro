@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Shield, ShieldCheck, ShieldOff, ShieldQuestion, Search, Users as UsersIcon } from "lucide-react";
+import { CheckCircle2, Shield, ShieldCheck, ShieldOff, ShieldQuestion, Search, Users as UsersIcon, Handshake } from "lucide-react";
 import { buildApiUrl } from "@/lib/api";
 import { getAccessToken, isTokenExpired, refreshAccessToken } from "@/lib/auth";
 import OrgSelector, { type Org } from "@/components/common/OrgSelector";
@@ -14,9 +14,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 import { useI18n } from "@/lib/hooks/useI18n";
+import { useRegisterPartner } from "@/lib/hooks/usePartnersAdmin";
+import { usePartnersList } from "@/lib/hooks/usePartnersAdmin";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type Role = "admin" | "agente" | "cliente";
 
@@ -30,6 +43,8 @@ type UserRecord = {
   organizationId?: string;
   permisos?: string[];
   ultimoAcceso?: string;
+  isPartner?: boolean;
+  partnerId?: string;
 };
 
 type PendingAction =
@@ -83,8 +98,12 @@ export default function RoleManager() {
   const [pending, setPending] = useState<PendingAction>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [orgs, setOrgs] = useState<{ id: string; nombre: string }[]>([]);
+  const [userToMakePartner, setUserToMakePartner] = useState<string | null>(null);
   const tUsers = useTranslationsSafe("users");
+  const tPartners = useTranslationsSafe("partners.admin");
   const { formatDate } = useI18n();
+  const registerPartner = useRegisterPartner();
+  const { data: partners } = usePartnersList();
 
   const ROLE_OPTIONS: { value: Role; label: string; description: string }[] = [
     { value: "admin", label: tUsers("roles.admin"), description: tUsers("roles.adminDescription") },
@@ -143,12 +162,19 @@ export default function RoleManager() {
               ? dataRaw.data
               : [];
 
+        // Mapear usuarios y verificar si son partners
+        const partnersMap = new Map(
+          partners?.map((p) => [p.userId, p.id]) || []
+        );
+        
         setUsers(
           list.map(
             (u: any): UserRecord => {
               const normalizedRole = (u.rol || u.role || "cliente").toLowerCase() as Role;
+              const userId = String(u.id);
+              const isPartner = partnersMap.has(userId);
               return {
-                id: String(u.id),
+                id: userId,
                 nombre: u.nombre || u.name || tUsers("noName"),
                 email: u.email || "sin-email",
                 rol: normalizedRole,
@@ -157,6 +183,8 @@ export default function RoleManager() {
                 organizationId: u.organizationId || u.organization_id || "",
                 permisos: u.permisos || u.permissions || [],
                 ultimoAcceso: u.ultimoAcceso || u.lastLogin,
+                isPartner,
+                partnerId: isPartner ? partnersMap.get(userId) : undefined,
               };
             },
           ),
@@ -202,7 +230,7 @@ export default function RoleManager() {
     fetchUsers();
     fetchOrgs();
     return () => controller.abort();
-  }, [apiBase, getValidToken, orgId]);
+  }, [apiBase, getValidToken, orgId, partners]);
 
   const filtered = useMemo(() => {
     const term = filter.trim().toLowerCase();
@@ -390,6 +418,22 @@ export default function RoleManager() {
     );
   };
 
+  const handleMakePartner = async (userId: string) => {
+    try {
+      await registerPartner.mutateAsync({
+        userId,
+        status: "active",
+        tier: "bronze",
+        commissionRate: 10.0,
+      });
+      setUserToMakePartner(null);
+      // Refrescar lista de usuarios
+      window.location.reload();
+    } catch (error) {
+      // Error manejado por el hook
+    }
+  };
+
   return (
     <div className="space-y-6" aria-live="polite">
       {/* Header */}
@@ -496,6 +540,7 @@ export default function RoleManager() {
                         <TableHead>{tUsers("state")}</TableHead>
                         <TableHead>{tUsers("organization")}</TableHead>
                         <TableHead>{tUsers("lastAccess")}</TableHead>
+                        <TableHead>Partner</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -580,6 +625,25 @@ export default function RoleManager() {
                                 <span className="text-sm text-muted-foreground">—</span>
                               )}
                             </TableCell>
+                            <TableCell>
+                              {user.isPartner ? (
+                                <Badge variant="default" className="gap-1.5">
+                                  <Handshake className="h-3 w-3" />
+                                  {tPartners("status.active")}
+                                </Badge>
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setUserToMakePartner(user.id)}
+                                  disabled={registerPartner.isPending || isPending}
+                                  className="gap-1.5"
+                                >
+                                  <Handshake className="h-3 w-3" />
+                                  {tPartners("actions.makePartner")}
+                                </Button>
+                              )}
+                            </TableCell>
                           </TableRow>
                         );
                       })}
@@ -591,6 +655,24 @@ export default function RoleManager() {
           )}
         </>
       )}
+
+      {/* Modal de confirmación para hacer partner */}
+      <AlertDialog open={!!userToMakePartner} onOpenChange={(open) => !open && setUserToMakePartner(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{tPartners("confirm.makePartnerTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {tPartners("confirm.makePartnerDescription")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{tPartners("confirm.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={() => userToMakePartner && handleMakePartner(userToMakePartner)}>
+              {tPartners("confirm.makePartner")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
