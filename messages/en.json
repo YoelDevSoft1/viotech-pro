@@ -668,7 +668,17 @@
       "featuredImage": "Featured Image",
       "imageUrl": "Image URL",
       "saving": "Saving...",
-      "saveArticle": "Save Article"
+      "saveArticle": "Save Article",
+      "validation": {
+        "titleMin": "Minimum 3 characters",
+        "titleMax": "Maximum 500 characters",
+        "excerptMin": "Minimum 50 characters",
+        "excerptMax": "Maximum 300 characters",
+        "contentMin": "Minimum 500 characters",
+        "categoryRequired": "Select a category",
+        "invalidUrl": "Invalid URL",
+        "metaDescriptionMax": "Maximum 160 characters"
+      }
     },
     "comments": {
       "moderateComments": "Comment Moderation",
@@ -1144,6 +1154,52 @@
         "title": "Ready to be our next success story?",
         "description": "Schedule a free consultation and discover how we can transform your business",
         "button": "Schedule Free Consultation"
+      },
+      "studies": {
+        "smdVital": {
+          "client": "SMD Vital Bogotá",
+          "industry": "Health",
+          "challenge": "Outdated patient management system and manual processes",
+          "solution": "Comprehensive web platform with appointment management, digital medical records and real-time analytical dashboard",
+          "results": {
+            "timeReduction": "Time reduction",
+            "morePatients": "More patients",
+            "satisfaction": "Satisfaction"
+          }
+        },
+        "medicExpress": {
+          "client": "MedicExpress",
+          "industry": "Medical logistics",
+          "challenge": "Lack of delivery visibility and poor customer communication",
+          "solution": "Mobile app with real-time tracking, automatic notifications and integrated inventory management system",
+          "results": {
+            "onTimeDeliveries": "On-time deliveries",
+            "customerRetention": "Customer retention",
+            "traceability": "Traceability"
+          }
+        },
+        "techShop": {
+          "client": "Tech Shop Bogotá",
+          "industry": "E-commerce",
+          "challenge": "Slow website and low conversion rate",
+          "solution": "Complete redesign with Next.js, performance optimization and simplified checkout with local payment gateways",
+          "results": {
+            "conversions": "Conversions",
+            "speed": "Speed",
+            "mobileTraffic": "Mobile traffic"
+          }
+        },
+        "financiaYa": {
+          "client": "FinanciaYa",
+          "industry": "Fintech",
+          "challenge": "Loan platform with scalability and security issues",
+          "solution": "Cloud-native architecture, banking security implementation and automated scoring system",
+          "results": {
+            "loansProcessed": "Loans processed",
+            "activeUsers": "Active users",
+            "uptime": "Uptime"
+          }
+        }
       }
     },
     "industries": {

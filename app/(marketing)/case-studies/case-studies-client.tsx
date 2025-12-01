@@ -6,56 +6,57 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
-
-const caseStudies = [
-  {
-    client: "SMD Vital Bogotá",
-    industry: "Salud",
-    challenge: "Sistema de gestión de pacientes obsoleto y procesos manuales",
-    solution: "Plataforma web integral con gestión de citas, historias clínicas digitales y dashboard analítico en tiempo real",
-    results: [
-      { icon: TrendingUp, metric: "40%", label: "Reducción tiempos" },
-      { icon: Users, metric: "2.5x", label: "Más pacientes" },
-      { icon: Zap, metric: "95%", label: "Satisfacción" },
-    ],
-  },
-  {
-    client: "MedicExpress",
-    industry: "Logística médica",
-    challenge: "Falta de visibilidad en entregas y comunicación deficiente con clientes",
-    solution: "App móvil con tracking en tiempo real, notificaciones automáticas y sistema de gestión de inventario integrado",
-    results: [
-      { icon: TrendingUp, metric: "60%", label: "Entregas a tiempo" },
-      { icon: Users, metric: "3x", label: "Retención clientes" },
-      { icon: Zap, metric: "100%", label: "Trazabilidad" },
-    ],
-  },
-  {
-    client: "Tech Shop Bogotá",
-    industry: "E-commerce",
-    challenge: "Sitio web lento y tasa de conversión baja",
-    solution: "Rediseño completo con Next.js, optimización de performance y checkout simplificado con pasarelas locales",
-    results: [
-      { icon: TrendingUp, metric: "180%", label: "Conversiones" },
-      { icon: Users, metric: "4x", label: "Velocidad" },
-      { icon: Zap, metric: "85%", label: "Mobile traffic" },
-    ],
-  },
-  {
-    client: "FinanciaYa",
-    industry: "Fintech",
-    challenge: "Plataforma de préstamos con problemas de escalabilidad y seguridad",
-    solution: "Arquitectura cloud-native, implementación de seguridad bancaria y sistema de scoring automatizado",
-    results: [
-      { icon: TrendingUp, metric: "250%", label: "Préstamos procesados" },
-      { icon: Users, metric: "5x", label: "Usuarios activos" },
-      { icon: Zap, metric: "99.9%", label: "Uptime" },
-    ],
-  },
-];
+import { useMemo } from "react";
 
 export function CaseStudiesPageClient() {
   const t = useTranslationsSafe("marketing.caseStudies");
+  
+  const caseStudies = useMemo(() => [
+    {
+      client: t("studies.smdVital.client"),
+      industry: t("studies.smdVital.industry"),
+      challenge: t("studies.smdVital.challenge"),
+      solution: t("studies.smdVital.solution"),
+      results: [
+        { icon: TrendingUp, metric: "40%", label: t("studies.smdVital.results.timeReduction") },
+        { icon: Users, metric: "2.5x", label: t("studies.smdVital.results.morePatients") },
+        { icon: Zap, metric: "95%", label: t("studies.smdVital.results.satisfaction") },
+      ],
+    },
+    {
+      client: t("studies.medicExpress.client"),
+      industry: t("studies.medicExpress.industry"),
+      challenge: t("studies.medicExpress.challenge"),
+      solution: t("studies.medicExpress.solution"),
+      results: [
+        { icon: TrendingUp, metric: "60%", label: t("studies.medicExpress.results.onTimeDeliveries") },
+        { icon: Users, metric: "3x", label: t("studies.medicExpress.results.customerRetention") },
+        { icon: Zap, metric: "100%", label: t("studies.medicExpress.results.traceability") },
+      ],
+    },
+    {
+      client: t("studies.techShop.client"),
+      industry: t("studies.techShop.industry"),
+      challenge: t("studies.techShop.challenge"),
+      solution: t("studies.techShop.solution"),
+      results: [
+        { icon: TrendingUp, metric: "180%", label: t("studies.techShop.results.conversions") },
+        { icon: Users, metric: "4x", label: t("studies.techShop.results.speed") },
+        { icon: Zap, metric: "85%", label: t("studies.techShop.results.mobileTraffic") },
+      ],
+    },
+    {
+      client: t("studies.financiaYa.client"),
+      industry: t("studies.financiaYa.industry"),
+      challenge: t("studies.financiaYa.challenge"),
+      solution: t("studies.financiaYa.solution"),
+      results: [
+        { icon: TrendingUp, metric: "250%", label: t("studies.financiaYa.results.loansProcessed") },
+        { icon: Users, metric: "5x", label: t("studies.financiaYa.results.activeUsers") },
+        { icon: Zap, metric: "99.9%", label: t("studies.financiaYa.results.uptime") },
+      ],
+    },
+  ], [t]);
 
   return (
     <div className="min-h-screen">

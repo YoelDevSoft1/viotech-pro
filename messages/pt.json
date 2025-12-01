@@ -635,7 +635,17 @@
       "featuredImage": "Imagem em Destaque",
       "imageUrl": "URL da Imagem",
       "saving": "Salvando...",
-      "saveArticle": "Salvar Artigo"
+      "saveArticle": "Salvar Artigo",
+      "validation": {
+        "titleMin": "Mínimo 3 caracteres",
+        "titleMax": "Máximo 500 caracteres",
+        "excerptMin": "Mínimo 50 caracteres",
+        "excerptMax": "Máximo 300 caracteres",
+        "contentMin": "Mínimo 500 caracteres",
+        "categoryRequired": "Selecione uma categoria",
+        "invalidUrl": "URL inválida",
+        "metaDescriptionMax": "Máximo 160 caracteres"
+      }
     },
     "comments": {
       "moderateComments": "Moderação de Comentários",
@@ -1149,6 +1159,52 @@
         "title": "Pronto para ser nosso próximo caso de sucesso?",
         "description": "Agende uma consultoria gratuita e descubra como podemos transformar seu negócio",
         "button": "Agendar Consultoria Gratuita"
+      },
+      "studies": {
+        "smdVital": {
+          "client": "SMD Vital Bogotá",
+          "industry": "Saúde",
+          "challenge": "Sistema de gestão de pacientes obsoleto e processos manuais",
+          "solution": "Plataforma web integral com gestão de consultas, prontuários digitais e painel analítico em tempo real",
+          "results": {
+            "timeReduction": "Redução de tempos",
+            "morePatients": "Mais pacientes",
+            "satisfaction": "Satisfação"
+          }
+        },
+        "medicExpress": {
+          "client": "MedicExpress",
+          "industry": "Logística médica",
+          "challenge": "Falta de visibilidade nas entregas e comunicação deficiente com clientes",
+          "solution": "App móvel com rastreamento em tempo real, notificações automáticas e sistema de gestão de inventário integrado",
+          "results": {
+            "onTimeDeliveries": "Entregas no prazo",
+            "customerRetention": "Retenção de clientes",
+            "traceability": "Rastreabilidade"
+          }
+        },
+        "techShop": {
+          "client": "Tech Shop Bogotá",
+          "industry": "E-commerce",
+          "challenge": "Site lento e taxa de conversão baixa",
+          "solution": "Redesign completo com Next.js, otimização de performance e checkout simplificado com gateways de pagamento locais",
+          "results": {
+            "conversions": "Conversões",
+            "speed": "Velocidade",
+            "mobileTraffic": "Tráfego móvel"
+          }
+        },
+        "financiaYa": {
+          "client": "FinanciaYa",
+          "industry": "Fintech",
+          "challenge": "Plataforma de empréstimos com problemas de escalabilidade e segurança",
+          "solution": "Arquitetura cloud-native, implementação de segurança bancária e sistema de scoring automatizado",
+          "results": {
+            "loansProcessed": "Empréstimos processados",
+            "activeUsers": "Usuários ativos",
+            "uptime": "Tempo de atividade"
+          }
+        }
       }
     },
     "industries": {
