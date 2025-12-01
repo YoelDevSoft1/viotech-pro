@@ -173,7 +173,7 @@ export default function Header() {
               <Link
                 href="/login"
                 className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
-                aria-label="Ingresar"
+                aria-label={tHeader("login")}
               >
                 <LogIn className="w-4 h-4" />
                 Ingresar
