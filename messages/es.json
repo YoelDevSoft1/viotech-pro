@@ -63,6 +63,58 @@
     "filter": "Filtrar",
     "close": "Cerrar",
     "back": "Atrás",
+    "uploading": "Subiendo...",
+    "file": "Archivo",
+    "avatarUploader": {
+      "save": "Guardar",
+      "uploading": "Subiendo...",
+      "cancel": "Cancelar"
+    },
+    "header": {
+      "home": "Inicio",
+      "summary": "Resumen",
+      "tickets": "Tickets",
+      "services": "Servicios",
+      "admin": "Admin",
+      "health": "Health",
+      "users": "Usuarios",
+      "operations": "Operaciones",
+      "projects": "Proyectos",
+      "client": "Cliente"
+    },
+    "sessions": {
+      "title": "Sesiones Activas",
+      "loading": "Cargando sesiones...",
+      "error": "Error al cargar las sesiones activas",
+      "description": "Gestiona tus sesiones activas en otros dispositivos",
+      "closeAllOthers": "Cerrar todas las demás",
+      "closeAllOthersConfirm": "¿Cerrar todas las demás sesiones?",
+      "closeAllOthersDescription": "Se cerrarán {count} sesión(es) activa(s) en otros dispositivos. Tu sesión actual permanecerá activa.",
+      "closing": "Cerrando...",
+      "closeAll": "Cerrar todas",
+      "currentSession": "Sesión actual",
+      "otherSessions": "Otras sesiones activas",
+      "closeSessionConfirm": "¿Cerrar esta sesión?",
+      "closeSessionDescription": "Se cerrará la sesión en {deviceName}. El usuario deberá iniciar sesión nuevamente en ese dispositivo.",
+      "closeSession": "Cerrar sesión",
+      "noSessions": "No hay sesiones activas",
+      "timeAgo": {
+        "lessThanMinute": "Hace menos de un minuto",
+        "minutes": "Hace {count} minuto{plural}",
+        "hours": "Hace {count} hora{plural}",
+        "days": "Hace {count} día{plural}"
+      }
+    },
+    "vacationTypes": {
+      "vacation": "Vacaciones",
+      "sick_leave": "Licencia médica",
+      "personal": "Personal",
+      "other": "Otro"
+    },
+    "vacationStatus": {
+      "approved": "Aprobada",
+      "pending": "Pendiente"
+    },
     "next": "Siguiente",
     "previous": "Anterior",
     "confirm": "Confirmar",
@@ -134,7 +186,9 @@
     "notFound": "No se encontró el proyecto.",
     "clearFilters": "Limpiar filtros",
     "today": "Hoy",
-    "yesterday": "Ayer"
+    "yesterday": "Ayer",
+    "allTypes": "Todos los tipos",
+    "allUsers": "Todos los usuarios"
   },
   "aiAssistant": {
     "welcomeMessage": "Soy tu asistente para redactar tickets claros. Describe el problema y sugeriré título, prioridad y detalles.",

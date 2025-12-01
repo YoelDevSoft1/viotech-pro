@@ -57,6 +57,7 @@ export function TicketComments({
   className,
 }: TicketCommentsProps) {
   const tTickets = useTranslationsSafe("tickets");
+  const tCommon = useTranslationsSafe("common");
   const [message, setMessage] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
@@ -245,7 +246,7 @@ export function TicketComments({
                     <FileText className="h-5 w-5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{file.nombre || file.name || "Archivo"}</p>
+                    <p className="text-sm font-medium truncate">{file.nombre || file.name || tCommon("file")}</p>
                     {(file.tamaño || file.size) && (
                       <p className="text-xs text-muted-foreground">
                         {formatFileSize(file.tamaño || file.size || 0)}

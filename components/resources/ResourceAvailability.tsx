@@ -47,6 +47,7 @@ type VacationFormValues = z.infer<ReturnType<typeof getVacationSchema>>;
 
 export function ResourceAvailability({ resourceId }: ResourceAvailabilityProps) {
   const tResources = useTranslationsSafe("resources");
+  const tCommon = useTranslationsSafe("common");
   const { formatDate } = useI18n();
 
   // Crear labels de días usando traducciones
@@ -377,16 +378,16 @@ export function ResourceAvailability({ resourceId }: ResourceAvailabilityProps) 
                         variant={vacation.approved ? "default" : "secondary"}
                         className="text-xs"
                       >
-                        {vacation.approved ? "Aprobada" : "Pendiente"}
+                        {vacation.approved ? tCommon("vacationStatus.approved") : tCommon("vacationStatus.pending")}
                       </Badge>
                       <Badge variant="outline" className="text-xs capitalize">
                         {vacation.type === "vacation"
-                          ? "Vacaciones"
+                          ? tCommon("vacationTypes.vacation")
                           : vacation.type === "sick_leave"
-                            ? "Licencia médica"
+                            ? tCommon("vacationTypes.sick_leave")
                             : vacation.type === "personal"
-                              ? "Personal"
-                              : "Otro"}
+                              ? tCommon("vacationTypes.personal")
+                              : tCommon("vacationTypes.other")}
                       </Badge>
                     </div>
                     {vacation.description && (

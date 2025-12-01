@@ -14,6 +14,7 @@ import {
 import { useUploadAvatar, useDeleteAvatar } from "@/lib/hooks/useAvatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 interface AvatarUploaderProps {
   currentAvatar: string | null | undefined;
@@ -31,6 +32,8 @@ export function AvatarUploader({
   initials,
   size = "md",
 }: AvatarUploaderProps) {
+  const tAvatar = useTranslationsSafe("common.avatarUploader");
+  const tCommon = useTranslationsSafe("common");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -250,7 +253,7 @@ export function AvatarUploader({
                 disabled={isLoading}
                 className="flex-1"
               >
-                Cancelar
+                {tCommon("cancel")}
               </Button>
               <Button
                 type="button"
@@ -261,10 +264,10 @@ export function AvatarUploader({
                 {uploadMutation.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Subiendo...
+                    {tAvatar("uploading")}
                   </>
                 ) : (
-                  "Guardar"
+                  tAvatar("save")
                 )}
               </Button>
             </div>

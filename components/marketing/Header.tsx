@@ -20,32 +20,9 @@ import {
 import clsx from "clsx";
 import { getAccessToken, logout } from "@/lib/auth";
 import { buildApiUrl } from "@/lib/api";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 type NavItem = { label: string; href: string; icon?: React.ReactNode };
-
-const MARKETING_NAV: NavItem[] = [
-  { label: "Inicio", href: "/", icon: <Home className="w-4 h-4" /> },
-  { label: "Servicios", href: "/services", icon: <Wrench className="w-4 h-4" /> },
-];
-
-const CLIENT_NAV: NavItem[] = [
-  { label: "Resumen", href: "/dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
-  { label: "Tickets", href: "/client/tickets", icon: <Ticket className="w-4 h-4" /> },
-  { label: "Servicios", href: "/services", icon: <Shield className="w-4 h-4" /> },
-];
-
-const ADMIN_NAV: NavItem[] = [
-  { label: "Admin", href: "/admin", icon: <LayoutDashboard className="w-4 h-4" /> },
-  { label: "Health", href: "/admin/health", icon: <HeartPulse className="w-4 h-4" /> },
-  { label: "Usuarios", href: "/admin/users", icon: <User className="w-4 h-4" /> },
-  { label: "Tickets", href: "/admin/tickets", icon: <Ticket className="w-4 h-4" /> },
-];
-
-const INTERNAL_NAV: NavItem[] = [
-  { label: "Operaciones", href: "/internal", icon: <Radar className="w-4 h-4" /> },
-  { label: "Tickets", href: "/internal/tickets", icon: <Ticket className="w-4 h-4" /> },
-  { label: "Proyectos", href: "/internal/projects", icon: <LayoutDashboard className="w-4 h-4" /> },
-];
 
 export default function Header() {
   const pathname = usePathname();
@@ -54,12 +31,38 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [role, setRole] = useState<string | null>(null);
+  const tHeader = useTranslationsSafe("common.header");
+  
+  const MARKETING_NAV: NavItem[] = useMemo(() => [
+    { label: tHeader("home"), href: "/", icon: <Home className="w-4 h-4" /> },
+    { label: tHeader("services"), href: "/services", icon: <Wrench className="w-4 h-4" /> },
+  ], [tHeader]);
+
+  const CLIENT_NAV: NavItem[] = useMemo(() => [
+    { label: tHeader("summary"), href: "/dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
+    { label: tHeader("tickets"), href: "/client/tickets", icon: <Ticket className="w-4 h-4" /> },
+    { label: tHeader("services"), href: "/services", icon: <Shield className="w-4 h-4" /> },
+  ], [tHeader]);
+
+  const ADMIN_NAV: NavItem[] = useMemo(() => [
+    { label: tHeader("admin"), href: "/admin", icon: <LayoutDashboard className="w-4 h-4" /> },
+    { label: tHeader("health"), href: "/admin/health", icon: <HeartPulse className="w-4 h-4" /> },
+    { label: tHeader("users"), href: "/admin/users", icon: <User className="w-4 h-4" /> },
+    { label: tHeader("tickets"), href: "/admin/tickets", icon: <Ticket className="w-4 h-4" /> },
+  ], [tHeader]);
+
+  const INTERNAL_NAV: NavItem[] = useMemo(() => [
+    { label: tHeader("operations"), href: "/internal", icon: <Radar className="w-4 h-4" /> },
+    { label: tHeader("tickets"), href: "/internal/tickets", icon: <Ticket className="w-4 h-4" /> },
+    { label: tHeader("projects"), href: "/internal/projects", icon: <LayoutDashboard className="w-4 h-4" /> },
+  ], [tHeader]);
+
   const activeNav = useMemo(() => {
     if (pathname.startsWith("/admin")) return ADMIN_NAV;
     if (pathname.startsWith("/internal")) return INTERNAL_NAV;
     if (pathname.startsWith("/dashboard") || pathname.startsWith("/client")) return CLIENT_NAV;
     return MARKETING_NAV;
-  }, [pathname]);
+  }, [pathname, ADMIN_NAV, INTERNAL_NAV, CLIENT_NAV, MARKETING_NAV]);
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 24);
@@ -112,15 +115,15 @@ export default function Header() {
   const portalShortcuts = useMemo(() => {
     const items: NavItem[] = [];
     if (isClient) {
-      items.push({ label: "Cliente", href: "/client", icon: <LayoutDashboard className="w-4 h-4" /> });
-      items.push({ label: "Tickets", href: "/client/tickets", icon: <Ticket className="w-4 h-4" /> });
+      items.push({ label: tHeader("client"), href: "/client", icon: <LayoutDashboard className="w-4 h-4" /> });
+      items.push({ label: tHeader("tickets"), href: "/client/tickets", icon: <Ticket className="w-4 h-4" /> });
     }
     if (isAdmin) {
-      items.push({ label: "Admin", href: "/admin", icon: <User className="w-4 h-4" /> });
-      items.push({ label: "Interno", href: "/internal", icon: <Radar className="w-4 h-4" /> });
+      items.push({ label: tHeader("admin"), href: "/admin", icon: <User className="w-4 h-4" /> });
+      items.push({ label: tHeader("operations"), href: "/internal", icon: <Radar className="w-4 h-4" /> });
     }
     return items;
-  }, [isAdmin, isClient]);
+  }, [isAdmin, isClient, tHeader]);
 
   const renderLink = (item: NavItem, isMobile = false) => {
     const active = pathname === item.href;

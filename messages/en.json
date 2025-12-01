@@ -63,6 +63,58 @@
     "filter": "Filter",
     "close": "Close",
     "back": "Back",
+    "uploading": "Uploading...",
+    "file": "File",
+    "avatarUploader": {
+      "save": "Save",
+      "uploading": "Uploading...",
+      "cancel": "Cancel"
+    },
+    "header": {
+      "home": "Home",
+      "summary": "Summary",
+      "tickets": "Tickets",
+      "services": "Services",
+      "admin": "Admin",
+      "health": "Health",
+      "users": "Users",
+      "operations": "Operations",
+      "projects": "Projects",
+      "client": "Client"
+    },
+    "sessions": {
+      "title": "Active Sessions",
+      "loading": "Loading sessions...",
+      "error": "Error loading active sessions",
+      "description": "Manage your active sessions on other devices",
+      "closeAllOthers": "Close all others",
+      "closeAllOthersConfirm": "Close all other sessions?",
+      "closeAllOthersDescription": "{count} active session(s) on other devices will be closed. Your current session will remain active.",
+      "closing": "Closing...",
+      "closeAll": "Close all",
+      "currentSession": "Current session",
+      "otherSessions": "Other active sessions",
+      "closeSessionConfirm": "Close this session?",
+      "closeSessionDescription": "The session on {deviceName} will be closed. The user will need to log in again on that device.",
+      "closeSession": "Close session",
+      "noSessions": "No active sessions",
+      "timeAgo": {
+        "lessThanMinute": "Less than a minute ago",
+        "minutes": "{count} minute{plural} ago",
+        "hours": "{count} hour{plural} ago",
+        "days": "{count} day{plural} ago"
+      }
+    },
+    "vacationTypes": {
+      "vacation": "Vacation",
+      "sick_leave": "Sick leave",
+      "personal": "Personal",
+      "other": "Other"
+    },
+    "vacationStatus": {
+      "approved": "Approved",
+      "pending": "Pending"
+    },
     "next": "Next",
     "previous": "Previous",
     "confirm": "Confirm",
@@ -135,7 +187,9 @@
     "notFound": "Project not found.",
     "clearFilters": "Clear filters",
     "today": "Today",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "allTypes": "All types",
+    "allUsers": "All users"
   },
   "aiAssistant": {
     "welcomeMessage": "I'm your assistant for writing clear tickets. Describe the problem and I'll suggest title, priority and details.",

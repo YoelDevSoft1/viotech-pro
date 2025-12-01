@@ -63,6 +63,58 @@
     "filter": "Filtrar",
     "close": "Fechar",
     "back": "Voltar",
+    "uploading": "Enviando...",
+    "file": "Arquivo",
+    "avatarUploader": {
+      "save": "Salvar",
+      "uploading": "Enviando...",
+      "cancel": "Cancelar"
+    },
+    "header": {
+      "home": "Início",
+      "summary": "Resumo",
+      "tickets": "Tickets",
+      "services": "Serviços",
+      "admin": "Admin",
+      "health": "Saúde",
+      "users": "Usuários",
+      "operations": "Operações",
+      "projects": "Projetos",
+      "client": "Cliente"
+    },
+    "sessions": {
+      "title": "Sessões Ativas",
+      "loading": "Carregando sessões...",
+      "error": "Erro ao carregar sessões ativas",
+      "description": "Gerencie suas sessões ativas em outros dispositivos",
+      "closeAllOthers": "Fechar todas as outras",
+      "closeAllOthersConfirm": "Fechar todas as outras sessões?",
+      "closeAllOthersDescription": "{count} sessão(ões) ativa(s) em outros dispositivos serão fechadas. Sua sessão atual permanecerá ativa.",
+      "closing": "Fechando...",
+      "closeAll": "Fechar todas",
+      "currentSession": "Sessão atual",
+      "otherSessions": "Outras sessões ativas",
+      "closeSessionConfirm": "Fechar esta sessão?",
+      "closeSessionDescription": "A sessão em {deviceName} será fechada. O usuário precisará fazer login novamente nesse dispositivo.",
+      "closeSession": "Fechar sessão",
+      "noSessions": "Não há sessões ativas",
+      "timeAgo": {
+        "lessThanMinute": "Há menos de um minuto",
+        "minutes": "Há {count} minuto{plural}",
+        "hours": "Há {count} hora{plural}",
+        "days": "Há {count} dia{plural}"
+      }
+    },
+    "vacationTypes": {
+      "vacation": "Férias",
+      "sick_leave": "Licença médica",
+      "personal": "Pessoal",
+      "other": "Outro"
+    },
+    "vacationStatus": {
+      "approved": "Aprovada",
+      "pending": "Pendente"
+    },
     "next": "Próximo",
     "previous": "Anterior",
     "confirm": "Confirmar",
@@ -135,7 +187,9 @@
     "notFound": "Projeto não encontrado.",
     "clearFilters": "Limpar filtros",
     "today": "Hoje",
-    "yesterday": "Ontem"
+    "yesterday": "Ontem",
+    "allTypes": "Todos os tipos",
+    "allUsers": "Todos os usuários"
   },
   "aiAssistant": {
     "welcomeMessage": "Sou seu assistente para redigir tickets claros. Descreva o problema e sugerirei título, prioridade e detalhes.",

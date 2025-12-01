@@ -9,12 +9,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Monitor, MapPin, Globe, Clock, LogOut, AlertCircle, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
 
 export function ActiveSessionsList() {
   const { data: sessions = [], isLoading, error } = useSessions();
   const closeSession = useCloseSession();
   const closeAllOther = useCloseAllOtherSessions();
   const [sessionToClose, setSessionToClose] = useState<string | null>(null);
+  const tSessions = useTranslationsSafe("common.sessions");
+  const tCommon = useTranslationsSafe("common");
+  const { formatDate, locale } = useI18n();
 
   const formatTimeAgo = (dateString: string): string => {
     const date = new Date(dateString);
@@ -24,18 +29,21 @@ export function ActiveSessionsList() {
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffMins < 1) return "Hace menos de un minuto";
-    if (diffMins < 60) return `Hace ${diffMins} minuto${diffMins > 1 ? "s" : ""}`;
-    if (diffHours < 24) return `Hace ${diffHours} hora${diffHours > 1 ? "s" : ""}`;
-    if (diffDays < 7) return `Hace ${diffDays} día${diffDays > 1 ? "s" : ""}`;
+    if (diffMins < 1) return tSessions("timeAgo.lessThanMinute");
+    if (diffMins < 60) {
+      const plural = diffMins > 1 ? "s" : "";
+      return tSessions("timeAgo.minutes").replace("{count}", String(diffMins)).replace("{plural}", plural);
+    }
+    if (diffHours < 24) {
+      const plural = diffHours > 1 ? "s" : "";
+      return tSessions("timeAgo.hours").replace("{count}", String(diffHours)).replace("{plural}", plural);
+    }
+    if (diffDays < 7) {
+      const plural = diffDays > 1 ? "s" : "";
+      return tSessions("timeAgo.days").replace("{count}", String(diffDays)).replace("{plural}", plural);
+    }
 
-    return date.toLocaleDateString("es-CO", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return formatDate(date, "PPpp");
   };
 
   const handleCloseSession = async (sessionId: string) => {
@@ -54,8 +62,8 @@ export function ActiveSessionsList() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Sesiones Activas</CardTitle>
-          <CardDescription>Cargando sesiones...</CardDescription>
+          <CardTitle>{tSessions("title")}</CardTitle>
+          <CardDescription>{tSessions("loading")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Skeleton className="h-24 w-full" />
@@ -69,13 +77,13 @@ export function ActiveSessionsList() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Sesiones Activas</CardTitle>
+          <CardTitle>{tSessions("title")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              {(error as Error)?.message || "Error al cargar las sesiones activas"}
+              {(error as Error)?.message || tSessions("error")}
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -90,10 +98,10 @@ export function ActiveSessionsList() {
           <div>
             <CardTitle className="flex items-center gap-2">
               <Monitor className="h-5 w-5" />
-              Sesiones Activas
+              {tSessions("title")}
             </CardTitle>
             <CardDescription>
-              Gestiona tus sesiones activas en otros dispositivos
+              {tSessions("description")}
             </CardDescription>
           </div>
           {otherSessions.length > 0 && (
@@ -101,19 +109,18 @@ export function ActiveSessionsList() {
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" size="sm">
                   <LogOut className="h-4 w-4 mr-2" />
-                  Cerrar todas las demás ({otherSessions.length})
+                  {tSessions("closeAllOthers")} ({otherSessions.length})
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>¿Cerrar todas las demás sesiones?</AlertDialogTitle>
+                  <AlertDialogTitle>{tSessions("closeAllOthersConfirm")}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Se cerrarán {otherSessions.length} sesión(es) activa(s) en otros dispositivos.
-                    Tu sesión actual permanecerá activa.
+                    {tSessions("closeAllOthersDescription").replace("{count}", String(otherSessions.length))}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogCancel>{tCommon("cancel")}</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleCloseAllOther}
                     disabled={closeAllOther.isPending}
@@ -122,10 +129,10 @@ export function ActiveSessionsList() {
                     {closeAllOther.isPending ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Cerrando...
+                        {tSessions("closing")}
                       </>
                     ) : (
-                      "Cerrar todas"
+                      tSessions("closeAll")
                     )}
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -142,7 +149,7 @@ export function ActiveSessionsList() {
                 <Monitor className="h-5 w-5 text-green-600" />
                 <span className="font-medium">{currentSession.deviceName}</span>
                 <Badge variant="default" className="bg-green-600">
-                  Sesión actual
+                  {tSessions("currentSession")}
                 </Badge>
               </div>
             </div>
@@ -170,7 +177,7 @@ export function ActiveSessionsList() {
         {otherSessions.length > 0 && (
           <div className="space-y-3">
             <h3 className="text-sm font-medium text-muted-foreground">
-              Otras sesiones activas ({otherSessions.length})
+              {tSessions("otherSessions")} ({otherSessions.length})
             </h3>
             {otherSessions.map((session) => (
               <div
@@ -189,19 +196,18 @@ export function ActiveSessionsList() {
                     <AlertDialogTrigger asChild>
                       <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
                         <LogOut className="h-4 w-4 mr-2" />
-                        Cerrar sesión
+                        {tSessions("closeSession")}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>¿Cerrar esta sesión?</AlertDialogTitle>
+                        <AlertDialogTitle>{tSessions("closeSessionConfirm")}</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Se cerrará la sesión en <strong>{session.deviceName}</strong>.
-                          El usuario deberá iniciar sesión nuevamente en ese dispositivo.
+                          {tSessions("closeSessionDescription").replace("{deviceName}", session.deviceName)}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogCancel>{tCommon("cancel")}</AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() => handleCloseSession(session.id)}
                           disabled={closeSession.isPending}
@@ -210,10 +216,10 @@ export function ActiveSessionsList() {
                           {closeSession.isPending ? (
                             <>
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Cerrando...
+                              {tSessions("closing")}
                             </>
                           ) : (
-                            "Cerrar sesión"
+                            tSessions("closeSession")
                           )}
                         </AlertDialogAction>
                       </AlertDialogFooter>
@@ -246,7 +252,7 @@ export function ActiveSessionsList() {
         {sessions.length === 0 && (
           <div className="text-center py-8 text-muted-foreground">
             <Monitor className="h-12 w-12 mx-auto mb-2 opacity-50" />
-            <p>No hay sesiones activas</p>
+            <p>{tSessions("noSessions")}</p>
           </div>
         )}
       </CardContent>

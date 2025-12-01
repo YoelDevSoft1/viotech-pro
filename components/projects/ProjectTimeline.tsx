@@ -369,10 +369,10 @@ export function ProjectTimeline({ projectId, filters: externalFilters }: Project
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Todos los tipos" />
+                    <SelectValue placeholder={tProjects("timeline.allTypes")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos los tipos</SelectItem>
+                    <SelectItem value="all">{tProjects("timeline.allTypes")}</SelectItem>
                     {eventTypeOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
@@ -422,10 +422,10 @@ export function ProjectTimeline({ projectId, filters: externalFilters }: Project
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Todos los usuarios" />
+                    <SelectValue placeholder={tProjects("timeline.allUsers")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos los usuarios</SelectItem>
+                    <SelectItem value="all">{tProjects("timeline.allUsers")}</SelectItem>
                     {users.map((user: any) => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.nombre || user.name || user.email}

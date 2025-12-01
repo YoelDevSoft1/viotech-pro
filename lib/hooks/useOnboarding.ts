@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/apiClient";
+import { getAccessToken } from "@/lib/auth";
 import type {
   OnboardingProgress,
   OnboardingChecklist,
@@ -11,9 +12,45 @@ import type {
 } from "@/lib/types/onboarding";
 
 /**
+ * Hook para verificar si hay un token válido (reactivo)
+ */
+function useHasToken() {
+  const [hasToken, setHasToken] = useState(false);
+
+  useEffect(() => {
+    const checkToken = () => {
+      setHasToken(!!getAccessToken());
+    };
+
+    // Verificar al montar
+    checkToken();
+
+    // Escuchar cambios en el token (eventos personalizados o storage)
+    const handleStorageChange = () => checkToken();
+    const handleAuthChange = () => checkToken();
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("authChanged", handleAuthChange);
+
+    // Verificar periódicamente (por si acaso)
+    const interval = setInterval(checkToken, 1000);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("authChanged", handleAuthChange);
+      clearInterval(interval);
+    };
+  }, []);
+
+  return hasToken;
+}
+
+/**
  * Hook para obtener el progreso de onboarding del usuario
  */
 export function useOnboardingProgress() {
+  const hasToken = useHasToken();
+  
   return useQuery<OnboardingProgress>({
     queryKey: ["onboarding", "progress"],
     queryFn: async () => {
@@ -30,6 +67,7 @@ export function useOnboardingProgress() {
         lastActiveAt: raw.lastActiveAt || raw.last_active_at || new Date().toISOString(),
       } as OnboardingProgress;
     },
+    enabled: hasToken, // Solo ejecutar si hay token
     staleTime: 1000 * 60 * 5, // 5 minutos
   });
 }
@@ -38,6 +76,8 @@ export function useOnboardingProgress() {
  * Hook para obtener la checklist de onboarding
  */
 export function useOnboardingChecklist() {
+  const hasToken = useHasToken();
+  
   return useQuery<OnboardingChecklist>({
     queryKey: ["onboarding", "checklist"],
     queryFn: async () => {
@@ -64,6 +104,7 @@ export function useOnboardingChecklist() {
         progress: raw.progress || 0,
       } as OnboardingChecklist;
     },
+    enabled: hasToken, // Solo ejecutar si hay token
     staleTime: 1000 * 60 * 5,
   });
 }
@@ -90,6 +131,8 @@ export function useCompleteChecklistItem() {
  * Hook para obtener tours disponibles
  */
 export function useOnboardingTours(role?: string) {
+  const hasToken = useHasToken();
+  
   return useQuery<OnboardingTour[]>({
     queryKey: ["onboarding", "tours", role],
     queryFn: async () => {
@@ -106,6 +149,7 @@ export function useOnboardingTours(role?: string) {
         enabled: tour.enabled !== false,
       })) as OnboardingTour[];
     },
+    enabled: hasToken, // Solo ejecutar si hay token
     staleTime: 1000 * 60 * 15, // 15 minutos (los tours no cambian frecuentemente)
   });
 }
@@ -133,6 +177,8 @@ export function useCompleteTour() {
  * Hook para obtener configuración de onboarding
  */
 export function useOnboardingConfig() {
+  const hasToken = useHasToken();
+  
   return useQuery<OnboardingConfig>({
     queryKey: ["onboarding", "config"],
     queryFn: async () => {
@@ -148,6 +194,7 @@ export function useOnboardingConfig() {
         autoStartTour: raw.autoStartTour || raw.auto_start_tour,
       } as OnboardingConfig;
     },
+    enabled: hasToken, // Solo ejecutar si hay token
     staleTime: 1000 * 60 * 5,
   });
 }
