@@ -335,10 +335,10 @@ export function AutomatedReports({ organizationId }: AutomatedReportsProps) {
                   </div>
                   <div className="text-sm text-muted-foreground mt-1">
                     {report.type === "daily"
-                      ? tReports("schedule.dailyAt").replace("{time}", report.schedule.time)
+                      ? tReports("schedule.dailyAt", { time: report.schedule.time })
                       : report.type === "weekly"
-                        ? tReports("schedule.weeklyOn").replace("{day}", dayLabels[report.schedule.dayOfWeek || 1]).replace("{time}", report.schedule.time)
-                        : tReports("schedule.monthlyOn").replace("{day}", String(report.schedule.dayOfMonth || 1)).replace("{time}", report.schedule.time)}
+                        ? tReports("schedule.weeklyOn", { day: dayLabels[report.schedule.dayOfWeek || 1], time: report.schedule.time })
+                        : tReports("schedule.monthlyOn", { day: report.schedule.dayOfMonth || 1, time: report.schedule.time })}
                   </div>
                   {report.lastGenerated && (
                     <div className="text-xs text-muted-foreground mt-1">

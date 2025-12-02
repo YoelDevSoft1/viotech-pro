@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 import { useI18n } from "@/lib/hooks/useI18n";
-import { Search, Download, FileText, Image, Video, ExternalLink } from "lucide-react";
+import { Search, Download, FileText, Image, Video, ExternalLink, FileX } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -21,21 +21,26 @@ import {
 
 export function PartnerMarketing() {
   const [filters, setFilters] = useState({
-    category: "",
-    type: "",
+    category: "all",
+    type: "all",
   });
   const [search, setSearch] = useState("");
   const [selectedMaterial, setSelectedMaterial] = useState<any>(null);
   const t = useTranslationsSafe("partners.marketing");
   const { formatDate } = useI18n();
 
-  const { data: materials, isLoading } = usePartnerMarketingMaterials(filters);
+  // Convertir "all" a undefined para el hook
+  const materialFilters = {
+    category: filters.category === "all" ? undefined : filters.category,
+    type: filters.type === "all" ? undefined : filters.type,
+  };
+  const { data: materials, isLoading } = usePartnerMarketingMaterials(materialFilters);
 
   const filteredMaterials = materials?.filter((material) => {
     if (!search) return true;
     const searchLower = search.toLowerCase();
     return (
-      material.name.toLowerCase().includes(searchLower) ||
+      material.title.toLowerCase().includes(searchLower) ||
       material.description?.toLowerCase().includes(searchLower) ||
       material.category.toLowerCase().includes(searchLower)
     );
@@ -43,7 +48,8 @@ export function PartnerMarketing() {
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case "image":
+      case "banner":
+      case "logo":
         return Image;
       case "video":
         return Video;
@@ -54,14 +60,12 @@ export function PartnerMarketing() {
 
   const getCategoryBadge = (category: string) => {
     const styles = {
-      logo: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      banner: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-      brochure: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-      presentation: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-      video: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-      social: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200",
+      general: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+      service: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+      industry: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+      "case-study": "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
     };
-    return styles[category as keyof typeof styles] || styles.logo;
+    return styles[category as keyof typeof styles] || styles.general;
   };
 
   if (isLoading) {
@@ -109,13 +113,11 @@ export function PartnerMarketing() {
                   <SelectValue placeholder={t("filters.allCategories")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">{t("filters.allCategories")}</SelectItem>
-                  <SelectItem value="logo">{t("category.logo")}</SelectItem>
-                  <SelectItem value="banner">{t("category.banner")}</SelectItem>
-                  <SelectItem value="brochure">{t("category.brochure")}</SelectItem>
-                  <SelectItem value="presentation">{t("category.presentation")}</SelectItem>
-                  <SelectItem value="video">{t("category.video")}</SelectItem>
-                  <SelectItem value="social">{t("category.social")}</SelectItem>
+                  <SelectItem value="all">{t("filters.allCategories")}</SelectItem>
+                  <SelectItem value="general">{t("category.general")}</SelectItem>
+                  <SelectItem value="service">{t("category.service")}</SelectItem>
+                  <SelectItem value="industry">{t("category.industry")}</SelectItem>
+                  <SelectItem value="case-study">{t("category.caseStudy")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -128,10 +130,13 @@ export function PartnerMarketing() {
                   <SelectValue placeholder={t("filters.allTypes")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">{t("filters.allTypes")}</SelectItem>
-                  <SelectItem value="image">{t("type.image")}</SelectItem>
+                  <SelectItem value="all">{t("filters.allTypes")}</SelectItem>
+                  <SelectItem value="logo">{t("type.logo")}</SelectItem>
+                  <SelectItem value="banner">{t("type.banner")}</SelectItem>
+                  <SelectItem value="brochure">{t("type.brochure")}</SelectItem>
                   <SelectItem value="video">{t("type.video")}</SelectItem>
-                  <SelectItem value="document">{t("type.document")}</SelectItem>
+                  <SelectItem value="presentation">{t("type.presentation")}</SelectItem>
+                  <SelectItem value="other">{t("type.other")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -143,8 +148,12 @@ export function PartnerMarketing() {
       {!filteredMaterials || filteredMaterials.length === 0 ? (
         <Card>
           <CardContent className="pt-6">
-            <div className="text-center py-12 text-muted-foreground">
-              {t("noMaterials")}
+            <div className="text-center py-12">
+              <FileX className="h-16 w-16 mx-auto text-muted-foreground mb-4 opacity-50" />
+              <h3 className="text-lg font-semibold mb-2">{t("emptyMaterials.title")}</h3>
+              <p className="text-sm text-muted-foreground">
+                {t("emptyMaterials.description")}
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -162,7 +171,7 @@ export function PartnerMarketing() {
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
                       <Icon className="h-5 w-5 text-muted-foreground" />
-                      <CardTitle className="text-lg">{material.name}</CardTitle>
+                      <CardTitle className="text-lg">{material.title}</CardTitle>
                     </div>
                     <Badge className={getCategoryBadge(material.category)}>
                       {t(`category.${material.category}`)}
@@ -176,7 +185,7 @@ export function PartnerMarketing() {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between text-sm text-muted-foreground">
                       <span>{t("updated")}: {formatDate(material.updatedAt, "PP")}</span>
-                      <span>{material.size || "—"}</span>
+                      <span>{t("downloads")}: {material.downloadCount || 0}</span>
                     </div>
                     <div className="flex gap-2">
                       <Button
@@ -185,7 +194,7 @@ export function PartnerMarketing() {
                         className="flex-1"
                         onClick={(e) => {
                           e.stopPropagation();
-                          window.open(material.url, "_blank");
+                          window.open(material.fileUrl, "_blank");
                         }}
                       >
                         <Download className="h-4 w-4 mr-2" />
@@ -214,7 +223,7 @@ export function PartnerMarketing() {
       <Dialog open={!!selectedMaterial} onOpenChange={() => setSelectedMaterial(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{selectedMaterial?.name}</DialogTitle>
+            <DialogTitle>{selectedMaterial?.title}</DialogTitle>
             <DialogDescription>
               {selectedMaterial?.description || t("noDescription")}
             </DialogDescription>
@@ -233,28 +242,18 @@ export function PartnerMarketing() {
                   <p className="text-sm">{t(`type.${selectedMaterial.type}`)}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">{t("size")}</p>
-                  <p className="text-sm">{selectedMaterial.size || "—"}</p>
+                  <p className="text-sm font-medium text-muted-foreground">{t("downloads")}</p>
+                  <p className="text-sm">{selectedMaterial.downloadCount || 0}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">{t("updated")}</p>
                   <p className="text-sm">{formatDate(selectedMaterial.updatedAt, "PPp")}</p>
                 </div>
               </div>
-              {selectedMaterial.usageGuidelines && (
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-2">
-                    {t("usageGuidelines")}
-                  </p>
-                  <p className="text-sm whitespace-pre-line">
-                    {selectedMaterial.usageGuidelines}
-                  </p>
-                </div>
-              )}
               <div className="flex gap-2 pt-4">
                 <Button
                   className="flex-1"
-                  onClick={() => window.open(selectedMaterial.url, "_blank")}
+                  onClick={() => window.open(selectedMaterial.fileUrl, "_blank")}
                 >
                   <Download className="h-4 w-4 mr-2" />
                   {t("download")}

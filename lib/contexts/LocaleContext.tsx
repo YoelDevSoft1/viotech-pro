@@ -18,7 +18,7 @@ const messagesMap: Record<Locale, Messages> = {
 interface LocaleContextValue {
   locale: Locale;
   setLocale: (locale: Locale) => void;
-  t: (key: string, namespace?: string) => string;
+  t: (key: string, namespace?: string, values?: Record<string, string | number>) => string;
   messages: Messages;
 }
 
@@ -58,9 +58,9 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     setLocaleState(newLocale);
   }, []);
 
-  // Función de traducción
+  // Función de traducción con soporte para interpolación
   const t = useCallback(
-    (key: string, namespace?: string): string => {
+    (key: string, namespace?: string, values?: Record<string, string | number>): string => {
       const messages = messagesMap[locale];
       const fullKey = namespace ? `${namespace}.${key}` : key;
       
@@ -74,11 +74,21 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
         } else {
           // Si no se encuentra, intentar en español como fallback
           const fallbackValue = getNestedValue(esMessages, keys);
-          return typeof fallbackValue === "string" ? fallbackValue : fullKey;
+          const result = typeof fallbackValue === "string" ? fallbackValue : fullKey;
+          // Aplicar interpolación si hay valores
+          if (values && typeof result === "string") {
+            return interpolateString(result, values);
+          }
+          return result;
         }
       }
       
-      return typeof value === "string" ? value : fullKey;
+      const result = typeof value === "string" ? value : fullKey;
+      // Aplicar interpolación si hay valores
+      if (values && typeof result === "string") {
+        return interpolateString(result, values);
+      }
+      return result;
     },
     [locale]
   );
@@ -104,6 +114,19 @@ function getNestedValue(obj: any, keys: string[]): any {
     }
   }
   return value;
+}
+
+// Helper para interpolar valores en strings
+// Soporta tanto {key} como #{key} para compatibilidad
+function interpolateString(str: string, values: Record<string, string | number>): string {
+  let result = str;
+  for (const [key, val] of Object.entries(values)) {
+    // Reemplazar {key} con el valor
+    result = result.replace(new RegExp(`\\{${key}\\}`, "g"), String(val));
+    // Reemplazar #{key} con el valor (para compatibilidad con formatos como "#{id}")
+    result = result.replace(new RegExp(`#\\{${key}\\}`, "g"), String(val));
+  }
+  return result;
 }
 
 export function useLocaleContext() {

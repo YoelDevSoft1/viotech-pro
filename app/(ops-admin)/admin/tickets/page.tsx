@@ -298,7 +298,7 @@ export default function AdminTicketsPage() {
 
       const promises = ticketIds.map((id) => updateTicket(id, payload));
       await Promise.all(promises);
-      toast.success(tTickets("success.bulkUpdated").replace("{count}", String(ticketIds.length)));
+      toast.success(tTickets("success.bulkUpdated", { count: ticketIds.length }));
       setSelectedTickets(new Set());
     } catch (err) {
       toast.error(tTickets("error.bulkUpdateFailed"));
@@ -604,7 +604,7 @@ export default function AdminTicketsPage() {
               <div className="flex items-center gap-2">
                 <CheckSquare className="h-5 w-5 text-primary" />
                 <span className="font-medium">
-                  {tTickets("admin.selectedTickets").replace("{count}", String(selectedTickets.size))}
+                  {tTickets("admin.selectedTickets", { count: selectedTickets.size })}
                     </span>
                   </div>
               <div className="flex items-center gap-2">
@@ -686,11 +686,15 @@ export default function AdminTicketsPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>{tTickets("admin.ticketsCount").replace("{count}", String(filteredAndSortedTickets.length))}</CardTitle>
+                <CardTitle>{tTickets("admin.ticketsCount", { count: filteredAndSortedTickets.length })}</CardTitle>
                 <CardDescription>
                   {pagination.total > 0 && (
                     <>
-                      {tTickets("admin.showing").replace("{from}", String(((currentPage - 1) * pagination.limit) + 1)).replace("{to}", String(Math.min(currentPage * pagination.limit, pagination.total))).replace("{total}", String(pagination.total))}
+                      {tTickets("admin.showing", {
+                        from: ((currentPage - 1) * pagination.limit) + 1,
+                        to: Math.min(currentPage * pagination.limit, pagination.total),
+                        total: pagination.total
+                      })}
                     </>
                   )}
                 </CardDescription>
@@ -953,7 +957,7 @@ export default function AdminTicketsPage() {
             {pagination.totalPages > 1 && (
               <div className="flex items-center justify-between mt-4">
                 <div className="text-sm text-muted-foreground">
-                  {tTickets("admin.pageInfo").replace("{current}", String(currentPage)).replace("{total}", String(pagination.totalPages))}
+                  {tTickets("admin.pageInfo", { current: currentPage, total: pagination.totalPages })}
                 </div>
                 <div className="flex items-center gap-2">
                   <Button

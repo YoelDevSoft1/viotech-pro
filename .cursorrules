@@ -1,0 +1,74 @@
+# VioTech Pro – Reglas de Proyecto (FRONTEND)
+
+## Contexto
+- Este repo contiene el FRONTEND de VioTech Pro.
+- Ruta local (Windows): C:\Users\Yoel\Documents\GitHub\viotech-pro
+- El backend se expone en: https://viotech-main.onrender.com/api
+- Objetivo: código de producción, no ejemplos de tutorial.
+
+## Stack principal
+- Next.js 16 (App Router) + React 19.
+- TypeScript 5 con strict: true.
+- Tailwind CSS 4 como base de estilos.
+- Shadcn/UI + Radix UI + Lucide React.
+- TanStack Query 5 para estado del servidor.
+- React Hook Form + Zod + @hookform/resolvers para formularios.
+- Axios usando un cliente central en `lib/apiClient.ts` (con interceptores JWT).
+- i18n con next-intl (es/en/pt).
+- Recharts, React Big Calendar, React Day Picker, date-fns + date-fns-tz.
+- UX extra: Framer Motion, Sonner, Vaul, dnd-kit, CMDK.
+- Exportación: jsPDF, jsPDF AutoTable, XLSX.
+
+## Estructura del proyecto (resumen)
+- `app/` – Rutas utilizando App Router, con route groups:
+  - `(auth)` – autenticación
+  - `(client)` – panel de cliente
+  - `(marketing)` – sitio público / landing
+  - `(ops-admin)` – panel de administración
+  - `(ops-internal)` – panel interno
+  - `(payments)` – flujos de pago
+- `components/` – Componentes React (UI, dashboard, admin, etc.).
+- `lib/` – Hooks, tipos, utilidades.
+- `messages/` – Archivos de traducción (es/en/pt).
+- `docs/agents/` – Descripción detallada de agentes:
+  - orchestrator-agent.md
+  - frontend-agent.md
+  - backend-agent.md
+  - devops-agent.md
+  - qa-agent.md
+  - ux-agent.md
+  - data-ml-agent.md
+  - docs-agent.md
+
+## Reglas de frontend
+
+- Usar SIEMPRE TypeScript estricto (evitar `any`).
+- Usar App Router con layouts y route groups ya definidos.
+- Para llamadas HTTP:
+  - Utilizar SIEMPRE `lib/apiClient.ts` (Axios) y React Query.
+- Para estado del servidor:
+  - TanStack Query 5 (useQuery, useMutation, invalidateQueries).
+- Para formularios:
+  - React Hook Form + Zod + @hookform/resolvers.
+  - Mostrar errores de validación en UI usando componentes de Shadcn/UI.
+- Estilos:
+  - Tailwind CSS + Shadcn/UI + Radix UI como primera opción.
+  - CVA + tailwind-merge + clsx para variantes y combinación de clases.
+- i18n:
+  - Usar next-intl para textos visibles al usuario.
+  - Evitar hardcodear textos repetidos si deben vivir en `messages/*.json`.
+
+## Agentes (cómo pensar)
+
+- Diseño global / decisiones de arquitectura → seguir `docs/agents/orchestrator-agent.md`.
+- Cambios/implementaciones de UI/React/Next → seguir `docs/agents/frontend-agent.md`.
+- Si se hace referencia a contratos de API, respetar la visión de `docs/agents/backend-agent.md`.
+- Para UX, QA, DevOps, ML, Docs → ver agentes correspondientes en `docs/agents/`.
+
+## Estilo de respuesta dentro de este repo
+
+- Explicar en español técnico.
+- Código y nombres en inglés (componentes, funciones, tipos).
+- Respuestas estructuradas:
+  - Objetivo → Diseño técnico → Código ejemplo → Notas UX/errores/riesgos.
+

@@ -402,13 +402,20 @@ app/(ops-admin)/
 - [x] Traducciones (ES, EN, PT) - Completadas
 - [x] Ruta agregada al sidebar - Implementada
 - [x] Documentación de requisitos backend - Completada
-- [ ] Gestión de leads y comisiones - Páginas pendientes
-- [ ] Materiales de marketing - Página pendiente
-- [ ] Training y certificaciones - Páginas pendientes
-- [ ] Reportes de performance - Página pendiente
-- [ ] Sistema de referidos - Página pendiente
+- [x] **Backend completo** - 17/17 endpoints implementados y funcionando
+- [x] Gestión de leads y comisiones - Componentes y páginas implementados
+- [x] Materiales de marketing - Componente y página implementados
+- [x] Training y certificaciones - Componentes y páginas implementados
+- [x] Reportes de performance - Componente y página implementados
+- [x] Sistema de referidos - Componente y página implementados
+- [x] **Protección de rutas** - PartnerGate implementado en todas las páginas
+- [x] **Mejoras UX completadas** - Empty states, toasts, manejo de errores
+- [x] **Correcciones técnicas** - SelectItems con valores vacíos, rutas incorrectas
+- [ ] **Testing end-to-end** - Verificar integración frontend-backend (pendiente validación manual)
+- [ ] **Ajustes menores** - Nomenclatura de parámetros (opcional)
 
-#### **Sprint 4.2: Marketplace de Servicios ()**
+#### **Sprint 4.2: Marketplace de Servicios (🔄 EN PROGRESO)**
+- [ ] **Diseño arquitectónico** - Completado ✅
 - [ ] Catálogo expandido de servicios
 - [ ] Categorización avanzada
 - [ ] Búsqueda y filtros

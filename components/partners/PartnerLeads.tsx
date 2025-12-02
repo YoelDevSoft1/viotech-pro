@@ -11,7 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 import { useI18n } from "@/lib/hooks/useI18n";
-import { Plus, Search, Filter } from "lucide-react";
+import { Plus, Search, Filter, Users } from "lucide-react";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -37,15 +38,20 @@ type LeadFormData = z.infer<typeof leadSchema>;
 
 export function PartnerLeads() {
   const [filters, setFilters] = useState({
-    status: "",
-    source: "",
+    status: "all",
+    source: "all",
   });
   const [search, setSearch] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const t = useTranslationsSafe("partners.leads");
   const { formatDate, formatCurrency } = useI18n();
 
-  const { data: leads, isLoading } = usePartnerLeads(filters);
+  // Convertir "all" a undefined para el hook
+  const leadFilters = {
+    status: filters.status === "all" ? undefined : filters.status,
+    source: filters.source === "all" ? undefined : filters.source,
+  };
+  const { data: leads, isLoading } = usePartnerLeads(leadFilters);
   const createLead = useCreatePartnerLead();
 
   const {
@@ -76,8 +82,13 @@ export function PartnerLeads() {
       await createLead.mutateAsync(data);
       reset();
       setShowCreateModal(false);
+      toast.success(t("success.leadCreated"), {
+        description: t("success.leadCreatedDescription"),
+      });
     } catch (error) {
-      // Error manejado por el hook
+      toast.error(t("error.createLead"), {
+        description: error instanceof Error ? error.message : t("error.createLeadDescription"),
+      });
     }
   };
 
@@ -148,7 +159,7 @@ export function PartnerLeads() {
                   <SelectValue placeholder={t("filters.allStatuses")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">{t("filters.allStatuses")}</SelectItem>
+                  <SelectItem value="all">{t("filters.allStatuses")}</SelectItem>
                   <SelectItem value="new">{t("status.new")}</SelectItem>
                   <SelectItem value="contacted">{t("status.contacted")}</SelectItem>
                   <SelectItem value="qualified">{t("status.qualified")}</SelectItem>
@@ -166,7 +177,7 @@ export function PartnerLeads() {
                   <SelectValue placeholder={t("filters.allSources")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">{t("filters.allSources")}</SelectItem>
+                  <SelectItem value="all">{t("filters.allSources")}</SelectItem>
                   <SelectItem value="referral">{t("source.referral")}</SelectItem>
                   <SelectItem value="direct">{t("source.direct")}</SelectItem>
                   <SelectItem value="campaign">{t("source.campaign")}</SelectItem>
@@ -202,8 +213,18 @@ export function PartnerLeads() {
               <TableBody>
                 {!filteredLeads || filteredLeads.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                      {t("noLeads")}
+                    <TableCell colSpan={7}>
+                      <div className="text-center py-12">
+                        <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4 opacity-50" />
+                        <h3 className="text-lg font-semibold mb-2">{t("emptyLeads.title")}</h3>
+                        <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
+                          {t("emptyLeads.description")}
+                        </p>
+                        <Button onClick={() => setShowCreateModal(true)}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          {t("emptyLeads.action")}
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : (

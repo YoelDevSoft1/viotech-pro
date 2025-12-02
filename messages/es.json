@@ -1531,7 +1531,73 @@
     "minutes": "minutos",
     "expires": "Expira",
     "error": {
-      "loading": "Error al cargar el dashboard"
+      "loading": "Error al cargar el dashboard",
+      "loadingDescription": "Por favor, intenta de nuevo en unos momentos",
+      "forbidden": "Acceso denegado",
+      "unauthorized": "Sesión expirada",
+      "createLead": "No se pudo crear el lead",
+      "createLeadDescription": "Verifica que el email no esté duplicado",
+      "startTraining": "No se pudo iniciar el training",
+      "completeTraining": "No se pudo completar el training",
+      "createCode": "No se pudo crear el código de referido",
+      "retry": "Reintentar",
+      "goToLogin": "Ir a iniciar sesión",
+      "contactSupport": "Contactar soporte"
+    },
+    "success": {
+      "leadCreated": "Lead creado exitosamente",
+      "leadCreatedDescription": "Se te notificará cuando se convierta",
+      "trainingStarted": "Training iniciado",
+      "trainingStartedDescription": "¡Continúa desde donde lo dejaste!",
+      "trainingCompleted": "Training completado",
+      "trainingCompletedDescription": "Has ganado puntos de experiencia",
+      "codeCreated": "Código de referido creado",
+      "codeCreatedDescription": "Compártelo para empezar a ganar comisiones",
+      "materialDownloaded": "Material descargado",
+      "exportSuccess": "Reporte exportado",
+      "exportSuccessDescription": "Revisa tu carpeta de descargas"
+    },
+    "empty": {
+      "leads": {
+        "title": "Aún no has creado ningún lead",
+        "description": "Crea tu primer lead para empezar a ganar comisiones",
+        "action": "Crear primer lead"
+      },
+      "commissions": {
+        "title": "No hay comisiones aún",
+        "description": "Tus comisiones aparecerán aquí cuando tus leads se conviertan",
+        "action": "Ver cómo ganar comisiones"
+      },
+      "trainings": {
+        "title": "No hay trainings disponibles",
+        "description": "Revisa más tarde para ver nuevos trainings"
+      },
+      "certifications": {
+        "title": "No tienes certificaciones",
+        "description": "Completa trainings para obtener certificaciones",
+        "action": "Ver trainings"
+      },
+      "codes": {
+        "title": "No hay códigos de referido",
+        "description": "Crea tu primer código para empezar a generar leads automáticamente",
+        "action": "Crear código"
+      },
+      "materials": {
+        "title": "No hay materiales disponibles",
+        "description": "Revisa más tarde para ver nuevos materiales"
+      },
+      "reports": {
+        "title": "No hay datos de performance",
+        "description": "Genera leads para ver tus métricas de performance",
+        "action": "Crear lead"
+      }
+    },
+    "tooltips": {
+      "performanceScore": "Puntuación basada en leads, conversiones y actividad",
+      "tier": "Tu tier determina tu tasa de comisión",
+      "conversionRate": "Porcentaje de leads convertidos en clientes",
+      "pendingCommissions": "Comisiones pendientes de aprobación o pago",
+      "requiredTraining": "Este training es obligatorio para mantener tu status"
     },
     "admin": {
       "title": "Gestión de Partners",
@@ -1646,6 +1712,11 @@
       "leadsList": "Lista de Leads",
       "totalLeads": "Total: {count} leads",
       "noLeads": "No hay leads registrados",
+      "emptyLeads": {
+        "title": "Aún no has creado ningún lead",
+        "description": "Crea tu primer lead para empezar a ganar comisiones",
+        "action": "Crear primer lead"
+      },
       "table": {
         "name": "Nombre",
         "email": "Email",
@@ -1669,6 +1740,14 @@
         "cancel": "Cancelar",
         "create": "Crear",
         "creating": "Creando..."
+      },
+      "success": {
+        "leadCreated": "Lead creado exitosamente",
+        "leadCreatedDescription": "Se te notificará cuando se convierta"
+      },
+      "error": {
+        "createLead": "No se pudo crear el lead",
+        "createLeadDescription": "Verifica que el email no esté duplicado"
       }
     },
     "commissions": {
@@ -1693,6 +1772,11 @@
       "totalCommissions": "Total: {count} comisiones",
       "noCommissions": "No hay comisiones registradas",
       "export": "Exportar",
+      "emptyCommissions": {
+        "title": "No hay comisiones aún",
+        "description": "Tus comisiones aparecerán aquí cuando tus leads se conviertan en clientes",
+        "action": "Ver cómo ganar comisiones"
+      },
       "table": {
         "amount": "Monto",
         "rate": "Tasa",
@@ -1711,24 +1795,28 @@
         "allTypes": "Todos los tipos"
       },
       "category": {
+        "general": "General",
+        "service": "Servicio",
+        "industry": "Industria",
+        "caseStudy": "Caso de Estudio"
+      },
+      "type": {
         "logo": "Logo",
         "banner": "Banner",
         "brochure": "Folleto",
+        "video": "Video",
         "presentation": "Presentación",
-        "video": "Video",
-        "social": "Redes Sociales"
-      },
-      "type": {
-        "image": "Imagen",
-        "video": "Video",
-        "document": "Documento"
+        "other": "Otro"
       },
       "noMaterials": "No hay materiales disponibles",
       "noDescription": "Sin descripción",
+      "emptyMaterials": {
+        "title": "No hay materiales disponibles",
+        "description": "Revisa más tarde para ver nuevos materiales de marketing"
+      },
       "updated": "Actualizado",
       "download": "Descargar",
-      "size": "Tamaño",
-      "usageGuidelines": "Guía de Uso",
+      "downloads": "Descargas",
       "close": "Cerrar",
       "label": "Categoría"
     },
@@ -1760,13 +1848,124 @@
       },
       "completedOn": "Completada el",
       "expires": "Expira",
-      "requiredTraining": "Training Requerido",
+      "requirements": "Requisitos",
       "viewCertificate": "Ver Certificado",
       "startCertification": "Iniciar Certificación",
       "duration": "Duración",
-      "content": "Contenido",
       "complete": "Completar",
-      "close": "Cerrar"
+      "close": "Cerrar",
+      "success": {
+        "trainingStarted": "Training iniciado",
+        "trainingStartedDescription": "¡Continúa desde donde lo dejaste!",
+        "trainingCompleted": "Training completado",
+        "trainingCompletedDescription": "Has ganado puntos de experiencia"
+      },
+      "error": {
+        "startTraining": "No se pudo iniciar el training",
+        "startTrainingDescription": "Intenta nuevamente en unos momentos",
+        "completeTraining": "No se pudo completar el training",
+        "completeTrainingDescription": "Intenta nuevamente en unos momentos"
+      },
+      "emptyTrainings": {
+        "title": "No hay trainings disponibles",
+        "description": "Revisa más tarde para ver nuevos trainings"
+      },
+      "emptyCertifications": {
+        "title": "No tienes certificaciones",
+        "description": "Completa trainings para obtener certificaciones",
+        "action": "Ver trainings"
+      }
+    },
+    "reports": {
+      "title": "Reportes de Performance",
+      "description": "Analiza tu rendimiento y métricas como partner",
+      "selectPeriod": "Seleccionar período",
+      "allPeriods": "Todos los períodos",
+      "export": "Exportar",
+      "kpis": {
+        "leadsGenerated": "Leads Generados",
+        "conversionRate": "Tasa de Conversión",
+        "revenue": "Ingresos",
+        "commissions": "Comisiones"
+      },
+      "trend": "Tendencia",
+      "topService": "Mejor Servicio",
+      "charts": {
+        "leadsAndConversions": "Leads y Conversiones",
+        "leadsAndConversionsDescription": "Evolución de leads generados y convertidos",
+        "revenueAndCommissions": "Ingresos y Comisiones",
+        "revenueAndCommissionsDescription": "Evolución de ingresos y comisiones",
+        "leads": "Leads",
+        "converted": "Convertidos",
+        "revenue": "Ingresos",
+        "commissions": "Comisiones"
+      },
+      "performanceTable": "Tabla de Performance",
+      "performanceTableDescription": "Resumen detallado por período",
+      "noData": "No hay datos disponibles",
+      "emptyReports": {
+        "title": "No hay datos de performance",
+        "description": "Genera leads para ver tus métricas de performance y comisiones",
+        "action": "Crear lead"
+      },
+      "table": {
+        "period": "Período",
+        "leads": "Leads",
+        "converted": "Convertidos",
+        "conversionRate": "Tasa Conversión",
+        "revenue": "Ingresos",
+        "commissions": "Comisiones",
+        "avgDealSize": "Tamaño Promedio"
+      }
+    },
+    "referrals": {
+      "title": "Sistema de Referidos",
+      "description": "Crea y gestiona códigos de referido para atraer nuevos clientes",
+      "createCode": "Crear Código",
+      "createCodeDescription": "Genera un nuevo código de referido",
+      "createSuccess": "Código de referido creado exitosamente",
+      "createSuccessDescription": "Compártelo para empezar a ganar comisiones",
+      "copied": "URL copiada al portapapeles",
+      "copiedDescription": "Pega el enlace donde quieras compartirlo",
+      "emptyCodes": {
+        "title": "No hay códigos de referido",
+        "description": "Crea tu primer código para empezar a generar leads automáticamente",
+        "action": "Crear código"
+      },
+      "error": {
+        "createCode": "No se pudo crear el código de referido",
+        "createCodeDescription": "Intenta nuevamente en unos momentos"
+      },
+      "stats": {
+        "totalCodes": "Total de Códigos",
+        "activeCodes": "Códigos Activos",
+        "totalUses": "Total de Usos"
+      },
+      "noCodes": "No hay códigos de referido creados",
+      "type": {
+        "discount": "Descuento",
+        "commission": "Comisión",
+        "bonus": "Bono"
+      },
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "value": "Valor",
+      "uses": "Usos",
+      "expires": "Expira",
+      "referralUrl": "URL de Referido",
+      "created": "Creado",
+      "form": {
+        "type": "Tipo",
+        "discount": "Descuento",
+        "commission": "Comisión",
+        "bonus": "Bono",
+        "maxUses": "Máximo de Usos",
+        "maxUsesPlaceholder": "Sin límite si se deja vacío",
+        "expiresAt": "Fecha de Expiración",
+        "cancel": "Cancelar",
+        "create": "Crear",
+        "creating": "Creando..."
+      }
     }
   }
 }

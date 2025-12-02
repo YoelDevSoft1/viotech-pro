@@ -1704,24 +1704,24 @@
         "allTypes": "All types"
       },
       "category": {
+        "general": "General",
+        "service": "Service",
+        "industry": "Industry",
+        "caseStudy": "Case Study"
+      },
+      "type": {
         "logo": "Logo",
         "banner": "Banner",
         "brochure": "Brochure",
+        "video": "Video",
         "presentation": "Presentation",
-        "video": "Video",
-        "social": "Social Media"
-      },
-      "type": {
-        "image": "Image",
-        "video": "Video",
-        "document": "Document"
+        "other": "Other"
       },
       "noMaterials": "No materials available",
       "noDescription": "No description",
       "updated": "Updated",
       "download": "Download",
-      "size": "Size",
-      "usageGuidelines": "Usage Guidelines",
+      "downloads": "Downloads",
       "close": "Close",
       "label": "Category"
     },
@@ -1753,13 +1753,87 @@
       },
       "completedOn": "Completed on",
       "expires": "Expires",
-      "requiredTraining": "Required Training",
+      "requirements": "Requirements",
       "viewCertificate": "View Certificate",
       "startCertification": "Start Certification",
       "duration": "Duration",
-      "content": "Content",
       "complete": "Complete",
       "close": "Close"
+    },
+    "reports": {
+      "title": "Performance Reports",
+      "description": "Analyze your performance and metrics as a partner",
+      "selectPeriod": "Select period",
+      "allPeriods": "All periods",
+      "export": "Export",
+      "kpis": {
+        "leadsGenerated": "Leads Generated",
+        "conversionRate": "Conversion Rate",
+        "revenue": "Revenue",
+        "commissions": "Commissions"
+      },
+      "trend": "Trend",
+      "topService": "Top Service",
+      "charts": {
+        "leadsAndConversions": "Leads and Conversions",
+        "leadsAndConversionsDescription": "Evolution of generated and converted leads",
+        "revenueAndCommissions": "Revenue and Commissions",
+        "revenueAndCommissionsDescription": "Evolution of revenue and commissions",
+        "leads": "Leads",
+        "converted": "Converted",
+        "revenue": "Revenue",
+        "commissions": "Commissions"
+      },
+      "performanceTable": "Performance Table",
+      "performanceTableDescription": "Detailed summary by period",
+      "noData": "No data available",
+      "table": {
+        "period": "Period",
+        "leads": "Leads",
+        "converted": "Converted",
+        "conversionRate": "Conversion Rate",
+        "revenue": "Revenue",
+        "commissions": "Commissions",
+        "avgDealSize": "Avg Deal Size"
+      }
+    },
+    "referrals": {
+      "title": "Referral System",
+      "description": "Create and manage referral codes to attract new clients",
+      "createCode": "Create Code",
+      "createCodeDescription": "Generate a new referral code",
+      "createSuccess": "Referral code created successfully",
+      "copied": "URL copied to clipboard",
+      "stats": {
+        "totalCodes": "Total Codes",
+        "activeCodes": "Active Codes",
+        "totalUses": "Total Uses"
+      },
+      "noCodes": "No referral codes created",
+      "type": {
+        "discount": "Discount",
+        "commission": "Commission",
+        "bonus": "Bonus"
+      },
+      "active": "Active",
+      "inactive": "Inactive",
+      "value": "Value",
+      "uses": "Uses",
+      "expires": "Expires",
+      "referralUrl": "Referral URL",
+      "created": "Created",
+      "form": {
+        "type": "Type",
+        "discount": "Discount",
+        "commission": "Commission",
+        "bonus": "Bonus",
+        "maxUses": "Max Uses",
+        "maxUsesPlaceholder": "Unlimited if left empty",
+        "expiresAt": "Expiration Date",
+        "cancel": "Cancel",
+        "create": "Create",
+        "creating": "Creating..."
+      }
     }
   }
 }

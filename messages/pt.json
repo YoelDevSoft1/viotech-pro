@@ -1714,24 +1714,24 @@
         "allTypes": "Todos os tipos"
       },
       "category": {
+        "general": "Geral",
+        "service": "Serviço",
+        "industry": "Indústria",
+        "caseStudy": "Caso de Estudo"
+      },
+      "type": {
         "logo": "Logo",
         "banner": "Banner",
         "brochure": "Brochura",
+        "video": "Vídeo",
         "presentation": "Apresentação",
-        "video": "Vídeo",
-        "social": "Redes Sociais"
-      },
-      "type": {
-        "image": "Imagem",
-        "video": "Vídeo",
-        "document": "Documento"
+        "other": "Outro"
       },
       "noMaterials": "Nenhum material disponível",
       "noDescription": "Sem descrição",
       "updated": "Atualizado",
       "download": "Baixar",
-      "size": "Tamanho",
-      "usageGuidelines": "Diretrizes de Uso",
+      "downloads": "Downloads",
       "close": "Fechar",
       "label": "Categoria"
     },
@@ -1763,13 +1763,87 @@
       },
       "completedOn": "Completada em",
       "expires": "Expira",
-      "requiredTraining": "Treinamento Obrigatório",
+      "requirements": "Requisitos",
       "viewCertificate": "Ver Certificado",
       "startCertification": "Iniciar Certificação",
       "duration": "Duração",
-      "content": "Conteúdo",
       "complete": "Completar",
       "close": "Fechar"
+    },
+    "reports": {
+      "title": "Relatórios de Desempenho",
+      "description": "Analise seu desempenho e métricas como parceiro",
+      "selectPeriod": "Selecionar período",
+      "allPeriods": "Todos os períodos",
+      "export": "Exportar",
+      "kpis": {
+        "leadsGenerated": "Leads Gerados",
+        "conversionRate": "Taxa de Conversão",
+        "revenue": "Receita",
+        "commissions": "Comissões"
+      },
+      "trend": "Tendência",
+      "topService": "Melhor Serviço",
+      "charts": {
+        "leadsAndConversions": "Leads e Conversões",
+        "leadsAndConversionsDescription": "Evolução de leads gerados e convertidos",
+        "revenueAndCommissions": "Receita e Comissões",
+        "revenueAndCommissionsDescription": "Evolução de receita e comissões",
+        "leads": "Leads",
+        "converted": "Convertidos",
+        "revenue": "Receita",
+        "commissions": "Comissões"
+      },
+      "performanceTable": "Tabela de Desempenho",
+      "performanceTableDescription": "Resumo detalhado por período",
+      "noData": "Nenhum dado disponível",
+      "table": {
+        "period": "Período",
+        "leads": "Leads",
+        "converted": "Convertidos",
+        "conversionRate": "Taxa de Conversão",
+        "revenue": "Receita",
+        "commissions": "Comissões",
+        "avgDealSize": "Tamanho Médio"
+      }
+    },
+    "referrals": {
+      "title": "Sistema de Indicações",
+      "description": "Crie e gerencie códigos de indicação para atrair novos clientes",
+      "createCode": "Criar Código",
+      "createCodeDescription": "Gere um novo código de indicação",
+      "createSuccess": "Código de indicação criado com sucesso",
+      "copied": "URL copiada para a área de transferência",
+      "stats": {
+        "totalCodes": "Total de Códigos",
+        "activeCodes": "Códigos Ativos",
+        "totalUses": "Total de Usos"
+      },
+      "noCodes": "Nenhum código de indicação criado",
+      "type": {
+        "discount": "Desconto",
+        "commission": "Comissão",
+        "bonus": "Bônus"
+      },
+      "active": "Ativo",
+      "inactive": "Inativo",
+      "value": "Valor",
+      "uses": "Usos",
+      "expires": "Expira",
+      "referralUrl": "URL de Indicação",
+      "created": "Criado",
+      "form": {
+        "type": "Tipo",
+        "discount": "Desconto",
+        "commission": "Comissão",
+        "bonus": "Bônus",
+        "maxUses": "Máximo de Usos",
+        "maxUsesPlaceholder": "Ilimitado se deixado vazio",
+        "expiresAt": "Data de Expiração",
+        "cancel": "Cancelar",
+        "create": "Criar",
+        "creating": "Criando..."
+      }
     }
   }
 }

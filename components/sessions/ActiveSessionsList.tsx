@@ -32,15 +32,15 @@ export function ActiveSessionsList() {
     if (diffMins < 1) return tSessions("timeAgo.lessThanMinute");
     if (diffMins < 60) {
       const plural = diffMins > 1 ? "s" : "";
-      return tSessions("timeAgo.minutes").replace("{count}", String(diffMins)).replace("{plural}", plural);
+      return tSessions("timeAgo.minutes", { count: diffMins, plural });
     }
     if (diffHours < 24) {
       const plural = diffHours > 1 ? "s" : "";
-      return tSessions("timeAgo.hours").replace("{count}", String(diffHours)).replace("{plural}", plural);
+      return tSessions("timeAgo.hours", { count: diffHours, plural });
     }
     if (diffDays < 7) {
       const plural = diffDays > 1 ? "s" : "";
-      return tSessions("timeAgo.days").replace("{count}", String(diffDays)).replace("{plural}", plural);
+      return tSessions("timeAgo.days", { count: diffDays, plural });
     }
 
     return formatDate(date, "PPpp");
@@ -116,7 +116,7 @@ export function ActiveSessionsList() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>{tSessions("closeAllOthersConfirm")}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    {tSessions("closeAllOthersDescription").replace("{count}", String(otherSessions.length))}
+                    {tSessions("closeAllOthersDescription", { count: otherSessions.length })}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -203,7 +203,7 @@ export function ActiveSessionsList() {
                       <AlertDialogHeader>
                         <AlertDialogTitle>{tSessions("closeSessionConfirm")}</AlertDialogTitle>
                         <AlertDialogDescription>
-                          {tSessions("closeSessionDescription").replace("{deviceName}", session.deviceName)}
+                          {tSessions("closeSessionDescription", { deviceName: session.deviceName })}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>

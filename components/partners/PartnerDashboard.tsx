@@ -14,7 +14,8 @@ import {
   CheckCircle2,
   Clock,
   FileText,
-  Gift
+  Gift,
+  Plus
 } from "lucide-react";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 import { useI18n } from "@/lib/hooks/useI18n";
@@ -48,12 +49,47 @@ export function PartnerDashboard() {
   }
 
   if (error) {
+    const errorMessage = error instanceof Error ? error.message : t("error.loading");
+    const isForbidden = errorMessage.includes("permisos") || errorMessage.includes("403");
+    const isUnauthorized = errorMessage.includes("sesión") || errorMessage.includes("401");
+    
     return (
       <Card>
         <CardContent className="pt-6">
-          <div className="flex items-center gap-2 text-destructive">
-            <AlertCircle className="h-5 w-5" />
-            <p>{t("error.loading")}</p>
+          <div className="flex flex-col items-center gap-4 text-center py-8">
+            <AlertCircle className="h-12 w-12 text-destructive" />
+            <div>
+              <h3 className="text-lg font-semibold mb-2">
+                {isForbidden 
+                  ? t("error.forbidden") 
+                  : isUnauthorized
+                  ? t("error.unauthorized")
+                  : t("error.loading")
+                }
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4 max-w-md">
+                {errorMessage}
+              </p>
+              {!isForbidden && !isUnauthorized && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.location.reload()}
+                >
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  {t("error.retry")}
+                </Button>
+              )}
+              {isUnauthorized && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => window.location.href = "/login"}
+                >
+                  {t("error.goToLogin")}
+                </Button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -93,7 +129,7 @@ export function PartnerDashboard() {
                 </Badge>
               </CardTitle>
               <CardDescription>
-                {t("dashboard.subtitle").replace("{joinedAt}", new Date(partner.joinedAt).getFullYear().toString())}
+                {t("dashboard.subtitle", { joinedAt: new Date(partner.joinedAt).getFullYear().toString() })}
               </CardDescription>
             </div>
             <div className="text-right">
@@ -154,7 +190,7 @@ export function PartnerDashboard() {
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(stats.paidCommissions)}</div>
             <p className="text-xs text-muted-foreground">
-              {t("stats.commissionRate").replace("{rate}", partner.commissionRate.toString())}
+              {t("stats.commissionRate", { rate: partner.commissionRate })}
             </p>
           </CardContent>
         </Card>
@@ -176,9 +212,19 @@ export function PartnerDashboard() {
           </CardHeader>
           <CardContent>
             {recentLeads.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                {t("noLeads")}
-              </p>
+              <div className="text-center py-8">
+                <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4 opacity-50" />
+                <p className="text-sm font-medium mb-2">{t("empty.leads.title")}</p>
+                <p className="text-xs text-muted-foreground mb-4">
+                  {t("empty.leads.description")}
+                </p>
+                <Link href="/partners/leads">
+                  <Button size="sm" variant="outline">
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t("empty.leads.action")}
+                  </Button>
+                </Link>
+              </div>
             ) : (
               <div className="space-y-3">
                 {recentLeads.slice(0, 5).map((lead) => (
@@ -216,9 +262,13 @@ export function PartnerDashboard() {
           </CardHeader>
           <CardContent>
             {recentCommissions.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                {t("noCommissions")}
-              </p>
+              <div className="text-center py-8">
+                <DollarSign className="h-12 w-12 mx-auto text-muted-foreground mb-4 opacity-50" />
+                <p className="text-sm font-medium mb-2">{t("empty.commissions.title")}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("empty.commissions.description")}
+                </p>
+              </div>
             ) : (
               <div className="space-y-3">
                 {recentCommissions.slice(0, 5).map((commission) => (
@@ -255,16 +305,20 @@ export function PartnerDashboard() {
                 <CardTitle>{t("upcomingTrainings")}</CardTitle>
                 <CardDescription>{t("upcomingTrainingsDescription")}</CardDescription>
               </div>
-              <Link href="/partners/trainings">
+              <Link href="/partners/training">
                 <Button variant="ghost" size="sm">{t("viewAll")}</Button>
               </Link>
             </div>
           </CardHeader>
           <CardContent>
             {upcomingTrainings.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                {t("noTrainings")}
-              </p>
+              <div className="text-center py-8">
+                <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4 opacity-50" />
+                <p className="text-sm font-medium mb-2">{t("empty.trainings.title")}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("empty.trainings.description")}
+                </p>
+              </div>
             ) : (
               <div className="space-y-3">
                 {upcomingTrainings.slice(0, 3).map((training) => (
@@ -302,9 +356,18 @@ export function PartnerDashboard() {
           </CardHeader>
           <CardContent>
             {certifications.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                {t("noCertifications")}
-              </p>
+              <div className="text-center py-8">
+                <Award className="h-12 w-12 mx-auto text-muted-foreground mb-4 opacity-50" />
+                <p className="text-sm font-medium mb-2">{t("empty.certifications.title")}</p>
+                <p className="text-xs text-muted-foreground mb-4">
+                  {t("empty.certifications.description")}
+                </p>
+                <Link href="/partners/training">
+                  <Button size="sm" variant="outline">
+                    {t("empty.certifications.action")}
+                  </Button>
+                </Link>
+              </div>
             ) : (
               <div className="space-y-3">
                 {certifications.map((cert) => (

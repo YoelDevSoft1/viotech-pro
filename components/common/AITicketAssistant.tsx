@@ -430,7 +430,7 @@ export default function AITicketAssistant({
         {createdTicketId && (
           <div className="flex items-center gap-2 text-xs text-green-700">
             <CheckCircle2 className="w-4 h-4" />
-            {tAI("ticketCreated").replace("#{id}", createdTicketId)}
+            {tAI("ticketCreated", { id: createdTicketId })}
           </div>
         )}
       </div>

@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 import { useI18n } from "@/lib/hooks/useI18n";
 import { BookOpen, Award, Play, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -53,8 +54,13 @@ export function PartnerTraining() {
     try {
       await startTraining.mutateAsync(trainingId);
       setSelectedTraining(null);
+      toast.success(t("success.trainingStarted"), {
+        description: t("success.trainingStartedDescription"),
+      });
     } catch (error) {
-      // Error manejado por el hook
+      toast.error(t("error.startTraining"), {
+        description: error instanceof Error ? error.message : t("error.startTrainingDescription"),
+      });
     }
   };
 
@@ -62,8 +68,13 @@ export function PartnerTraining() {
     try {
       await completeTraining.mutateAsync(trainingId);
       setSelectedTraining(null);
+      toast.success(t("success.trainingCompleted"), {
+        description: t("success.trainingCompletedDescription"),
+      });
     } catch (error) {
-      // Error manejado por el hook
+      toast.error(t("error.completeTraining"), {
+        description: error instanceof Error ? error.message : t("error.completeTrainingDescription"),
+      });
     }
   };
 
@@ -98,87 +109,88 @@ export function PartnerTraining() {
           ) : !trainings || trainings.length === 0 ? (
             <Card>
               <CardContent className="pt-6">
-                <div className="text-center py-12 text-muted-foreground">
-                  {t("noTrainings")}
+                <div className="text-center py-12">
+                  <BookOpen className="h-16 w-16 mx-auto text-muted-foreground mb-4 opacity-50" />
+                  <h3 className="text-lg font-semibold mb-2">{t("emptyTrainings.title")}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {t("emptyTrainings.description")}
+                  </p>
                 </div>
               </CardContent>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {trainings.map((training) => (
-                <Card key={training.id}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <CardTitle>{training.name}</CardTitle>
-                      <Badge className={getLevelBadge(training.level)}>
-                        {t(`level.${training.level}`)}
-                      </Badge>
-                    </div>
-                    <CardDescription className="line-clamp-2">
-                      {training.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">{t("progress")}</span>
-                          <span className="font-medium">
-                            {training.progress || 0}%
-                          </span>
-                        </div>
-                        <Progress value={training.progress || 0} />
+              {trainings.map((training) => {
+                const isCompleted = training.completedBy?.includes("current-partner-id") || false;
+                const isInProgress = false; // Necesitaríamos un campo en el tipo
+                return (
+                  <Card key={training.id}>
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <CardTitle>{training.title}</CardTitle>
+                        <Badge className={getLevelBadge(training.level)}>
+                          {t(`level.${training.level}`)}
+                        </Badge>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
-                          {training.duration} {t("minutes")}
+                      <CardDescription className="line-clamp-2">
+                        {training.description}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          {training.duration && (
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-4 w-4" />
+                              {training.duration} {t("minutes")}
+                            </div>
+                          )}
+                          {training.required && (
+                            <Badge variant="outline" className="text-xs">
+                              {t("required")}
+                            </Badge>
+                          )}
                         </div>
-                        {training.required && (
-                          <Badge variant="outline" className="text-xs">
-                            {t("required")}
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        {training.status === "not_started" ? (
+                        <div className="flex gap-2">
+                          {!isCompleted && !isInProgress ? (
+                            <Button
+                              className="flex-1"
+                              onClick={() => handleStartTraining(training.id)}
+                              disabled={startTraining.isPending}
+                            >
+                              <Play className="h-4 w-4 mr-2" />
+                              {t("start")}
+                            </Button>
+                          ) : isInProgress ? (
+                            <Button
+                              className="flex-1"
+                              variant="outline"
+                              onClick={() => setSelectedTraining(training)}
+                            >
+                              {t("continue")}
+                            </Button>
+                          ) : (
+                            <Button
+                              className="flex-1"
+                              variant="outline"
+                              disabled
+                            >
+                              <CheckCircle2 className="h-4 w-4 mr-2" />
+                              {t("completed")}
+                            </Button>
+                          )}
                           <Button
-                            className="flex-1"
-                            onClick={() => handleStartTraining(training.id)}
-                            disabled={startTraining.isPending}
-                          >
-                            <Play className="h-4 w-4 mr-2" />
-                            {t("start")}
-                          </Button>
-                        ) : training.status === "in_progress" ? (
-                          <Button
-                            className="flex-1"
-                            variant="outline"
+                            variant="ghost"
                             onClick={() => setSelectedTraining(training)}
                           >
-                            {t("continue")}
+                            {t("details")}
                           </Button>
-                        ) : (
-                          <Button
-                            className="flex-1"
-                            variant="outline"
-                            disabled
-                          >
-                            <CheckCircle2 className="h-4 w-4 mr-2" />
-                            {t("completed")}
-                          </Button>
-                        )}
-                        <Button
-                          variant="ghost"
-                          onClick={() => setSelectedTraining(training)}
-                        >
-                          {t("details")}
-                        </Button>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </TabsContent>
@@ -194,8 +206,15 @@ export function PartnerTraining() {
           ) : !certifications || certifications.length === 0 ? (
             <Card>
               <CardContent className="pt-6">
-                <div className="text-center py-12 text-muted-foreground">
-                  {t("noCertifications")}
+                <div className="text-center py-12">
+                  <Award className="h-16 w-16 mx-auto text-muted-foreground mb-4 opacity-50" />
+                  <h3 className="text-lg font-semibold mb-2">{t("emptyCertifications.title")}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {t("emptyCertifications.description")}
+                  </p>
+                  <Button variant="outline" size="sm" onClick={() => setActiveTab("trainings")}>
+                    {t("emptyCertifications.action")}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -205,7 +224,7 @@ export function PartnerTraining() {
                 <Card key={cert.id}>
                   <CardHeader>
                     <div className="flex items-start justify-between">
-                      <CardTitle>{cert.name}</CardTitle>
+                      <CardTitle>{cert.title}</CardTitle>
                       <Badge className={getCertStatusBadge(cert.status)}>
                         {t(`certStatus.${cert.status}`)}
                       </Badge>
@@ -216,11 +235,11 @@ export function PartnerTraining() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {cert.status === "completed" && cert.completedAt && (
+                      {cert.status === "completed" && cert.issuedAt && (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <CheckCircle2 className="h-4 w-4 text-green-600" />
                           <span>
-                            {t("completedOn")}: {formatDate(cert.completedAt, "PP")}
+                            {t("completedOn")}: {formatDate(cert.issuedAt, "PP")}
                           </span>
                         </div>
                       )}
@@ -232,10 +251,14 @@ export function PartnerTraining() {
                           </span>
                         </div>
                       )}
-                      {cert.requiredTraining && (
+                      {cert.requirements && cert.requirements.length > 0 && (
                         <div className="text-sm">
-                          <p className="text-muted-foreground mb-1">{t("requiredTraining")}</p>
-                          <p className="font-medium">{cert.requiredTraining}</p>
+                          <p className="text-muted-foreground mb-1">{t("requirements")}</p>
+                          <ul className="list-disc list-inside space-y-1">
+                            {cert.requirements.map((req, idx) => (
+                              <li key={idx} className="text-xs">{req}</li>
+                            ))}
+                          </ul>
                         </div>
                       )}
                       <Button
@@ -258,37 +281,43 @@ export function PartnerTraining() {
       <Dialog open={!!selectedTraining} onOpenChange={() => setSelectedTraining(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{selectedTraining?.name}</DialogTitle>
+            <DialogTitle>{selectedTraining?.title}</DialogTitle>
             <DialogDescription>
               {selectedTraining?.description}
             </DialogDescription>
           </DialogHeader>
           {selectedTraining && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{t("level.label")}</p>
-                  <Badge className={getLevelBadge(selectedTraining.level || "beginner")}>
-                    {t(`level.${selectedTraining.level || "beginner"}`)}
-                  </Badge>
+              {selectedTraining.level && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{t("level.label")}</p>
+                    <Badge className={getLevelBadge(selectedTraining.level)}>
+                      {t(`level.${selectedTraining.level}`)}
+                    </Badge>
+                  </div>
+                  {selectedTraining.duration && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">{t("duration")}</p>
+                      <p className="text-sm">{selectedTraining.duration} {t("minutes")}</p>
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{t("duration")}</p>
-                  <p className="text-sm">{selectedTraining.duration} {t("minutes")}</p>
-                </div>
-              </div>
-              {selectedTraining.content && (
+              )}
+              {selectedTraining.requirements && selectedTraining.requirements.length > 0 && (
                 <div>
                   <p className="text-sm font-medium text-muted-foreground mb-2">
-                    {t("content")}
+                    {t("requirements")}
                   </p>
-                  <div className="text-sm whitespace-pre-line bg-muted p-4 rounded-md">
-                    {selectedTraining.content}
-                  </div>
+                  <ul className="list-disc list-inside space-y-1 text-sm">
+                    {selectedTraining.requirements.map((req: string, idx: number) => (
+                      <li key={idx}>{req}</li>
+                    ))}
+                  </ul>
                 </div>
               )}
               <div className="flex gap-2 pt-4">
-                {selectedTraining.status === "not_started" && (
+                {selectedTraining.type && !selectedTraining.completedBy?.includes("current-partner-id") && (
                   <Button
                     className="flex-1"
                     onClick={() => handleStartTraining(selectedTraining.id)}
@@ -298,7 +327,7 @@ export function PartnerTraining() {
                     {t("start")}
                   </Button>
                 )}
-                {selectedTraining.status === "in_progress" && (
+                {selectedTraining.type && selectedTraining.completedBy?.includes("current-partner-id") && (
                   <Button
                     className="flex-1"
                     onClick={() => handleCompleteTraining(selectedTraining.id)}

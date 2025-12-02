@@ -112,7 +112,7 @@ export function TicketComments({
             await uploadTicketAttachment(ticketId, file, token);
           } catch (err) {
             console.error(`Error subiendo ${file.name}:`, err);
-            toast.error(tTickets("comments.uploadError").replace("{fileName}", file.name));
+            toast.error(tTickets("comments.uploadError", { fileName: file.name }));
           }
         }
         setUploadingFiles(new Set());

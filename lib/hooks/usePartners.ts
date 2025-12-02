@@ -32,7 +32,26 @@ export function usePartnerDashboard() {
       });
 
       if (!response.ok) {
-        throw new Error("Error al obtener dashboard de partner");
+        const errorData = await response.json().catch(() => ({}));
+        
+        // Manejo específico de errores de autorización
+        if (response.status === 403) {
+          throw new Error(
+            errorData.error || 
+            errorData.message || 
+            "No tienes permisos para acceder al Portal de Partners. Contacta al administrador si crees que esto es un error."
+          );
+        }
+        
+        if (response.status === 401) {
+          throw new Error("Tu sesión ha expirado. Por favor, inicia sesión nuevamente.");
+        }
+        
+        throw new Error(
+          errorData.error || 
+          errorData.message || 
+          "Error al obtener dashboard de partner"
+        );
       }
 
       const data = await response.json();
@@ -70,7 +89,25 @@ export function usePartnerLeads(filters?: {
       );
 
       if (!response.ok) {
-        throw new Error("Error al obtener leads");
+        const errorData = await response.json().catch(() => ({}));
+        
+        if (response.status === 403) {
+          throw new Error(
+            errorData.error || 
+            errorData.message || 
+            "No tienes permisos para acceder a los leads. Contacta al administrador."
+          );
+        }
+        
+        if (response.status === 401) {
+          throw new Error("Tu sesión ha expirado. Por favor, inicia sesión nuevamente.");
+        }
+        
+        throw new Error(
+          errorData.error || 
+          errorData.message || 
+          "Error al obtener leads"
+        );
       }
 
       const data = await response.json();

@@ -1,61 +1,91 @@
+/**
+ * Catálogo de Servicios - Cliente
+ * Refactorizado con nuevos componentes del marketplace
+ */
+
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Check, Sparkles, AlertCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, Search, SlidersHorizontal } from "lucide-react";
 
-import { apiClient } from "@/lib/apiClient";
-import { formatPrice } from "@/lib/services";
 import { PageShell } from "@/components/ui/shell";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, Loader2 } from "lucide-react";
 import CheckoutModal from "@/components/payments/CheckoutModal";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
-
-// Tipos locales (o mover a @/lib/types/services.ts)
-type ServicePlan = {
-  id: string;
-  nombre: string;
-  tipo: string;
-  precio: number;
-  currency: string;
-  durationDays: number;
-  features: string[];
-};
+import { useServiceCatalog, useServiceCategories, useServiceTags } from "@/lib/hooks/useServicesMarketplace";
+import { ServiceGrid } from "@/components/services/ServiceGrid";
+import { ServiceFilters } from "@/components/services/ServiceFilters";
+import type { ServicePlanExtended, ServiceCatalogFilters } from "@/lib/types/services";
 
 export function CatalogPageClient() {
   const router = useRouter();
-  const [selectedPlan, setSelectedPlan] = useState<ServicePlan | null>(null);
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const t = useTranslationsSafe("services.catalog");
-
-  // React Query para el catálogo
-  const { data: plans = [], isLoading, isError, error } = useQuery({
-    queryKey: ["catalog"],
-    queryFn: async () => {
-      const { data } = await apiClient.get("/services/catalog");
-      return (data?.data || data || []) as ServicePlan[];
-    },
-    staleTime: 1000 * 60 * 30, // Catálogo fresco por 30 mins
+  
+  // Estado de filtros
+  const [filters, setFilters] = useState<ServiceCatalogFilters>({
+    page: 1,
+    limit: 20,
+    sortBy: "popular",
   });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedPlan, setSelectedPlan] = useState<ServicePlanExtended | null>(null);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
-  const handleBuy = (plan: ServicePlan) => {
-    // Aquí podrías validar auth antes de abrir modal
-    setSelectedPlan(plan);
+  // Queries
+  const { data: catalogData, isLoading, isError, error } = useServiceCatalog(filters);
+  const { data: categories = [] } = useServiceCategories();
+  const { data: tags = [] } = useServiceTags();
+
+  // Handlers
+  const handleSearch = (value: string) => {
+    setSearchQuery(value);
+    setFilters((prev) => ({
+      ...prev,
+      search: value || undefined,
+      page: 1, // Reset a primera página
+    }));
+  };
+
+  const handleSortChange = (value: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      sortBy: value as ServiceCatalogFilters["sortBy"],
+      page: 1,
+    }));
+  };
+
+  const handleFiltersChange = (newFilters: ServiceCatalogFilters) => {
+    setFilters({
+      ...newFilters,
+      page: 1, // Reset a primera página al cambiar filtros
+    });
+  };
+
+  const handleBuy = (service: ServicePlanExtended) => {
+    setSelectedPlan(service);
     setIsCheckoutOpen(true);
+  };
+
+  const handlePageChange = (page: number) => {
+    setFilters((prev) => ({ ...prev, page }));
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
     <PageShell>
-      <div className="flex flex-col gap-8 max-w-6xl mx-auto">
-        
+      <div className="flex flex-col gap-8 max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center space-y-4 py-8">
-          <Link href="/services" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-4">
+          <Link
+            href="/services"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-4"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" /> {t("backToServices")}
           </Link>
           <h1 className="text-4xl font-extrabold tracking-tight">{t("title")}</h1>
@@ -64,93 +94,100 @@ export function CatalogPageClient() {
           </p>
         </div>
 
-        {/* Error State */}
-        {isError && (
-          <Alert variant="destructive" className="max-w-md mx-auto">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>{t("error")}</AlertTitle>
-            <AlertDescription>
-              {(error as Error)?.message || t("errorLoading")}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* Loading State */}
-        {isLoading && (
-          <div className="flex justify-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        {/* Búsqueda y Ordenamiento */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar servicios..."
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="pl-10"
+            />
           </div>
-        )}
+          <Select value={filters.sortBy} onValueChange={handleSortChange}>
+            <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectValue placeholder="Ordenar por" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="popular">Más populares</SelectItem>
+              <SelectItem value="price">Precio: menor a mayor</SelectItem>
+              <SelectItem value="price-desc">Precio: mayor a menor</SelectItem>
+              <SelectItem value="rating">Mejor valorados</SelectItem>
+              <SelectItem value="newest">Más recientes</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-        {/* Plans Grid */}
-        {!isLoading && !isError && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {plans.map((plan, idx) => {
-              const isPopular = idx === 1; // Lógica simple para destacar el del medio
-              return (
-                <Card 
-                  key={plan.id} 
-                  className={`flex flex-col relative transition-all duration-200 ${
-                    isPopular 
-                      ? "border-primary shadow-lg scale-105 z-10" 
-                      : "border-border hover:border-primary/50"
-                  }`}
-                >
-                  {isPopular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <Badge className="bg-primary text-primary-foreground hover:bg-primary px-3">
-                        <Sparkles className="w-3 h-3 mr-1" /> {t("mostPopular")}
-                      </Badge>
-                    </div>
-                  )}
+        {/* Layout: Filtros + Grid */}
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Filtros (Desktop: lateral, Mobile: sheet) */}
+          <div className="lg:w-64 shrink-0">
+            <ServiceFilters
+              categories={categories}
+              tags={tags}
+              priceRange={catalogData?.filters.priceRange}
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              resultCount={catalogData?.pagination.total}
+            />
+          </div>
 
-                  <CardHeader>
-                    <CardTitle className="text-xl">{plan.nombre}</CardTitle>
-                    <CardDescription className="uppercase text-xs font-bold tracking-wider">
-                      {plan.tipo}
-                    </CardDescription>
-                  </CardHeader>
+          {/* Contenido principal */}
+          <div className="flex-1">
+            {/* Error State */}
+            {isError && (
+              <Alert variant="destructive" className="mb-6">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>{t("error")}</AlertTitle>
+                <AlertDescription>
+                  {(error as Error)?.message || t("errorLoading")}
+                </AlertDescription>
+              </Alert>
+            )}
 
-                  <CardContent className="flex-1 space-y-6">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-bold">
-                        {formatPrice(plan.precio, plan.currency)}
-                      </span>
-                      {plan.durationDays > 0 && (
-                        <span className="text-sm text-muted-foreground">
-                          / {plan.durationDays} {t("days")}
-                        </span>
-                      )}
-                    </div>
+            {/* Loading State */}
+            {isLoading && <ServiceGrid loading={true} />}
 
-                    <ul className="space-y-3">
-                      {plan.features.map((feature, fIdx) => (
-                        <li key={fIdx} className="flex items-start gap-3 text-sm text-muted-foreground">
-                          <Check className="h-5 w-5 text-primary shrink-0" />
-                          <span className="leading-tight">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
+            {/* Services Grid */}
+            {!isLoading && !isError && catalogData && (
+              <>
+                <ServiceGrid
+                  services={catalogData.services}
+                  onBuy={handleBuy}
+                />
 
-                  <CardFooter>
-                    <Button 
-                      className="w-full" 
-                      size="lg" 
-                      variant={isPopular ? "default" : "outline"}
-                      onClick={() => handleBuy(plan)}
+                {/* Paginación */}
+                {catalogData.pagination.totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-8">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(filters.page! - 1)}
+                      disabled={filters.page === 1}
                     >
-                      {t("hireNow")}
+                      Anterior
                     </Button>
-                  </CardFooter>
-                </Card>
-              );
-            })}
+                    <span className="text-sm text-muted-foreground">
+                      Página {catalogData.pagination.page} de {catalogData.pagination.totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(filters.page! + 1)}
+                      disabled={filters.page === catalogData.pagination.totalPages}
+                    >
+                      Siguiente
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
-      {/* Checkout Modal Integration */}
+      {/* Checkout Modal */}
       {selectedPlan && (
         <CheckoutModal
           isOpen={isCheckoutOpen}
@@ -169,4 +206,3 @@ export function CatalogPageClient() {
     </PageShell>
   );
 }
-

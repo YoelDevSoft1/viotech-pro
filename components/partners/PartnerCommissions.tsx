@@ -9,18 +9,24 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 import { useI18n } from "@/lib/hooks/useI18n";
-import { Download, Filter } from "lucide-react";
+import { Download, Filter, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export function PartnerCommissions() {
   const [filters, setFilters] = useState({
-    status: "",
-    period: "",
+    status: "all",
+    period: "all",
   });
   const t = useTranslationsSafe("partners.commissions");
   const { formatCurrency, formatDate } = useI18n();
 
-  const { data: commissions, isLoading } = usePartnerCommissions(filters);
+  // Convertir "all" a undefined para el hook
+  const commissionFilters = {
+    status: filters.status === "all" ? undefined : filters.status,
+    period: filters.period === "all" ? undefined : filters.period,
+  };
+  const { data: commissions, isLoading } = usePartnerCommissions(commissionFilters);
 
   const getStatusBadge = (status: string) => {
     const styles = {
@@ -102,7 +108,7 @@ export function PartnerCommissions() {
                   <SelectValue placeholder={t("filters.allStatuses")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">{t("filters.allStatuses")}</SelectItem>
+                  <SelectItem value="all">{t("filters.allStatuses")}</SelectItem>
                   <SelectItem value="pending">{t("status.pending")}</SelectItem>
                   <SelectItem value="approved">{t("status.approved")}</SelectItem>
                   <SelectItem value="paid">{t("status.paid")}</SelectItem>
@@ -119,7 +125,7 @@ export function PartnerCommissions() {
                   <SelectValue placeholder={t("filters.allPeriods")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">{t("filters.allPeriods")}</SelectItem>
+                  <SelectItem value="all">{t("filters.allPeriods")}</SelectItem>
                   <SelectItem value="2024-12">Diciembre 2024</SelectItem>
                   <SelectItem value="2024-11">Noviembre 2024</SelectItem>
                   <SelectItem value="2024-10">Octubre 2024</SelectItem>
@@ -160,8 +166,19 @@ export function PartnerCommissions() {
               <TableBody>
                 {!commissions || commissions.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                      {t("noCommissions")}
+                    <TableCell colSpan={6}>
+                      <div className="text-center py-12">
+                        <DollarSign className="h-16 w-16 mx-auto text-muted-foreground mb-4 opacity-50" />
+                        <h3 className="text-lg font-semibold mb-2">{t("emptyCommissions.title")}</h3>
+                        <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
+                          {t("emptyCommissions.description")}
+                        </p>
+                        <Link href="/partners/leads">
+                          <Button variant="outline" size="sm">
+                            {t("emptyCommissions.action")}
+                          </Button>
+                        </Link>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : (
