@@ -103,12 +103,18 @@ function NotificationItem({ notification }: { notification: Notification }) {
 
 export function NotificationCenter() {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { data: notifications = [], isLoading } = useNotifications();
   const { data: stats } = useNotificationStats();
   const { data: preferences } = useNotificationPreferences();
   const markAllAsRead = useMarkAllNotificationsAsRead();
   const tNotifications = useTranslationsSafe("notifications");
   const previousUnreadCountRef = useRef<number>(0);
+  
+  // Evitar hidratación incorrecta renderizando solo en el cliente
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   // Conectar a notificaciones en tiempo real
   useRealtimeNotifications();
@@ -159,6 +165,23 @@ export function NotificationCenter() {
   const handleMarkAllAsRead = () => {
     markAllAsRead.mutate();
   };
+
+  // Renderizar placeholder durante SSR para evitar diferencias de hidratación
+  if (!mounted) {
+    return (
+      <Button variant="ghost" size="icon" className="relative">
+        <Bell className="h-5 w-5" />
+        {hasUnread && (
+          <Badge
+            variant="destructive"
+            className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+          >
+            {unreadCount > 99 ? "99+" : unreadCount}
+          </Badge>
+        )}
+      </Button>
+    );
+  }
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useOnboardingTours, useOnboardingConfig } from "@/lib/hooks/useOnboarding";
-import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
+import { NativeOnboardingTour } from "@/components/onboarding/NativeOnboardingTour";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 import { dashboardTour } from "@/lib/config/dashboard-tour";
 
@@ -38,7 +38,7 @@ export function TourButton() {
         <span className="hidden sm:inline">{tOnboarding("startTour")}</span>
       </Button>
       {activeTourData && (
-        <OnboardingTour
+        <NativeOnboardingTour
           tourId={activeTourData.id}
           steps={activeTourData.steps}
           run={activeTour === activeTourData.id}

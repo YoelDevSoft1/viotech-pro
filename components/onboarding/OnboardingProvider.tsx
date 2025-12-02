@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useOnboardingConfig, useOnboardingTours, useOnboardingProgress } from "@/lib/hooks/useOnboarding";
-import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
+import { NativeOnboardingTour } from "@/components/onboarding/NativeOnboardingTour";
 import { usePathname } from "next/navigation";
 import { logger } from "@/lib/logger";
 
@@ -123,7 +123,7 @@ export function OnboardingProvider({ children }: OnboardingProviderProps) {
     <>
       {children}
       {activeTourData && (
-        <OnboardingTour
+        <NativeOnboardingTour
           tourId={activeTourData.id}
           steps={activeTourData.steps}
           run={activeTour === activeTourData.id}
