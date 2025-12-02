@@ -57,7 +57,7 @@ export function ServiceDetailClient({ slug }: ServiceDetailClientProps) {
     } else {
       // Fallback: copiar al portapapeles
       navigator.clipboard.writeText(window.location.href);
-      toast.success(t("linkCopied") || "Link copiado al portapapeles");
+      toast.success(t("linkCopied"));
     }
   };
 
@@ -76,9 +76,9 @@ export function ServiceDetailClient({ slug }: ServiceDetailClientProps) {
       <PageShell>
         <Alert variant="destructive" className="max-w-md mx-auto mt-8">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>{t("error") || "Error"}</AlertTitle>
+          <AlertTitle>{t("error")}</AlertTitle>
           <AlertDescription>
-            {(error as Error)?.message || t("errorLoading") || "No se pudo cargar el servicio"}
+            {(error as Error)?.message || t("errorLoading")}
           </AlertDescription>
         </Alert>
         <div className="text-center mt-4">
@@ -101,11 +101,11 @@ export function ServiceDetailClient({ slug }: ServiceDetailClientProps) {
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link href="/services" className="hover:text-primary">
-            {tCatalog("title") || "Servicios"}
+            {tCatalog("title")}
           </Link>
           <span>/</span>
           <Link href="/services/catalog" className="hover:text-primary">
-            {tCatalog("title") || "Catálogo"}
+            {tCatalog("title")}
           </Link>
           <span>/</span>
           <span className="text-foreground">{service.nombre}</span>
@@ -124,7 +124,7 @@ export function ServiceDetailClient({ slug }: ServiceDetailClientProps) {
               />
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground">
-                {t("noImage") || "Sin imagen"}
+                {t("noImage")}
               </div>
             )}
           </div>
@@ -153,7 +153,7 @@ export function ServiceDetailClient({ slug }: ServiceDetailClientProps) {
                   href="#reviews"
                   className="text-sm text-muted-foreground hover:text-primary"
                 >
-                  {t("viewAllReviews") || "Ver todos los reviews"}
+                  {t("viewAllReviews")}
                 </Link>
               </div>
             )}
@@ -164,10 +164,10 @@ export function ServiceDetailClient({ slug }: ServiceDetailClientProps) {
                 <Badge variant="default">{tCatalog("mostPopular")}</Badge>
               )}
               {service.metadata?.new && (
-                <Badge variant="secondary">{tCatalog("new") || "Nuevo"}</Badge>
+                <Badge variant="secondary">{tCatalog("new")}</Badge>
               )}
               {service.metadata?.featured && (
-                <Badge variant="outline">{tCatalog("featured") || "Destacado"}</Badge>
+                <Badge variant="outline">{tCatalog("featured")}</Badge>
               )}
               {service.categorias?.map((cat) => (
                 <Badge key={cat.id} variant="outline">
@@ -211,7 +211,7 @@ export function ServiceDetailClient({ slug }: ServiceDetailClientProps) {
             {/* Tags */}
             {service.tags && service.tags.length > 0 && (
               <div>
-                <p className="text-sm font-medium mb-2">{t("tagsLabel") || "Tags:"}</p>
+                <p className="text-sm font-medium mb-2">{t("tagsLabel")}</p>
                 <div className="flex flex-wrap gap-2">
                   {service.tags.map((tag) => (
                     <Badge key={tag.id} variant="outline">
@@ -250,7 +250,7 @@ export function ServiceDetailClient({ slug }: ServiceDetailClientProps) {
           <TabsContent value="features" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>{t("featuresTitle") || "Características Incluidas"}</CardTitle>
+                <CardTitle>{t("featuresTitle")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">

@@ -18,6 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { HealthCheckBadge } from "@/components/admin/HealthCheckBadge";
 
 export default function AdminDashboardPage() {
   const { orgId, setOrgId } = useOrg();

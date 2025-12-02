@@ -41,6 +41,36 @@ export interface NotificationPreferences {
   commentUpdates: boolean;
 }
 
+/**
+ * Preferencias granulares de notificaciones por tipo y canal
+ */
+export interface NotificationPreferencesGranular {
+  // Preferencias globales
+  email: boolean;
+  push: boolean;
+  inApp: boolean;
+  
+  // Email digest
+  digest: {
+    enabled: boolean;
+    frequency: 'daily' | 'weekly' | 'never';
+    time?: string; // HH:mm formato
+  };
+  
+  // Preferencias adicionales
+  sound: boolean;
+  desktop: boolean; // Notificaciones de escritorio
+  
+  // Preferencias por tipo de notificación
+  byType: {
+    [key in NotificationType]?: {
+      email: boolean;
+      push: boolean;
+      inApp: boolean;
+    };
+  };
+}
+
 export interface NotificationStats {
   total: number;
   unread: number;

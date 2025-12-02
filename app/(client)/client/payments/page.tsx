@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, CreditCard, Package, Calendar, AlertCircle, CheckCircle2, Clock, Loader2 } from "lucide-react";
+import { ArrowLeft, CreditCard, Package, Calendar, AlertCircle, CheckCircle2, Clock, Loader2, Phone, Search, Filter } from "lucide-react";
 import { getAccessToken } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,15 +14,26 @@ import { formatPrice } from "@/lib/services";
 import CheckoutModal from "@/components/payments/CheckoutModal";
 import type { ServicePlan } from "@/lib/services";
 import { apiClient } from "@/lib/apiClient";
+import { logger } from "@/lib/logger";
+import { EmptyState } from "@/components/ui/empty-state";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function ClientPaymentsPage() {
   const router = useRouter();
-  const { services, loading: servicesLoading, error: servicesError } = useServices();
+  const queryClient = useQueryClient();
+  const { services, loading: servicesLoading, error: servicesError, refresh: refreshServices } = useServices();
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [catalog, setCatalog] = useState<ServicePlan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<ServicePlan | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const t = useTranslationsSafe();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const tCommon = useTranslationsSafe("common");
+  const tSidebar = useTranslationsSafe("sidebar");
+  const tServices = useTranslationsSafe("client.services");
 
   useEffect(() => {
     const token = getAccessToken();
@@ -38,10 +49,23 @@ export default function ClientPaymentsPage() {
       try {
         setCatalogLoading(true);
         const { data } = await apiClient.get("/services/catalog");
-        const rawData = Array.isArray(data) ? data : (data?.data || []);
+        
+        // Asegurar que siempre sea un array
+        let rawData: any = data?.data || data;
+        
+        if (!Array.isArray(rawData)) {
+          logger.warn("Catalog data is not an array", { rawData });
+          rawData = [];
+        }
+        
         setCatalog(rawData);
       } catch (error) {
-        console.error("Error cargando catálogo:", error);
+        logger.error("Error loading service catalog", error, {
+          endpoint: "/services/catalog",
+          apiError: true,
+        });
+        // En caso de error, establecer array vacío
+        setCatalog([]);
       } finally {
         setCatalogLoading(false);
       }
@@ -55,11 +79,29 @@ export default function ClientPaymentsPage() {
     setCheckoutOpen(true);
   };
 
-  const handleCheckoutSuccess = () => {
+  const handleCheckoutSuccess = (serviceName?: string) => {
     setCheckoutOpen(false);
     setSelectedPlan(null);
-    // Recargar servicios después de pago exitoso
-    window.location.reload();
+    
+    // Invalidar y refrescar servicios sin recargar la página
+    queryClient.invalidateQueries({ queryKey: ["services"] });
+    refreshServices();
+    
+    // Toast de éxito con acción
+    toast.success(
+      serviceName 
+        ? `¡Pago procesado exitosamente! Tu servicio ${serviceName} está activo.`
+        : "¡Pago procesado exitosamente! Tu servicio está activo.",
+      {
+        action: {
+          label: "Ver Servicios",
+          onClick: () => {
+            // Scroll suave a la sección de servicios activos
+            document.getElementById("active-services")?.scrollIntoView({ behavior: "smooth" });
+          },
+        },
+      }
+    );
   };
 
   const getServiceStatusBadge = (estado: string) => {
@@ -83,6 +125,22 @@ export default function ClientPaymentsPage() {
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
   };
 
+  // Filtrar catálogo por búsqueda y tipo
+  const filteredCatalog = Array.isArray(catalog) ? catalog.filter((plan) => {
+    const matchesSearch = searchQuery === "" || 
+      plan.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (plan.tipo && plan.tipo.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    const matchesType = typeFilter === "all" || plan.tipo === typeFilter;
+    
+    return matchesSearch && matchesType;
+  }) : [];
+
+  // Obtener tipos únicos del catálogo
+  const availableTypes = Array.isArray(catalog) 
+    ? Array.from(new Set(catalog.map(p => p.tipo).filter(Boolean)))
+    : [];
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -91,7 +149,7 @@ export default function ClientPaymentsPage() {
           <Button variant="ghost" size="sm" asChild>
             <Link href="/dashboard" className="gap-2">
               <ArrowLeft className="h-4 w-4" />
-              {t("common.backToDashboard") || "Volver al Dashboard"}
+              {tServices("backToDashboard")}
             </Link>
           </Button>
         </div>
@@ -99,25 +157,25 @@ export default function ClientPaymentsPage() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
               <CreditCard className="h-8 w-8" />
-              {t("sidebar.payments") || "Pagos"}
+              {tSidebar("payments")}
             </h1>
             <p className="text-muted-foreground mt-1">
-              Gestiona tus pagos y servicios activos
+              {tServices("payments.pageDescription")}
             </p>
           </div>
         </div>
       </div>
 
       {/* Servicios Activos */}
-      <section>
+      <section id="active-services">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Package className="h-5 w-5" />
-              Mis Servicios Activos
+              {tServices("payments.myServices.title")}
             </CardTitle>
             <CardDescription>
-              Servicios que has adquirido y su estado de pago
+              {tServices("payments.myServices.description")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -128,15 +186,45 @@ export default function ClientPaymentsPage() {
             ) : servicesError ? (
               <div className="flex items-center gap-3 p-4 rounded-lg border border-red-500/20 bg-red-500/5">
                 <AlertCircle className="h-5 w-5 text-red-500" />
-                <p className="text-sm text-red-500">{servicesError}</p>
+                <div className="flex-1">
+                  <p className="text-sm text-red-500 font-medium">{servicesError}</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    onClick={() => refreshServices()}
+                  >
+                    {tCommon("retry")}
+                  </Button>
+                </div>
               </div>
             ) : services.length === 0 ? (
-              <div className="text-center py-8">
-                <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-sm text-muted-foreground">
-                  No tienes servicios activos. Explora el catálogo para adquirir uno.
-                </p>
-              </div>
+              <EmptyState
+                icon={Package}
+                title={tServices("emptyStates.noActiveServices.title")}
+                description={tServices("emptyStates.noActiveServices.description")}
+                action={{
+                  label: tServices("emptyStates.noActiveServices.actionExplore"),
+                  onClick: () => {
+                    document.getElementById("service-catalog")?.scrollIntoView({ behavior: "smooth" });
+                  },
+                  variant: "default" as const,
+                }}
+              >
+                <div className="mt-4 flex gap-2 justify-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      // TODO: Implementar agendamiento de llamada
+                      toast.info("Funcionalidad de agendamiento próximamente disponible");
+                    }}
+                  >
+                    <Phone className="h-4 w-4 mr-2" />
+                    {tServices("emptyStates.noActiveServices.actionSchedule")}
+                  </Button>
+                </div>
+              </EmptyState>
             ) : (
               <div className="space-y-4">
                 {services.map((service) => {
@@ -160,37 +248,63 @@ export default function ClientPaymentsPage() {
                               </p>
                             )}
 
-                            <div className="flex items-center gap-6 text-sm">
+                            {/* Información agrupada visualmente */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-lg bg-muted/30 border border-border/50">
                               {service.fecha_compra && (
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                  <Calendar className="h-4 w-4" />
-                                  <span>Comprado: {new Date(service.fecha_compra).toLocaleDateString()}</span>
+                                <div className="flex items-center gap-2">
+                                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                                  <div>
+                                    <p className="text-xs text-muted-foreground">{tServices("payments.myServices.purchased")}</p>
+                                    <p className="text-sm font-medium">{new Date(service.fecha_compra).toLocaleDateString()}</p>
+                                  </div>
                                 </div>
                               )}
                               {service.fecha_expiracion && (
-                                <div className={`flex items-center gap-2 ${isExpiringSoon || isExpired ? "text-yellow-600" : "text-muted-foreground"}`}>
-                                  <Clock className="h-4 w-4" />
-                                  <span>
-                                    {isExpired
-                                      ? "Expirado"
-                                      : isExpiringSoon
-                                      ? `Expira en ${daysLeft} días`
-                                      : `Expira: ${new Date(service.fecha_expiracion).toLocaleDateString()}`}
-                                  </span>
+                                <div className={`flex items-center gap-2 ${isExpiringSoon || isExpired ? "text-red-600" : ""}`}>
+                                  <Clock className={`h-4 w-4 ${isExpiringSoon || isExpired ? "text-red-600" : "text-muted-foreground"}`} />
+                                  <div>
+                                    <p className="text-xs text-muted-foreground">
+                                      {isExpired ? tServices("payments.myServices.expired") : tServices("payments.myServices.expires")}
+                                    </p>
+                                    <p className={`text-sm font-medium ${isExpiringSoon || isExpired ? "text-red-600" : ""}`}>
+                                      {isExpired
+                                        ? tServices("payments.myServices.expired")
+                                        : isExpiringSoon
+                                        ? tServices("payments.myServices.expiresIn").replace("{days}", String(daysLeft))
+                                        : new Date(service.fecha_expiracion).toLocaleDateString()}
+                                    </p>
+                                  </div>
                                 </div>
                               )}
                               {service.precio && (
-                                <div className="text-muted-foreground">
-                                  {formatPrice(service.precio, "COP")}
+                                <div className="flex items-center gap-2">
+                                  <CreditCard className="h-4 w-4 text-muted-foreground" />
+                                  <div>
+                                    <p className="text-xs text-muted-foreground">{tServices("payments.myServices.price")}</p>
+                                    <p className="text-sm font-medium">{formatPrice(service.precio, "COP")}</p>
+                                  </div>
                                 </div>
                               )}
                             </div>
 
+                            {/* Alerta de urgencia mejorada */}
                             {isExpiringSoon && (
-                              <div className="flex items-center gap-2 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
-                                <AlertCircle className="h-4 w-4 text-yellow-600" />
-                                <p className="text-sm text-yellow-600">
-                                  Tu servicio expira pronto. Considera renovarlo.
+                              <div className={`flex items-center gap-2 p-3 rounded-lg border ${
+                                daysLeft && daysLeft <= 7 
+                                  ? "bg-red-500/10 border-red-500/30" 
+                                  : "bg-yellow-500/10 border-yellow-500/20"
+                              }`}>
+                                <AlertCircle className={`h-4 w-4 ${daysLeft && daysLeft <= 7 ? "text-red-600" : "text-yellow-600"}`} />
+                                <p className={`text-sm font-medium ${daysLeft && daysLeft <= 7 ? "text-red-600" : "text-yellow-600"}`}>
+                                  {tServices("payments.myServices.expiringSoon")}
+                                </p>
+                              </div>
+                            )}
+                            {isExpired && (
+                              <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/30">
+                                <AlertCircle className="h-4 w-4 text-red-600" />
+                                <p className="text-sm font-medium text-red-600">
+                                  {tServices("payments.myServices.expired")}
                                 </p>
                               </div>
                             )}
@@ -203,27 +317,28 @@ export default function ClientPaymentsPage() {
                                 size="sm"
                                 onClick={() => {
                                   // Buscar el plan en el catálogo para renovar
-                                  const plan = catalog.find(p => p.nombre === service.nombre);
+                                  const plan = Array.isArray(catalog) ? catalog.find(p => p.nombre === service.nombre) : undefined;
                                   if (plan) {
                                     handlePurchase(plan);
                                   }
                                 }}
                               >
-                                Renovar
+                                {tServices("payments.myServices.renew")}
                               </Button>
                             )}
                             {isExpiringSoon && (
                               <Button
-                                variant="outline"
+                                variant={daysLeft && daysLeft <= 7 ? "default" : "outline"}
                                 size="sm"
+                                className={daysLeft && daysLeft <= 7 ? "bg-red-600 hover:bg-red-700" : ""}
                                 onClick={() => {
-                                  const plan = catalog.find(p => p.nombre === service.nombre);
+                                  const plan = Array.isArray(catalog) ? catalog.find(p => p.nombre === service.nombre) : undefined;
                                   if (plan) {
                                     handlePurchase(plan);
                                   }
                                 }}
                               >
-                                Renovar Ahora
+                                {tServices("payments.myServices.renewNow")}
                               </Button>
                             )}
                           </div>
@@ -239,12 +354,12 @@ export default function ClientPaymentsPage() {
       </section>
 
       {/* Catálogo de Servicios */}
-      <section>
+      <section id="service-catalog">
         <Card>
           <CardHeader>
-            <CardTitle>Catálogo de Servicios</CardTitle>
+            <CardTitle>{tServices("payments.catalog.title")}</CardTitle>
             <CardDescription>
-              Explora y adquiere nuevos servicios
+              {tServices("payments.catalog.description")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -252,16 +367,60 @@ export default function ClientPaymentsPage() {
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
-            ) : catalog.length === 0 ? (
-              <div className="text-center py-8">
-                <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-sm text-muted-foreground">
-                  No hay servicios disponibles en el catálogo.
-                </p>
-              </div>
+            ) : !Array.isArray(catalog) || catalog.length === 0 ? (
+              <EmptyState
+                icon={Package}
+                title={tServices("emptyStates.catalogEmpty.title")}
+                description={tServices("emptyStates.catalogEmpty.description")}
+                action={{
+                  label: tServices("emptyStates.catalogEmpty.actionContact"),
+                  onClick: () => {
+                    router.push("/contact");
+                  },
+                  variant: "default" as const,
+                }}
+              />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {catalog.map((plan) => (
+              <>
+                {/* Búsqueda y Filtros */}
+                <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder={tServices("payments.catalog.searchPlaceholder")}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                  {availableTypes.length > 0 && (
+                    <Select value={typeFilter} onValueChange={setTypeFilter}>
+                      <SelectTrigger className="w-full sm:w-[200px]">
+                        <Filter className="h-4 w-4 mr-2" />
+                        <SelectValue placeholder={tServices("payments.catalog.filterByType")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">{tServices("payments.catalog.allTypes")}</SelectItem>
+                        {availableTypes.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+
+                {/* Resultados */}
+                {filteredCatalog.length === 0 ? (
+                  <EmptyState
+                    icon={Package}
+                    title={tServices("emptyStates.noActiveServices.title")}
+                    description={tServices("emptyStates.noActiveServices.description")}
+                  />
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredCatalog.map((plan) => (
                   <Card key={plan.id} className="border-border/70 hover:border-border transition-colors">
                     <CardHeader>
                       <CardTitle className="text-lg">{plan.nombre}</CardTitle>
@@ -278,7 +437,7 @@ export default function ClientPaymentsPage() {
                       
                       {plan.features && plan.features.length > 0 && (
                         <div className="space-y-1">
-                          <p className="text-xs font-medium text-muted-foreground">Características:</p>
+                          <p className="text-xs font-medium text-muted-foreground">{tServices("payments.catalog.features")}:</p>
                           <ul className="text-xs text-muted-foreground space-y-1">
                             {plan.features.slice(0, 3).map((feature, idx) => (
                               <li key={idx} className="flex items-center gap-2">
@@ -295,12 +454,14 @@ export default function ClientPaymentsPage() {
                         onClick={() => handlePurchase(plan)}
                       >
                         <CreditCard className="h-4 w-4 mr-2" />
-                        Comprar Ahora
+                        {tServices("payments.catalog.buyNow")}
                       </Button>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </CardContent>
         </Card>
@@ -315,7 +476,7 @@ export default function ClientPaymentsPage() {
             setSelectedPlan(null);
           }}
           plan={selectedPlan}
-          onSuccess={handleCheckoutSuccess}
+          onSuccess={() => handleCheckoutSuccess(selectedPlan?.nombre)}
         />
       )}
     </div>

@@ -367,13 +367,16 @@ app/(ops-admin)/
 - [x] Shortcuts de teclado
 - [x] Modo oscuro/claro
 
-#### **Sprint 3.3: Notificaciones en Tiempo Real ()**
-- [ ] WebSockets para notificaciones
-- [ ] Centro de notificaciones
-- [ ] Preferencias de notificación por tipo
-- [ ] Notificaciones push (PWA)
-- [ ] Email digests
-- [ ] Integración con Slack/Teams
+#### **Sprint 3.3: Notificaciones en Tiempo Real (🔄 EN PROGRESO)**
+- [x] WebSockets para notificaciones - Hook implementado con reconexión automática
+- [x] Centro de notificaciones - Componente dropdown con badge animado
+- [x] Preferencias de notificación por tipo - Componente granular implementado
+- [x] Toasts para notificaciones nuevas - Integrado con Sonner
+- [x] Página de notificaciones para clientes - `/client/notifications` implementada
+- [x] Badge animado en NotificationCenter - Animación pulse implementada
+- [ ] Notificaciones push (PWA) - Pendiente v1
+- [ ] Email digests - Pendiente v2
+- [ ] Integración con Slack/Teams - Pendiente futuro
 
 #### **Sprint 3.4: Internacionalización (✅ COMPLETADO)**
 - [x] next-intl instalado y configurado

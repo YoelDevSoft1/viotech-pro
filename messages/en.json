@@ -130,7 +130,23 @@
     "goBack": "Go back",
     "refresh": "Refresh",
     "error": {
-      "occurred": "An error occurred"
+      "occurred": "An error occurred",
+      "boundary": {
+        "title": "Something went wrong",
+        "description": "An unexpected error occurred. Please try again.",
+        "retry": "Try again",
+        "reload": "Reload page",
+        "goHome": "Go to Dashboard",
+        "auth": {
+          "title": "Authentication error",
+          "description": "An error occurred during authentication. Please try again."
+        },
+        "payment": {
+          "title": "Payment process error",
+          "description": "An error occurred during the payment process. Please try again or contact support."
+        },
+        "stackTrace": "Stack trace"
+      }
     },
     "empty": {
       "noResults": "No results"
@@ -1502,6 +1518,50 @@
         "pageTitle": "Time and cost prediction",
         "description": "Connect with the active ML model to estimate project duration and cost.",
         "backToDashboard": "Back to dashboard"
+      }
+    },
+    "services": {
+      "backToDashboard": "Back to Dashboard",
+      "emptyStates": {
+        "noActiveServices": {
+          "title": "You haven't activated your first service yet",
+          "description": "Schedule a discovery call to receive a personalized plan or explore our service catalog.",
+          "actionSchedule": "Schedule Call",
+          "actionExplore": "Explore Catalog"
+        },
+        "catalogEmpty": {
+          "title": "We're updating our catalog",
+          "description": "Check back soon or contact our team for custom services.",
+          "actionContact": "Contact Team"
+        }
+      },
+      "payments": {
+        "pageDescription": "Manage your payments and active services",
+        "myServices": {
+          "title": "My Active Services",
+          "description": "Services you've purchased and their payment status",
+          "purchased": "Purchased",
+          "expires": "Expires",
+          "expired": "Expired",
+          "expiresIn": "Expires in {days} days",
+          "expiringSoon": "Your service is expiring soon. Consider renewing it.",
+          "renew": "Renew",
+          "renewNow": "Renew Now",
+          "price": "Price",
+          "viewAll": "View all",
+          "dismissBanner": "Dismiss renewal notice"
+        },
+        "catalog": {
+          "title": "Service Catalog",
+          "description": "Explore and purchase new services",
+          "searchPlaceholder": "Search services...",
+          "filterByType": "Filter by type",
+          "filterByStatus": "Filter by status",
+          "allTypes": "All types",
+          "allStatuses": "All statuses",
+          "buyNow": "Buy Now",
+          "features": "Features"
+        }
       }
     }
   },

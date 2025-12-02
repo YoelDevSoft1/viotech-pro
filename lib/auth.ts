@@ -101,6 +101,16 @@ export async function logout() {
     }
   }
   clearTokens();
+  
+  // Limpiar usuario de Sentry si está disponible
+  if (typeof window !== "undefined") {
+    import("@/lib/sentry-init")
+      .then(({ clearSentryUser }) => clearSentryUser())
+      .catch(() => {
+        // Sentry no está disponible, ignorar
+      });
+  }
+  
   // Evento para limpiar estado global si es necesario
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent("authChanged", { detail: { isAuthenticated: false } }));

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { LogOut, User, Settings, MoreVertical } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,9 +16,19 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useCurrentUser } from "@/lib/hooks/useResources";
 import { logout } from "@/lib/auth";
+import { useSentryUser } from "@/lib/hooks/useSentryUser";
 
 export function SidebarUser() {
   const { data: user } = useCurrentUser();
+  const [mounted, setMounted] = useState(false);
+  
+  // Configurar usuario en Sentry para tracking
+  useSentryUser(user || undefined);
+  
+  // Evitar hidratación incorrecta renderizando solo en el cliente
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   // Iniciales para el fallback del avatar
   const initials = user?.nombre
@@ -26,6 +37,30 @@ export function SidebarUser() {
     .join("")
     .slice(0, 2)
     .toUpperCase() || "U";
+
+  // Renderizar placeholder durante SSR para evitar diferencias de hidratación
+  if (!mounted) {
+    return (
+      <div className="p-3 border-t group-data-[collapsible=icon]:p-3">
+        <button className="w-full flex items-center gap-3 p-2 rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:rounded-md">
+          <Avatar className="h-9 w-9 shrink-0 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10">
+            <AvatarFallback className="bg-green-500 text-white text-xs font-semibold">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 text-left min-w-0 group-data-[collapsible=icon]:hidden">
+            <p className="text-sm font-medium leading-tight truncate">
+              {user?.nombre || "Usuario"}
+            </p>
+            <p className="text-xs text-sidebar-foreground/70 leading-tight mt-0.5 truncate">
+              {user?.email || "email@example.com"}
+            </p>
+          </div>
+          <MoreVertical className="h-4 w-4 text-sidebar-foreground/50 shrink-0 group-data-[collapsible=icon]:hidden" />
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="p-3 border-t group-data-[collapsible=icon]:p-3">

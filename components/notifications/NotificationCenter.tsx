@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Bell, Check, CheckCheck, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,12 +14,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNotifications, useNotificationStats, useMarkNotificationAsRead, useMarkAllNotificationsAsRead, useDeleteNotification } from "@/lib/hooks/useNotifications";
 import { useRealtimeNotifications } from "@/lib/hooks/useRealtimeNotifications";
+import { useNotificationPreferences } from "@/lib/hooks/useNotificationPreferences";
 import type { Notification } from "@/lib/types/notifications";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale/es";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { toast } from "sonner";
 
 function NotificationItem({ notification }: { notification: Notification }) {
   const markAsRead = useMarkNotificationAsRead();
@@ -103,27 +105,56 @@ export function NotificationCenter() {
   const [open, setOpen] = useState(false);
   const { data: notifications = [], isLoading } = useNotifications();
   const { data: stats } = useNotificationStats();
+  const { data: preferences } = useNotificationPreferences();
   const markAllAsRead = useMarkAllNotificationsAsRead();
   const tNotifications = useTranslationsSafe("notifications");
+  const previousUnreadCountRef = useRef<number>(0);
   
   // Conectar a notificaciones en tiempo real
   useRealtimeNotifications();
 
-  // Escuchar eventos de notificaciones recibidas
+  const unreadCount = stats?.unread || notifications.filter((n) => !n.read).length;
+  const hasUnread = unreadCount > 0;
+
+  // Mostrar toast cuando llega una nueva notificación
   useEffect(() => {
     const handleNotificationReceived = (event: CustomEvent<Notification>) => {
-      // El hook useRealtimeNotifications ya actualiza el cache
-      // Aquí podríamos mostrar un toast si está abierto el dropdown
+      const notification = event.detail;
+      
+      // Verificar si las notificaciones in-app están habilitadas
+      const inAppEnabled = preferences?.inApp !== false;
+      const typeEnabled = preferences?.byType?.[notification.type]?.inApp !== false;
+      
+      if (inAppEnabled && typeEnabled !== false) {
+        // Mostrar toast con la notificación
+        toast.info(notification.title, {
+          description: notification.message,
+          duration: 5000,
+          action: notification.actionUrl ? {
+            label: "Ver",
+            onClick: () => {
+              window.location.href = notification.actionUrl!;
+            },
+          } : undefined,
+        });
+      }
     };
 
     window.addEventListener("notification-received", handleNotificationReceived as EventListener);
     return () => {
       window.removeEventListener("notification-received", handleNotificationReceived as EventListener);
     };
-  }, []);
+  }, [preferences]);
 
-  const unreadCount = stats?.unread || notifications.filter((n) => !n.read).length;
-  const hasUnread = unreadCount > 0;
+  // Detectar cuando aumenta el contador de no leídas (nueva notificación)
+  useEffect(() => {
+    const previousCount = previousUnreadCountRef.current;
+    if (unreadCount > previousCount && previousCount > 0) {
+      // Nueva notificación recibida (el toast ya se mostró arriba)
+      // Aquí podríamos reproducir un sonido si está habilitado
+    }
+    previousUnreadCountRef.current = unreadCount;
+  }, [unreadCount]);
 
   const handleMarkAllAsRead = () => {
     markAllAsRead.mutate();
@@ -133,11 +164,14 @@ export function NotificationCenter() {
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
+          <Bell className={cn("h-5 w-5 transition-all", hasUnread && "animate-pulse")} />
           {hasUnread && (
             <Badge
               variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+              className={cn(
+                "absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs",
+                "animate-in fade-in zoom-in-50 duration-200"
+              )}
             >
               {unreadCount > 99 ? "99+" : unreadCount}
             </Badge>

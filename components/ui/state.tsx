@@ -8,13 +8,25 @@ type BaseProps = {
   children?: React.ReactNode;
 };
 
-export function LoadingState({ title, message }: BaseProps) {
+export function LoadingState({ title, message, children }: BaseProps) {
   const tCommon = useTranslationsSafe("common");
   const defaultTitle = title || tCommon("loading");
+  
+  // Si hay children (skeleton personalizado), renderizarlo
+  if (children) {
+    return <>{children}</>;
+  }
+  
+  // Estado de carga simple con spinner
   return (
-    <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
-      <p className="font-medium text-foreground">{defaultTitle}</p>
-      {message && <p className="text-xs text-muted-foreground">{message}</p>}
+    <div className="flex flex-col items-center justify-center py-8 space-y-3">
+      <div className="relative">
+        <div className="h-8 w-8 border-4 border-muted border-t-primary rounded-full animate-spin" />
+      </div>
+      <div className="text-center space-y-1">
+        <p className="text-sm font-medium text-foreground">{defaultTitle}</p>
+        {message && <p className="text-xs text-muted-foreground">{message}</p>}
+      </div>
     </div>
   );
 }

@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { createWompiTransaction } from "@/lib/payments";
 import type { ServicePlan } from "@/lib/services";
 import { formatPrice } from "@/lib/services";
+import { logger } from "@/lib/logger";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -31,6 +33,8 @@ export default function CheckoutModal({
   onError,
 }: CheckoutModalProps) {
   const router = useRouter();
+  const t = useTranslationsSafe("payment.checkout");
+  const tCommon = useTranslationsSafe("common");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const widgetInitialized = useRef(false);
@@ -57,10 +61,10 @@ export default function CheckoutModal({
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-              Checkout
+              {t("label")}
             </p>
             <h3 className="text-2xl font-medium text-foreground">
-              Completar Pago
+              {t("title")}
             </h3>
           </div>
           <button
@@ -82,7 +86,7 @@ export default function CheckoutModal({
             </p>
           </div>
           <div className="flex items-center justify-between pt-4 border-t border-border/50">
-            <span className="text-sm text-muted-foreground">Total a pagar</span>
+            <span className="text-sm text-muted-foreground">{t("totalToPay")}</span>
             <span className="text-2xl font-medium text-foreground">
               {formatPrice(plan.precio, plan.currency)}
             </span>
@@ -94,7 +98,7 @@ export default function CheckoutModal({
           <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-4 flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-red-500">Error</p>
+              <p className="text-sm font-medium text-red-500">{tCommon("error.occurred")}</p>
               <p className="text-sm text-muted-foreground">{error}</p>
             </div>
             <button
@@ -105,7 +109,7 @@ export default function CheckoutModal({
               }}
               className="px-4 py-2 rounded-lg border border-red-500/50 text-red-500 text-sm font-medium hover:bg-red-500/10 transition-colors"
             >
-              Reintentar
+              {tCommon("retry")}
             </button>
           </div>
         )}
@@ -115,7 +119,7 @@ export default function CheckoutModal({
           <div className="flex items-center justify-center gap-3 py-8">
             <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
             <span className="text-sm text-muted-foreground">
-              Preparando checkout...
+              {t("preparing")}
             </span>
           </div>
         )}
@@ -126,10 +130,10 @@ export default function CheckoutModal({
             <div className="rounded-lg border border-border/70 bg-muted/20 p-6 space-y-4">
               <div className="text-center space-y-2">
                 <p className="text-sm font-medium text-foreground">
-                  Serás redirigido a la página de pago segura de Wompi
+                  {t("redirectMessage")}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Completa el pago en la página de Wompi y serás redirigido automáticamente de vuelta.
+                  {t("redirectDescription")}
                 </p>
               </div>
               <button
@@ -137,24 +141,43 @@ export default function CheckoutModal({
                   try {
                     setLoading(true);
                     setError(null);
-                    console.log("Creando transacción de pago para plan:", plan.id);
+                    logger.info("Creating payment transaction", {
+                      planId: plan.id,
+                      planName: plan.nombre,
+                      amount: plan.precio,
+                      businessEvent: true,
+                    });
                     const transaction = await createWompiTransaction(plan.id);
-                    console.log("Transacción creada exitosamente:", transaction);
+                    logger.info("Payment transaction created successfully", {
+                      planId: plan.id,
+                      transactionId: transaction.transaction_id,
+                      businessEvent: true,
+                    });
                     // Redirigir a checkout de Wompi
                     if (transaction.checkout_url) {
                       window.location.href = transaction.checkout_url;
                     } else {
-                      throw new Error("No se recibió URL de checkout de Wompi");
+                      throw new Error(t("error.noCheckoutUrl"));
                     }
                   } catch (err: any) {
-                    console.error("Error creando transacción:", err);
-                    const errorMessage = err.message || "Error al crear transacción de pago";
+                    const errorMessage = err.message || t("error.createTransaction");
+                    logger.error("Error creating payment transaction", err, {
+                      planId: plan.id,
+                      planName: plan.nombre,
+                      businessEvent: true,
+                    });
                     setError(errorMessage);
                     setLoading(false);
                     // Si el error es 422, puede ser un problema de validación
                     if (err.message?.includes('422') || err.message?.includes('Unprocessable')) {
-                      setError("Error de validación. Por favor verifica que el plan sea válido y que estés autenticado correctamente.");
+                      setError(t("error.validation"));
+                      logger.warn("Payment validation error", {
+                        planId: plan.id,
+                        error: errorMessage,
+                      });
                     }
+                    // Notificar callback de error si existe
+                    onError?.();
                   }
                 }}
                 disabled={loading}
@@ -163,11 +186,11 @@ export default function CheckoutModal({
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Preparando pago...
+                    {t("preparingPayment")}
                   </>
                 ) : (
                   <>
-                    Continuar al Checkout de Wompi
+                    {t("continueToCheckout")}
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -179,7 +202,7 @@ export default function CheckoutModal({
         {/* Footer */}
         <div className="pt-4 border-t border-border/50">
           <p className="text-xs text-muted-foreground text-center">
-            Pago seguro procesado por Wompi. Tus datos están protegidos.
+            {t("securePayment")}
           </p>
         </div>
       </div>

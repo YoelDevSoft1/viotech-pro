@@ -50,8 +50,8 @@ export function ServiceGrid({ services = [], loading = false, onBuy, className }
     return (
       <EmptyState
         icon={Search}
-        title={t("noResults") || "No se encontraron servicios"}
-        description={t("noResultsDescription") || "Prueba ajustando los filtros o la búsqueda para encontrar más opciones."}
+        title={t("noResults")}
+        description={t("noResultsDescription")}
       />
     );
   }

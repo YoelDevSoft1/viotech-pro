@@ -56,13 +56,13 @@ export function ServiceCard({ service, onBuy, showImage = true, className }: Ser
                   )}
                   {isNew && (
                     <Badge className="bg-green-500 text-white hover:bg-green-600 px-2 py-0.5">
-                      {t("new") || "Nuevo"}
+                      {t("new")}
                     </Badge>
                   )}
                   {isFeatured && (
                     <Badge className="bg-purple-500 text-white hover:bg-purple-600 px-2 py-0.5">
                       <StarIcon className="w-3 h-3 mr-1" />
-                      {t("featured") || "Destacado"}
+                      {t("featured")}
                     </Badge>
                   )}
         </div>
@@ -164,7 +164,7 @@ export function ServiceCard({ service, onBuy, showImage = true, className }: Ser
             ))}
             {service.features.length > 3 && (
               <li className="text-xs text-muted-foreground pl-6">
-                +{service.features.length - 3} {t("more") || "más"}
+                +{service.features.length - 3} {t("more")}
               </li>
             )}
           </ul>

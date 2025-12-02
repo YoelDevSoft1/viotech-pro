@@ -1,5 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { getAccessToken, refreshAccessToken, isTokenExpired, logout } from "./auth";
+import { logger } from "./logger";
 
 // --- CONFIGURACIÓN DE LA URL (CORREGIDA) ---
 
@@ -29,7 +30,11 @@ const getValidToken = async (): Promise<string | null> => {
   if (isTokenExpired(token)) {
     try {
       token = await refreshAccessToken();
+      if (token) {
+        logger.debug("Token refreshed successfully", { source: "getValidToken" });
+      }
     } catch (error) {
+      logger.warn("Failed to refresh token", { source: "getValidToken", error });
       return null;
     }
   }
@@ -87,8 +92,6 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
-    return config;
 
     // Si es FormData, no establecer Content-Type (axios lo hace automáticamente)
     // Esto permite que axios establezca el boundary correcto para multipart/form-data
@@ -96,9 +99,9 @@ apiClient.interceptors.request.use(
       delete config.headers["Content-Type"];
     }
     
-    // DEBUG: Ver URL final en consola
+    // DEBUG: Ver URL final en consola (solo en desarrollo)
     // const fullUrl = `${config.baseURL || ""}${config.url}`;
-    // console.log(`🚀 Request: ${fullUrl}`);
+    // logger.debug(`Request: ${fullUrl}`, { method: config.method });
     
     return config;
   },
@@ -118,6 +121,10 @@ apiClient.interceptors.response.use(
     
     // Si es un 404 de un endpoint no implementado, devolvemos un error especial que será manejado silenciosamente
     if (error.response?.status === 404 && isNonImplemented) {
+      logger.debug("Non-implemented endpoint accessed", { 
+        endpoint: originalRequest?.url,
+        method: originalRequest?.method 
+      });
       // Crear un error especial que será capturado y manejado silenciosamente
       const silentError = new Error('ENDPOINT_NOT_IMPLEMENTED') as any;
       silentError.response = error.response;
@@ -127,12 +134,23 @@ apiClient.interceptors.response.use(
 
     // Manejo específico de errores de timeout
     if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+      logger.warn("Request timeout", {
+        endpoint: originalRequest?.url,
+        method: originalRequest?.method,
+        timeout: apiClient.defaults.timeout,
+        apiError: true,
+      });
       const timeoutMessage = "El servidor está tardando demasiado en responder. Esto puede deberse a un 'cold start' del servidor. Por favor, intenta nuevamente en unos segundos.";
       return Promise.reject(new Error(timeoutMessage));
     }
 
     // Manejo de errores de conexión (sin respuesta del servidor)
     if (!error.response && error.request) {
+      logger.error("Connection error - no response from server", undefined, {
+        endpoint: originalRequest?.url,
+        method: originalRequest?.method,
+        apiError: true,
+      });
       const connectionMessage = "No se pudo conectar con el servidor. Verifica tu conexión a internet o intenta más tarde.";
       return Promise.reject(new Error(connectionMessage));
     }
@@ -190,12 +208,24 @@ apiClient.interceptors.response.use(
       }
 
       try {
+        logger.info("Attempting to refresh token after 401", { 
+          endpoint: originalRequest?.url,
+          authEvent: true,
+        });
         const newToken = await refreshAccessToken();
         if (newToken) {
+          logger.info("Token refreshed successfully, retrying request", {
+            endpoint: originalRequest?.url,
+            authEvent: true,
+          });
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
           return apiClient(originalRequest);
         }
       } catch (refreshError) {
+        logger.error("Token refresh failed, logging out user", refreshError, {
+          endpoint: originalRequest?.url,
+          authEvent: true,
+        });
         // Si el refresh falla, limpiar tokens pero no redirigir automáticamente
         // Dejar que cada componente maneje el error según su contexto
         await logout();
@@ -222,6 +252,36 @@ apiClient.interceptors.response.use(
         errorMessage;
     } else if (error.message) {
       errorMessage = error.message;
+    }
+
+    // Logging de errores de API según severidad
+    const status = error.response?.status;
+    const endpoint = originalRequest?.url || 'unknown';
+    const method = originalRequest?.method?.toUpperCase() || 'UNKNOWN';
+
+    if (!status || status >= 500) {
+      // Errores del servidor - críticos
+      logger.error(
+        `API Server Error: ${method} ${endpoint} - ${status || 'NO_STATUS'}`,
+        error,
+        {
+          endpoint,
+          method,
+          status: status || 0,
+          apiError: true,
+        }
+      );
+    } else if (status >= 400 && status < 500 && status !== 401 && status !== 404) {
+      // Errores del cliente (excepto 401 y 404 ya manejados)
+      logger.warn(
+        `API Client Error: ${method} ${endpoint} - ${status}`,
+        {
+          endpoint,
+          method,
+          status,
+          apiError: true,
+        }
+      );
     }
       
     return Promise.reject(new Error(errorMessage));

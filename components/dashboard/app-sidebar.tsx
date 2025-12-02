@@ -119,6 +119,11 @@ export function AppSidebar() {
       href: "/partners",
       icon: Handshake,
     },
+    {
+      title: t("navigation.notifications"),
+      href: "/client/notifications",
+      icon: Bell,
+    },
   ];
 
   const getAdminSidebarItems = (): SidebarItem[] => [

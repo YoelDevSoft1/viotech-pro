@@ -129,7 +129,23 @@
     "retry": "Reintentar",
     "goBack": "Volver",
     "error": {
-      "occurred": "Ocurrió un error"
+      "occurred": "Ocurrió un error",
+      "boundary": {
+        "title": "Algo salió mal",
+        "description": "Ocurrió un error inesperado. Por favor, intenta nuevamente.",
+        "retry": "Intentar nuevamente",
+        "reload": "Recargar página",
+        "goHome": "Ir al Dashboard",
+        "auth": {
+          "title": "Error en la autenticación",
+          "description": "Ocurrió un error durante el proceso de autenticación. Por favor, intenta nuevamente."
+        },
+        "payment": {
+          "title": "Error en el proceso de pago",
+          "description": "Ocurrió un error durante el proceso de pago. Por favor, intenta nuevamente o contacta a soporte."
+        },
+        "stackTrace": "Stack trace"
+      }
     },
     "empty": {
       "noResults": "Sin resultados"
@@ -1509,9 +1525,69 @@
         "description": "Conecta con el modelo ML activo para estimar duración y costo de proyectos.",
         "backToDashboard": "Volver al dashboard"
       }
+    },
+    "services": {
+      "backToDashboard": "Volver al Dashboard",
+      "emptyStates": {
+        "noActiveServices": {
+          "title": "Aún no has activado tu primer servicio",
+          "description": "Agenda un discovery call para recibir un plan personalizado o explora nuestro catálogo de servicios.",
+          "actionSchedule": "Agendar Llamada",
+          "actionExplore": "Explorar Catálogo"
+        },
+        "catalogEmpty": {
+          "title": "Estamos actualizando nuestro catálogo",
+          "description": "Vuelve pronto o contacta a nuestro equipo para servicios personalizados.",
+          "actionContact": "Contactar Equipo"
+        }
+      },
+      "payments": {
+        "pageDescription": "Gestiona tus pagos y servicios activos",
+        "myServices": {
+          "title": "Mis Servicios Activos",
+          "description": "Servicios que has adquirido y su estado de pago",
+          "purchased": "Comprado",
+          "expires": "Expira",
+          "expired": "Expirado",
+          "expiresIn": "Expira en {days} días",
+          "expiringSoon": "Tu servicio expira pronto. Considera renovarlo.",
+          "renew": "Renovar",
+          "renewNow": "Renovar Ahora",
+          "price": "Precio",
+          "viewAll": "Ver todos",
+          "dismissBanner": "Descartar aviso de renovación"
+        },
+        "catalog": {
+          "title": "Catálogo de Servicios",
+          "description": "Explora y adquiere nuevos servicios",
+          "searchPlaceholder": "Buscar servicios...",
+          "filterByType": "Filtrar por tipo",
+          "filterByStatus": "Filtrar por estado",
+          "allTypes": "Todos los tipos",
+          "allStatuses": "Todos los estados",
+          "buyNow": "Comprar Ahora",
+          "features": "Características"
+        }
+      }
     }
   },
   "payment": {
+    "checkout": {
+      "label": "Checkout",
+      "title": "Completar Pago",
+      "totalToPay": "Total a pagar",
+      "preparing": "Preparando checkout...",
+      "preparingPayment": "Preparando pago...",
+      "redirectMessage": "Serás redirigido a la página de pago segura de Wompi",
+      "redirectDescription": "Completa el pago en la página de Wompi y serás redirigido automáticamente de vuelta.",
+      "continueToCheckout": "Continuar al Checkout de Wompi",
+      "securePayment": "Pago seguro procesado por Wompi. Tus datos están protegidos.",
+      "error": {
+        "noCheckoutUrl": "No se recibió URL de checkout de Wompi",
+        "createTransaction": "Error al crear transacción de pago",
+        "validation": "Error de validación. Por favor verifica que el plan sea válido y que estés autenticado correctamente."
+      }
+    },
     "success": {
       "title": "¡Pago Exitoso!",
       "description": "Tu pago ha sido procesado correctamente",

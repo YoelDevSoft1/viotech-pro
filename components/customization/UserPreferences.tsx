@@ -21,6 +21,7 @@ import {
 import { useTheme } from "next-themes";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { NotificationPreferences } from "@/components/notifications/NotificationPreferences";
 
 export function UserPreferences() {
   const { data: preferences, isLoading } = useUserPreferences();
@@ -134,71 +135,7 @@ export function UserPreferences() {
           </TabsContent>
 
           <TabsContent value="notifications" className="space-y-4">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="email-notifications">{tCustomization("emailNotifications")}</Label>
-                  <p className="text-xs text-muted-foreground">
-                    {tCustomization("emailNotificationsDescription")}
-                  </p>
-                </div>
-                <Switch
-                  id="email-notifications"
-                  checked={preferences.notifications.email}
-                  onCheckedChange={(checked) =>
-                    handleNotificationChange("email", checked)
-                  }
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="push-notifications">{tCustomization("pushNotifications")}</Label>
-                  <p className="text-xs text-muted-foreground">
-                    {tCustomization("pushNotificationsDescription")}
-                  </p>
-                </div>
-                <Switch
-                  id="push-notifications"
-                  checked={preferences.notifications.push}
-                  onCheckedChange={(checked) =>
-                    handleNotificationChange("push", checked)
-                  }
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="in-app-notifications">{tCustomization("inAppNotifications")}</Label>
-                  <p className="text-xs text-muted-foreground">
-                    {tCustomization("inAppNotificationsDescription")}
-                  </p>
-                </div>
-                <Switch
-                  id="in-app-notifications"
-                  checked={preferences.notifications.inApp}
-                  onCheckedChange={(checked) =>
-                    handleNotificationChange("inApp", checked)
-                  }
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="digest-notifications">{tCustomization("digestNotifications")}</Label>
-                  <p className="text-xs text-muted-foreground">
-                    {tCustomization("digestNotificationsDescription")}
-                  </p>
-                </div>
-                <Switch
-                  id="digest-notifications"
-                  checked={preferences.notifications.digest}
-                  onCheckedChange={(checked) =>
-                    handleNotificationChange("digest", checked)
-                  }
-                />
-              </div>
-            </div>
+            <NotificationPreferences />
           </TabsContent>
 
           <TabsContent value="regional" className="space-y-4">

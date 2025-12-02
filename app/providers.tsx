@@ -7,6 +7,7 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { OrgProvider } from "@/components/common/OrgProvider";
 import { OnboardingProvider } from "@/components/onboarding/OnboardingProvider";
 import { LocaleProvider } from "@/lib/contexts/LocaleContext";
+import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   // Inicializamos el cliente de React Query una sola vez por sesión
@@ -31,7 +32,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <LocaleProvider>
           <OrgProvider>
             <OnboardingProvider>
-              {children}
+              <ErrorBoundary>
+                {children}
+              </ErrorBoundary>
             </OnboardingProvider>
           </OrgProvider>
         </LocaleProvider>
