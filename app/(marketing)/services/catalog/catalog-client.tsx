@@ -168,7 +168,7 @@ export function CatalogPageClient() {
             )}
 
             {/* Loading State */}
-            {isLoading && <ServiceGrid loading={true} />}
+            {isLoading && <ServiceGrid services={[]} loading={true} />}
 
             {/* Services Grid */}
             {!isLoading && !isError && catalogData && (

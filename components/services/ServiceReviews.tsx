@@ -145,7 +145,7 @@ export function ServiceReviews({ serviceId, className }: ServiceReviewsProps) {
               </div>
               <div className="flex-1 space-y-2">
                 {[5, 4, 3, 2, 1].map((rating) => {
-                  const count = summary.distribution[rating as keyof typeof summary.distribution] || 0;
+                  const count = summary.distribution[String(rating) as keyof typeof summary.distribution] || 0;
                   const percentage = summary.count > 0 ? (count / summary.count) * 100 : 0;
                   return (
                     <div key={rating} className="flex items-center gap-2">
@@ -313,6 +313,7 @@ export function ServiceReviews({ serviceId, className }: ServiceReviewsProps) {
               key={review.id}
               review={review}
               onMarkHelpful={() => handleMarkHelpful(review.id)}
+              t={t}
             />
           ))
         )}
@@ -347,9 +348,11 @@ export function ServiceReviews({ serviceId, className }: ServiceReviewsProps) {
 function ReviewCard({
   review,
   onMarkHelpful,
+  t,
 }: {
   review: ServiceReview;
   onMarkHelpful: () => void;
+  t: (key: string) => string;
 }) {
   return (
     <Card>
@@ -371,7 +374,7 @@ function ReviewCard({
                 <div className="flex items-center gap-2">
                   <span className="font-semibold">{review.userName}</span>
                   {review.verified && (
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs">     
                       <CheckCircle2 className="h-3 w-3 mr-1" />
                       {t("verified")}
                     </Badge>

@@ -14,13 +14,13 @@ import type { ServicePlanExtended } from "@/lib/types/services";
 import { cn } from "@/lib/utils";
 
 interface ServiceGridProps {
-  services: ServicePlanExtended[];
+  services?: ServicePlanExtended[];
   loading?: boolean;
   onBuy?: (service: ServicePlanExtended) => void;
   className?: string;
 }
 
-export function ServiceGrid({ services, loading = false, onBuy, className }: ServiceGridProps) {
+export function ServiceGrid({ services = [], loading = false, onBuy, className }: ServiceGridProps) {
   const t = useTranslationsSafe("services.catalog");
   
   if (loading) {
