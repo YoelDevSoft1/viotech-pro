@@ -8,6 +8,27 @@ import type { OnboardingStep } from "@/lib/types/onboarding";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 import { cn } from "@/lib/utils";
 
+// Estilo global para forzar que el spotlight se vea claro (sin overlay)
+if (typeof document !== "undefined") {
+  // Verificar si el estilo ya existe para no duplicarlo
+  if (!document.getElementById("joyride-spotlight-style")) {
+    const style = document.createElement("style");
+    style.id = "joyride-spotlight-style";
+    style.textContent = `
+      .react-joyride__spotlight {
+        background-color: transparent !important;
+        mix-blend-mode: normal !important;
+        pointer-events: none !important;
+      }
+      /* Asegurar que el contenido dentro del spotlight sea visible */
+      .react-joyride__spotlight * {
+        pointer-events: auto !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+}
+
 interface OnboardingTourProps {
   tourId: string;
   steps: OnboardingStep[];
@@ -142,7 +163,7 @@ export function OnboardingTour({
           primaryColor: "hsl(var(--primary))",
           textColor: "hsl(var(--foreground))",
           backgroundColor: "hsl(var(--card))",
-          overlayColor: "rgba(0, 0, 0, 0.6)",
+          overlayColor: "rgba(0, 0, 0, 0.75)",
           arrowColor: "hsl(var(--card))",
           zIndex: 10000,
           width: 420,
@@ -195,12 +216,14 @@ export function OnboardingTour({
         },
         overlay: {
           mixBlendMode: "normal",
-          backgroundColor: "rgba(0, 0, 0, 0.6)",
+          backgroundColor: "rgba(0, 0, 0, 0.75)",
           backdropFilter: "blur(2px)",
         },
         spotlight: {
           borderRadius: 12,
-          boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.6), 0 0 20px rgba(59, 130, 246, 0.5)",
+          backgroundColor: "transparent",
+          mixBlendMode: "normal",
+          pointerEvents: "none",
         },
       }}
       locale={{

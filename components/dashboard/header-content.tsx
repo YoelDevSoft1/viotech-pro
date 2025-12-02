@@ -8,6 +8,7 @@ import { LocaleSelector } from "@/components/i18n/LocaleSelector";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 import { usePathname } from "next/navigation";
 import { HealthCheckBadge } from "@/components/admin/HealthCheckBadge";
+import { TourButton } from "@/components/dashboard/TourButton";
 
 export function HeaderContent() {
   const { state, isMobile } = useSidebar();
@@ -22,6 +23,7 @@ export function HeaderContent() {
       {showTriggerInHeader && <SidebarTrigger className="-ml-1" />}
       <div className="flex flex-1 items-center justify-end gap-3">
         {isAdminRoute && <HealthCheckBadge />}
+        <TourButton />
         <NotificationCenter />
         <LocaleSelector />
         <Button variant="ghost" size="sm" className="gap-2">
