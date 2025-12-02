@@ -706,6 +706,27 @@
           "reviews": "Reviews"
         }
       },
+      "comparison": {
+        "title": "Compare Services",
+        "description": "Compare up to 4 services to find the perfect plan",
+        "servicesToCompare": "Services to Compare ({count}/4)",
+        "addService": "Add service",
+        "addServicePlaceholder": "Add service to compare",
+        "maxServices": "Maximum 4 services to compare",
+        "serviceAlreadyAdded": "This service is already in the comparison",
+        "detailedComparison": "Detailed Comparison",
+        "characteristic": "Characteristic",
+        "price": "Price",
+        "rating": "Rating",
+        "categories": "Categories",
+        "features": "Features",
+        "viewDetails": "View details of {name}",
+        "noServices": "Select up to 4 services to compare",
+        "noServicesDescription": "Add services to compare features, prices, and ratings.",
+        "noRatings": "No ratings",
+        "loading": "Loading comparison...",
+        "more": "more"
+      },
       "reviews": {
         "title": "Reviews",
         "summary": "Reviews Summary",
@@ -799,6 +820,7 @@
       "selectCategory": "Select a category",
       "loadingCategories": "Loading categories...",
       "noCategoriesAvailable": "No categories available. Create a category first.",
+      "noTagsAvailable": "No tags available",
       "error": "Error",
       "errorLoadingCategories": "Error loading categories",
       "loading": "Loading...",
@@ -1052,13 +1074,14 @@
       "settings": "Settings",
       "other": "Other"
     },
-    "tour": {
-      "back": "Back",
-      "close": "Close",
-      "finish": "Finish",
-      "next": "Next",
-      "open": "Open"
-    }
+      "tour": {
+        "back": "Back",
+        "close": "Close",
+        "finish": "Finish",
+        "next": "Next",
+        "open": "Open",
+        "stepProgress": "Step {current} of {total}"
+      }
   },
   "customization": {
     "title": "Customization",

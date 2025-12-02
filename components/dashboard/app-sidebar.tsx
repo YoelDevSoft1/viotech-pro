@@ -256,7 +256,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r">
+    <Sidebar collapsible="icon" className="border-r" data-tour="sidebar">
       <SidebarHeader className="border-b h-16 flex items-center p-4 group-data-[collapsible=icon]:p-3">
         <div className="flex items-center gap-3 w-full">
           <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 flex-1">

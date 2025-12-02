@@ -10,6 +10,7 @@ import type {
   OnboardingConfig,
   OnboardingTour,
 } from "@/lib/types/onboarding";
+import { dashboardTour } from "@/lib/config/dashboard-tour";
 
 /**
  * Hook para verificar si hay un token válido (reactivo)
@@ -136,18 +137,39 @@ export function useOnboardingTours(role?: string) {
   return useQuery<OnboardingTour[]>({
     queryKey: ["onboarding", "tours", role],
     queryFn: async () => {
-      const params = role ? { role } : {};
-      const { data } = await apiClient.get("/onboarding/tours", { params });
-      const raw = data?.data || data || [];
+      try {
+        const params = role ? { role } : {};
+        const { data } = await apiClient.get("/onboarding/tours", { params });
+        const raw = data?.data || data || [];
 
-      return (Array.isArray(raw) ? raw : []).map((tour: any) => ({
-        id: tour.id,
-        name: tour.name,
-        description: tour.description,
-        steps: tour.steps || [],
-        role: tour.role,
-        enabled: tour.enabled !== false,
-      })) as OnboardingTour[];
+        const backendTours = (Array.isArray(raw) ? raw : []).map((tour: any) => ({
+          id: tour.id,
+          name: tour.name,
+          description: tour.description,
+          steps: tour.steps || [],
+          role: tour.role,
+          enabled: tour.enabled !== false,
+        })) as OnboardingTour[];
+
+        // Si hay tours del backend, devolverlos
+        if (backendTours.length > 0) {
+          return backendTours;
+        }
+
+        // Si no hay tours del backend, incluir el tour del dashboard como fallback
+        // Solo si el rol coincide o es "all"
+        if (!role || role === "client" || dashboardTour.role === "all" || dashboardTour.role === role) {
+          return [dashboardTour];
+        }
+
+        return [];
+      } catch (error) {
+        // Si hay error, devolver el tour del dashboard como fallback
+        if (!role || role === "client" || dashboardTour.role === "all" || dashboardTour.role === role) {
+          return [dashboardTour];
+        }
+        return [];
+      }
     },
     enabled: hasToken, // Solo ejecutar si hay token
     staleTime: 1000 * 60 * 15, // 15 minutos (los tours no cambian frecuentemente)

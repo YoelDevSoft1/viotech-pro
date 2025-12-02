@@ -18,7 +18,7 @@ export function HeaderContent() {
   const isAdminRoute = pathname?.startsWith("/admin");
 
   return (
-    <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-3 border-b bg-background px-4">
+    <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-3 border-b bg-background px-4" data-tour="header">
       {showTriggerInHeader && <SidebarTrigger className="-ml-1" />}
       <div className="flex flex-1 items-center justify-end gap-3">
         {isAdminRoute && <HealthCheckBadge />}

@@ -8,6 +8,7 @@ import { OrgProvider } from "@/components/common/OrgProvider";
 import { OnboardingProvider } from "@/components/onboarding/OnboardingProvider";
 import { LocaleProvider } from "@/lib/contexts/LocaleContext";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
+import { WebVitalsTracker } from "@/components/common/WebVitalsTracker";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   // Inicializamos el cliente de React Query una sola vez por sesión
@@ -33,6 +34,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <OrgProvider>
             <OnboardingProvider>
               <ErrorBoundary>
+                <WebVitalsTracker />
                 {children}
               </ErrorBoundary>
             </OnboardingProvider>

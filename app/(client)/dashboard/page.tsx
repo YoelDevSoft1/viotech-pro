@@ -51,21 +51,25 @@ export default function DashboardPage() {
       </div>
 
       {/* KPIs principales */}
-      <SectionCards metrics={metrics} />
+      <div data-tour="kpis">
+        <SectionCards metrics={metrics} />
+      </div>
 
       {/* Grid principal */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Servicios activos */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2" data-tour="services-panel">
           <ServicesPanel />
         </div>
 
         {/* Roadmap inmediato */}
-        <RoadmapPanel />
+        <div data-tour="roadmap">
+          <RoadmapPanel />
+        </div>
       </div>
 
       {/* Grid secundario */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2" data-tour="charts">
         {/* Gráfico de tendencias */}
         <TicketsTrendChart />
 

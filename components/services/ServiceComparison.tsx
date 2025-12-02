@@ -5,7 +5,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Plus } from "lucide-react";
+import { X, Plus, GitCompare } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface ServiceComparisonProps {
   initialServiceIds?: string[];
@@ -77,26 +78,35 @@ export function ServiceComparison({
           <CardTitle>{t("title")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">
-              {t("noServices")}
-            </p>
-            <Select
-              value=""
-              onValueChange={handleAddService}
-            >
-              <SelectTrigger className="w-full max-w-md mx-auto">
-                <SelectValue placeholder={t("addServicePlaceholder")} />
-              </SelectTrigger>
-              <SelectContent>
-                {availableServices.map((service) => (
-                  <SelectItem key={service.id} value={service.id}>
-                    {service.nombre} - {formatPrice(service.precio, service.currency)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <EmptyState
+            icon={GitCompare}
+            title={t("noServices")}
+            description={t("noServicesDescription")}
+          >
+            {availableServices.length > 0 ? (
+              <div className="mt-4 w-full max-w-md mx-auto">
+                <Select
+                  value=""
+                  onValueChange={handleAddService}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={t("addServicePlaceholder")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableServices.map((service) => (
+                      <SelectItem key={service.id} value={service.id}>
+                        {service.nombre} - {formatPrice(service.precio, service.currency)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground mt-4">
+                {t("noServicesAvailable") || "No hay servicios disponibles para comparar"}
+              </p>
+            )}
+          </EmptyState>
         </CardContent>
       </Card>
     );

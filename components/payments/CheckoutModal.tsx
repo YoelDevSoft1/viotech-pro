@@ -8,6 +8,7 @@ import type { ServicePlan } from "@/lib/services";
 import { formatPrice } from "@/lib/services";
 import { logger } from "@/lib/logger";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useModalFocus } from "@/lib/hooks/useModalFocus";
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -38,6 +39,18 @@ export default function CheckoutModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const widgetInitialized = useRef(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const continueButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Focus management
+  useModalFocus({
+    isOpen,
+    onClose,
+    modalRef,
+    initialFocusRef: closeButtonRef,
+    restoreFocus: true,
+  });
 
   // Ya no necesitamos cargar el script del widget, usamos redirect directamente
 
@@ -54,29 +67,54 @@ export default function CheckoutModal({
 
   if (!isOpen) return null;
 
+  // Generar IDs únicos para aria attributes
+  const modalId = `checkout-modal-${plan.id}`;
+  const titleId = `${modalId}-title`;
+  const descriptionId = `${modalId}-description`;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-sm px-4">
-      <div className="w-full max-w-2xl rounded-3xl border border-border bg-background p-8 space-y-6 max-h-[90vh] overflow-y-auto">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-sm px-4"
+      onClick={(e) => {
+        // Cerrar al hacer click fuera del modal
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+      role="presentation"
+    >
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
+        className="w-full max-w-2xl rounded-3xl border border-border bg-background p-8 space-y-6 max-h-[90vh] overflow-y-auto focus:outline-none"
+        tabIndex={-1}
+      >
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
               {t("label")}
             </p>
-            <h3 className="text-2xl font-medium text-foreground">
+            <h3 id={titleId} className="text-2xl font-medium text-foreground">
               {t("title")}
             </h3>
           </div>
           <button
+            ref={closeButtonRef}
             onClick={onClose}
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-sm"
+            aria-label={tCommon("close")}
           >
             <X className="w-5 h-5" />
+            <span className="sr-only">{tCommon("close")}</span>
           </button>
         </div>
 
         {/* Plan Summary */}
-        <div className="rounded-2xl border border-border/70 bg-muted/20 p-6 space-y-4">
+        <div id={descriptionId} className="rounded-2xl border border-border/70 bg-muted/20 p-6 space-y-4">
           <div>
             <h4 className="text-lg font-medium text-foreground mb-1">
               {plan.nombre}
@@ -137,6 +175,7 @@ export default function CheckoutModal({
                 </p>
               </div>
               <button
+                ref={continueButtonRef}
                 onClick={async () => {
                   try {
                     setLoading(true);
@@ -181,7 +220,7 @@ export default function CheckoutModal({
                   }
                 }}
                 disabled={loading}
-                className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               >
                 {loading ? (
                   <>

@@ -167,9 +167,9 @@ export function ServiceFilters({
       )}
 
       {/* Categorías */}
-      {categories.length > 0 && (
-        <div>
-          <Label className="text-base font-semibold mb-3 block">{t("categories") || "Categorías"}</Label>
+      <div>
+        <Label className="text-base font-semibold mb-3 block">{t("categories") || "Categorías"}</Label>
+        {categories.length > 0 ? (
           <div className="space-y-2">
             {categories.map((category) => (
               <div key={category.id} className="flex items-center space-x-2">
@@ -187,13 +187,17 @@ export function ServiceFilters({
               </div>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <p className="text-sm text-muted-foreground py-2">
+            {t("noCategoriesAvailable") || "No hay categorías disponibles"}
+          </p>
+        )}
+      </div>
 
       {/* Tags */}
-      {tags.length > 0 && (
-        <div>
-          <Label className="text-base font-semibold mb-3 block">{t("tags") || "Tags"}</Label>
+      <div>
+        <Label className="text-base font-semibold mb-3 block">{t("tags") || "Tags"}</Label>
+        {tags.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {tags.map((tag) => {
               const isSelected = localFilters.tags?.includes(tag.slug);
@@ -209,8 +213,12 @@ export function ServiceFilters({
               );
             })}
           </div>
-        </div>
-      )}
+        ) : (
+          <p className="text-sm text-muted-foreground py-2">
+            {t("noTagsAvailable") || "No hay tags disponibles"}
+          </p>
+        )}
+      </div>
 
       {/* Rango de precios */}
       {priceRange && (

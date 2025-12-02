@@ -695,6 +695,7 @@
         "features": "Características",
         "viewDetails": "Ver detalles de {name}",
         "noServices": "Selecciona hasta 4 servicios para comparar",
+        "noServicesDescription": "Agrega servicios para comparar características, precios y ratings.",
         "noRatings": "Sin calificaciones",
         "loading": "Cargando comparación...",
         "more": "más"
@@ -745,6 +746,7 @@
       "selectCategory": "Selecciona una categoría",
       "loadingCategories": "Cargando categorías...",
       "noCategoriesAvailable": "No hay categorías disponibles. Crea una categoría primero.",
+      "noTagsAvailable": "No hay tags disponibles",
       "error": "Error",
       "errorLoadingCategories": "Error al cargar categorías",
       "loading": "Cargando...",
@@ -1058,13 +1060,14 @@
       "settings": "Configuración",
       "other": "Otros"
     },
-    "tour": {
-      "back": "Atrás",
-      "close": "Cerrar",
-      "finish": "Finalizar",
-      "next": "Siguiente",
-      "open": "Abrir"
-    }
+      "tour": {
+        "back": "Atrás",
+        "close": "Cerrar",
+        "finish": "Finalizar",
+        "next": "Siguiente",
+        "open": "Abrir",
+        "stepProgress": "Paso {current} de {total}"
+      }
   },
   "customization": {
     "title": "Personalización",
