@@ -15,6 +15,7 @@ import { formatPrice } from "@/lib/services";
 import type { ServicePlanExtended } from "@/lib/types/services";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 interface ServiceCardProps {
   service: ServicePlanExtended;
@@ -24,6 +25,7 @@ interface ServiceCardProps {
 }
 
 export function ServiceCard({ service, onBuy, showImage = true, className }: ServiceCardProps) {
+  const t = useTranslationsSafe("services.catalog");
   const isPopular = service.metadata?.popular;
   const isFeatured = service.metadata?.featured;
   const isNew = service.metadata?.new;
@@ -46,23 +48,23 @@ export function ServiceCard({ service, onBuy, showImage = true, className }: Ser
       {/* Badges */}
       <div className="absolute -top-3 left-4 right-4 flex items-center justify-between z-10">
         <div className="flex items-center gap-2">
-          {isPopular && (
-            <Badge className="bg-primary text-primary-foreground hover:bg-primary px-2 py-0.5">
-              <Sparkles className="w-3 h-3 mr-1" />
-              Popular
-            </Badge>
-          )}
-          {isNew && (
-            <Badge className="bg-green-500 text-white hover:bg-green-600 px-2 py-0.5">
-              Nuevo
-            </Badge>
-          )}
-          {isFeatured && (
-            <Badge className="bg-purple-500 text-white hover:bg-purple-600 px-2 py-0.5">
-              <StarIcon className="w-3 h-3 mr-1" />
-              Destacado
-            </Badge>
-          )}
+                  {isPopular && (
+                    <Badge className="bg-primary text-primary-foreground hover:bg-primary px-2 py-0.5">
+                      <Sparkles className="w-3 h-3 mr-1" />
+                      {t("mostPopular")}
+                    </Badge>
+                  )}
+                  {isNew && (
+                    <Badge className="bg-green-500 text-white hover:bg-green-600 px-2 py-0.5">
+                      {t("new") || "Nuevo"}
+                    </Badge>
+                  )}
+                  {isFeatured && (
+                    <Badge className="bg-purple-500 text-white hover:bg-purple-600 px-2 py-0.5">
+                      <StarIcon className="w-3 h-3 mr-1" />
+                      {t("featured") || "Destacado"}
+                    </Badge>
+                  )}
         </div>
         {hasDiscount && (
           <Badge variant="destructive" className="px-2 py-0.5">
@@ -146,7 +148,7 @@ export function ServiceCard({ service, onBuy, showImage = true, className }: Ser
           </span>
           {service.durationDays > 0 && (
             <span className="text-sm text-muted-foreground">
-              / {service.durationDays} días
+              / {service.durationDays} {t("days")}
             </span>
           )}
         </div>
@@ -162,27 +164,27 @@ export function ServiceCard({ service, onBuy, showImage = true, className }: Ser
             ))}
             {service.features.length > 3 && (
               <li className="text-xs text-muted-foreground pl-6">
-                +{service.features.length - 3} más
+                +{service.features.length - 3} {t("more") || "más"}
               </li>
             )}
           </ul>
         )}
       </CardContent>
 
-      <CardFooter className="flex flex-col gap-2">
+                  <CardFooter className="flex flex-col gap-2">
         <Button
           className="w-full"
           size="lg"
           variant={isPopular ? "default" : "outline"}
           onClick={handleBuy}
         >
-          Contratar ahora
+          {t("hireNow")}
         </Button>
         <Link
           href={`/services/catalog/${service.slug}`}
-          className="text-sm text-muted-foreground hover:text-primary text-center w-full"
+          className="text-sm text-muted-foreground hover:text-primary text-center w-full transition-colors"
         >
-          Ver detalles
+          {t("viewDetails")}
         </Link>
       </CardFooter>
     </Card>

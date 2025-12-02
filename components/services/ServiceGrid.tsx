@@ -7,6 +7,9 @@
 import { ServiceCard } from "./ServiceCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Search } from "lucide-react";
+import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 import type { ServicePlanExtended } from "@/lib/types/services";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +21,8 @@ interface ServiceGridProps {
 }
 
 export function ServiceGrid({ services, loading = false, onBuy, className }: ServiceGridProps) {
+  const t = useTranslationsSafe("services.catalog");
+  
   if (loading) {
     return (
       <div className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6", className)}>
@@ -43,9 +48,11 @@ export function ServiceGrid({ services, loading = false, onBuy, className }: Ser
 
   if (services.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">No se encontraron servicios</p>
-      </div>
+      <EmptyState
+        icon={Search}
+        title={t("noResults") || "No se encontraron servicios"}
+        description={t("noResultsDescription") || "Prueba ajustando los filtros o la búsqueda para encontrar más opciones."}
+      />
     );
   }
 

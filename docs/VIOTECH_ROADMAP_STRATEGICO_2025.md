@@ -414,14 +414,24 @@ app/(ops-admin)/
 - [ ] **Testing end-to-end** - Verificar integración frontend-backend (pendiente validación manual)
 - [ ] **Ajustes menores** - Nomenclatura de parámetros (opcional)
 
-#### **Sprint 4.2: Marketplace de Servicios (🔄 EN PROGRESO)**
-- [ ] **Diseño arquitectónico** - Completado ✅
-- [ ] Catálogo expandido de servicios
-- [ ] Categorización avanzada
-- [ ] Búsqueda y filtros
-- [ ] Comparación de servicios
-- [ ] Reviews y ratings
-- [ ] Recomendaciones personalizadas
+#### **Sprint 4.2: Marketplace de Servicios (✅ COMPLETADO)**
+- [x] **Diseño arquitectónico** - Completado ✅
+- [x] **Tipos TypeScript extendidos** - Modelo completo del marketplace
+- [x] **Hooks de React Query** - 9 hooks implementados
+- [x] **Componentes base** - ServiceCard, ServiceRating, ServiceGrid, ServiceFilters
+- [x] **Catálogo expandido** - Con filtros, búsqueda y paginación
+- [x] **Categorización avanzada** - Filtros por categoría y tags
+- [x] **Búsqueda y filtros** - Búsqueda en tiempo real, filtros múltiples
+- [x] **Página de detalle** - Con tabs, reviews, specs, recomendaciones
+- [x] **Componente ServiceReviews** - Lista, formulario, filtros, resumen
+- [x] **Comparación de servicios** - Tabla comparativa (hasta 4 servicios)
+- [x] **Recomendaciones** - Componente de recomendaciones personalizadas
+- [x] **Traducciones** - ES, EN, PT completas (70+ keys)
+- [x] **Integración completa** - Todos los endpoints conectados
+- [x] **Auditoría UX** - Completada ✅
+- [x] **Correcciones UX** - Todos los textos traducidos, estados vacíos mejorados
+- [x] **Verificación final** - Flujos completos verificados
+- [ ] **Testing end-to-end** - Verificar integración completa (pendiente validación manual)
 
 #### **Sprint 4.3: Analytics Avanzados ()**
 - [ ] Google Analytics 4 integrado

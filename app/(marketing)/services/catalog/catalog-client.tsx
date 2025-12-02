@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Search, SlidersHorizontal } from "lucide-react";
@@ -60,12 +60,26 @@ export function CatalogPageClient() {
     }));
   };
 
-  const handleFiltersChange = (newFilters: ServiceCatalogFilters) => {
-    setFilters({
-      ...newFilters,
-      page: 1, // Reset a primera página al cambiar filtros
+  const handleFiltersChange = useCallback((newFilters: ServiceCatalogFilters) => {
+    setFilters((prev) => {
+      // Solo actualizar si realmente cambió algo (evitar re-renders innecesarios)
+      const hasChanged = 
+        prev.category !== newFilters.category ||
+        JSON.stringify(prev.tags) !== JSON.stringify(newFilters.tags) ||
+        prev.minPrice !== newFilters.minPrice ||
+        prev.maxPrice !== newFilters.maxPrice ||
+        prev.rating !== newFilters.rating ||
+        prev.search !== newFilters.search ||
+        prev.sortBy !== newFilters.sortBy;
+      
+      if (!hasChanged) return prev;
+      
+      return {
+        ...newFilters,
+        page: 1, // Reset a primera página al cambiar filtros
+      };
     });
-  };
+  }, []);
 
   const handleBuy = (service: ServicePlanExtended) => {
     setSelectedPlan(service);
@@ -82,12 +96,19 @@ export function CatalogPageClient() {
       <div className="flex flex-col gap-8 max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center space-y-4 py-8">
-          <Link
-            href="/services"
-            className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" /> {t("backToServices")}
-          </Link>
+          <div className="flex items-center justify-between mb-4">
+            <Link
+              href="/services"
+              className="inline-flex items-center text-sm text-muted-foreground hover:text-primary"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" /> {t("backToServices")}
+            </Link>
+            <Link href="/services/catalog/compare">
+              <Button variant="outline" size="sm">
+                {t("compare")}
+              </Button>
+            </Link>
+          </div>
           <h1 className="text-4xl font-extrabold tracking-tight">{t("title")}</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             {t("description")}
@@ -99,7 +120,7 @@ export function CatalogPageClient() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar servicios..."
+              placeholder={t("searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
               className="pl-10"
@@ -107,14 +128,14 @@ export function CatalogPageClient() {
           </div>
           <Select value={filters.sortBy} onValueChange={handleSortChange}>
             <SelectTrigger className="w-full sm:w-[200px]">
-              <SelectValue placeholder="Ordenar por" />
+              <SelectValue placeholder={t("sortBy")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="popular">Más populares</SelectItem>
-              <SelectItem value="price">Precio: menor a mayor</SelectItem>
-              <SelectItem value="price-desc">Precio: mayor a menor</SelectItem>
-              <SelectItem value="rating">Mejor valorados</SelectItem>
-              <SelectItem value="newest">Más recientes</SelectItem>
+              <SelectItem value="popular">{t("sortPopular")}</SelectItem>
+              <SelectItem value="price">{t("sortPrice")}</SelectItem>
+              <SelectItem value="price-desc">{t("sortPriceDesc")}</SelectItem>
+              <SelectItem value="rating">{t("sortRating")}</SelectItem>
+              <SelectItem value="newest">{t("sortNewest")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -166,10 +187,10 @@ export function CatalogPageClient() {
                       onClick={() => handlePageChange(filters.page! - 1)}
                       disabled={filters.page === 1}
                     >
-                      Anterior
+                      {t("previous")}
                     </Button>
                     <span className="text-sm text-muted-foreground">
-                      Página {catalogData.pagination.page} de {catalogData.pagination.totalPages}
+                      {t("page")} {catalogData.pagination.page} {t("of")} {catalogData.pagination.totalPages}
                     </span>
                     <Button
                       variant="outline"
@@ -177,7 +198,7 @@ export function CatalogPageClient() {
                       onClick={() => handlePageChange(filters.page! + 1)}
                       disabled={filters.page === catalogData.pagination.totalPages}
                     >
-                      Siguiente
+                      {t("next")}
                     </Button>
                   </div>
                 )}
