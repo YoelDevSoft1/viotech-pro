@@ -42,7 +42,7 @@ export default function OrgSelector({ onChange, label }: Props) {
           className="rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/40"
         >
           <option value="">{tCommon("selectOrganization")}</option>
-          {orgs.map((org) => (
+          {Array.isArray(orgs) && orgs.map((org) => (
             <option key={org.id} value={org.id}>
               {org.nombre}
             </option>

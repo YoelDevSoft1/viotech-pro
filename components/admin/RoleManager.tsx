@@ -216,8 +216,11 @@ export default function RoleManager() {
             : Array.isArray(raw.data)
               ? raw.data
               : [];
+        
+        // Asegurar que list es un array antes de mapear
+        const safeList = Array.isArray(list) ? list : [];
         setOrgs(
-          list.map((o: any) => ({
+          safeList.map((o: any) => ({
             id: String(o.id),
             nombre: o.nombre || o.name || o.id,
           })),
@@ -608,7 +611,7 @@ export default function RoleManager() {
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="none">{tUsers("unassigned")}</SelectItem>
-                                  {orgs.map((org) => (
+                                  {Array.isArray(orgs) && orgs.map((org) => (
                                     <SelectItem key={org.id} value={org.id}>
                                       {org.nombre}
                                     </SelectItem>

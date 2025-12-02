@@ -89,10 +89,13 @@ export function OrgProvider({ children }: { children: React.ReactNode }) {
       }
 
       // 3. Mapear los datos al formato del frontend
-      const mapped: Org[] = rawList.map((o: any) => ({
-        id: String(o.id || o._id),
-        nombre: o.nombre || o.name || String(o.id || "Sin nombre"),
-      }));
+      // Asegurar que rawList es un array antes de mapear
+      const mapped: Org[] = Array.isArray(rawList) 
+        ? rawList.map((o: any) => ({
+            id: String(o.id || o._id),
+            nombre: o.nombre || o.name || String(o.id || "Sin nombre"),
+          }))
+        : [];
 
       setOrgs(mapped);
 

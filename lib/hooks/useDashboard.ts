@@ -65,7 +65,17 @@ export function useDashboard() {
     queryFn: async () => {
       try {
         const { data } = await apiClient.get("/activity/recent");
-        return (data?.data || data || []) as ActivityItem[];
+        
+        // Asegurar que siempre devolvemos un array
+        let activityData: any = data?.data || data;
+        
+        // Si no es un array, devolver array vacío
+        if (!Array.isArray(activityData)) {
+          console.warn("⚠️ Actividad reciente no es un array:", activityData);
+          return [] as ActivityItem[];
+        }
+        
+        return activityData as ActivityItem[];
       } catch (error) {
         // El backend no expone /activity/recent actualmente (404). Devolvemos [] para no bloquear el dashboard.
         const status = (error as AxiosError)?.response?.status;
@@ -75,7 +85,10 @@ export function useDashboard() {
           // Silenciosamente devolvemos array vacío para endpoints no implementados
           return [] as ActivityItem[];
         }
-        throw error;
+        
+        // Para otros errores, también devolvemos array vacío para no romper el dashboard
+        console.warn("⚠️ Error al obtener actividad reciente:", error);
+        return [] as ActivityItem[];
       }
     },
     staleTime: 1000 * 60 * 2, // 2 min
