@@ -680,3 +680,4 @@ Las mejoras introducidas son **positivas** y aumentan la robustez del componente
 
 **Prioridad de implementación:** 🔴 Crítica (traducciones) → 🟡 Alta (tests) → 🟢 Media (mejoras UX)
 
+

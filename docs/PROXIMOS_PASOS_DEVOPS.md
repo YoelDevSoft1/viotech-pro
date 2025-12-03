@@ -154,3 +154,4 @@ npm run dev:webpack
 
 **Siguiente paso sugerido**: Implementar Core Web Vitals tracking
 
+

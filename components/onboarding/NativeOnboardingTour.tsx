@@ -3,9 +3,9 @@
 import { useEffect, useCallback } from "react";
 import { TourSpotlight } from "./TourSpotlight";
 import { TourTooltip } from "./TourTooltip";
+import { TourOverlay } from "./TourOverlay";
 import { useNativeTour } from "@/lib/hooks/useNativeTour";
 import type { OnboardingStep } from "@/lib/types/onboarding";
-import { cn } from "@/lib/utils";
 
 interface NativeOnboardingTourProps {
   tourId: string;
@@ -95,18 +95,8 @@ export function NativeOnboardingTour({
 
   return (
     <>
-      {/* Overlay oscuro con blur */}
-      <div
-        className={cn(
-          "fixed inset-0 z-[9997] bg-black/60 backdrop-blur-sm transition-opacity duration-300",
-          isActive ? "opacity-100" : "opacity-0 pointer-events-none"
-        )}
-        aria-hidden="true"
-        onClick={(e) => {
-          // Prevenir cerrar al hacer click en el overlay
-          e.stopPropagation();
-        }}
-      />
+      {/* Overlay oscuro con blur que excluye el área del spotlight */}
+      <TourOverlay spotlightPosition={spotlightPosition} isVisible={isActive} />
 
       {/* Spotlight que envuelve el elemento */}
       <TourSpotlight position={spotlightPosition} />

@@ -299,3 +299,4 @@
 
 Este tour nativo proporcionará una experiencia fluida, accesible y efectiva usando únicamente componentes del design system. El enfoque en claridad, reducción de fricción y valor rápido asegurará que los usuarios nuevos se sientan confiados desde el primer momento.
 
+

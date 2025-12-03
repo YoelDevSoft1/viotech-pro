@@ -166,32 +166,65 @@ export function useNativeTour({ steps, onComplete, onSkip }: UseNativeTourOption
     }
 
     const step = steps[currentStep];
+    
+    // Función para calcular y establecer posiciones
+    const updatePositions = () => {
+      const element = document.querySelector<HTMLElement>(step.target);
+
+      if (!element) {
+        console.warn(`Tour step target not found: ${step.target}`);
+        return;
+      }
+
+      targetElementRef.current = element;
+
+      // Calcular posiciones
+      const spotlightPos = calculateSpotlightPosition(step.target);
+      if (!spotlightPos) {
+        console.warn(`Could not calculate spotlight position for: ${step.target}`);
+        return;
+      }
+
+      const tooltipPos = calculateTooltipPosition(spotlightPos, step.placement);
+
+      setSpotlightPosition(spotlightPos);
+      setTooltipPosition(tooltipPos);
+      
+      console.log(`Tour step ${currentStep + 1}: Spotlight at`, spotlightPos, "Tooltip at", tooltipPos);
+    };
+
+    // Primero intentar encontrar y scroll al elemento
     const element = document.querySelector<HTMLElement>(step.target);
-
-    if (!element) {
-      console.warn(`Tour step target not found: ${step.target}`);
-      return;
-    }
-
-    targetElementRef.current = element;
-
-    // Calcular posiciones
-    const spotlightPos = calculateSpotlightPosition(step.target);
-    if (!spotlightPos) return;
-
-    const tooltipPos = calculateTooltipPosition(spotlightPos, step.placement);
-
-    setSpotlightPosition(spotlightPos);
-    setTooltipPosition(tooltipPos);
-
-    // Scroll suave al elemento
-    setTimeout(() => {
+    
+    if (element) {
+      // Scroll suave al elemento
       element.scrollIntoView({
         behavior: "smooth",
         block: "center",
         inline: "nearest",
       });
-    }, 100);
+      
+      // Calcular posiciones iniciales
+      updatePositions();
+      
+      // Recalcular después del scroll (múltiples intentos para asegurar)
+      const timeouts = [
+        setTimeout(updatePositions, 300),
+        setTimeout(updatePositions, 600),
+        setTimeout(updatePositions, 1000),
+      ];
+      
+      return () => {
+        timeouts.forEach(clearTimeout);
+      };
+    } else {
+      // Si no se encuentra, esperar un poco y volver a intentar
+      const retryTimeout = setTimeout(() => {
+        updatePositions();
+      }, 500);
+      
+      return () => clearTimeout(retryTimeout);
+    }
   }, [currentStep, isActive, steps, calculateSpotlightPosition, calculateTooltipPosition]);
 
   // Recalcular posiciones en resize

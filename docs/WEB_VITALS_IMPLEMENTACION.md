@@ -230,3 +230,4 @@ Si quieres almacenar métricas:
 
 Las métricas se están enviando automáticamente a Sentry para análisis y alertas.
 
+

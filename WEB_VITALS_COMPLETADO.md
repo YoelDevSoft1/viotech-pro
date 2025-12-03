@@ -102,3 +102,4 @@ Para verificar que funciona:
 
 Las métricas se están capturando y enviando automáticamente a Sentry.
 
+

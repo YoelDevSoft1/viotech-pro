@@ -39,8 +39,8 @@ export function TourSpotlight({ position, borderRadius = 12, className }: TourSp
         height: `${position.height}px`,
         borderRadius: `${borderRadius}px`,
         border: "3px solid hsl(var(--primary))",
+        // Box-shadow solo para el resplandor, no para oscurecer (eso lo hace el overlay)
         boxShadow: `
-          0 0 0 9999px rgba(0, 0, 0, 0.6),
           0 0 0 3px hsl(var(--primary) / 0.3),
           0 0 20px hsl(var(--primary) / 0.2)
         `,

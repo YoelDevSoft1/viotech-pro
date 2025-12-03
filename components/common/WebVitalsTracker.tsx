@@ -12,3 +12,4 @@ export function WebVitalsTracker() {
   return null; // Este componente no renderiza nada
 }
 
+
