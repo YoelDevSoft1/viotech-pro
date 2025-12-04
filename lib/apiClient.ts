@@ -48,6 +48,7 @@ const PUBLIC_ENDPOINTS = [
   '/blog/categories', // Categorías
   '/blog/tags', // Tags
   '/blog/newsletter/subscribe', // Newsletter
+  '/analytics/events', // Analytics - puede funcionar sin autenticación
 ];
 
 // Endpoints que son públicos solo si son GET (lectura)
@@ -160,12 +161,13 @@ apiClient.interceptors.response.use(
       '/auth/me',
       '/blog/comments/pending',
       '/blog/comments/admin',
+      '/analytics/events', // Analytics puede funcionar sin autenticación
     ];
     const isSilentError = originalRequest?.url && 
       silentErrorEndpoints.some(endpoint => originalRequest.url?.includes(endpoint));
     
     // Si es un endpoint que puede fallar silenciosamente, no mostrar error genérico
-    if (isSilentError && (!error.response || error.response?.status === 404 || error.response?.status === 501)) {
+    if (isSilentError && (!error.response || error.response?.status === 404 || error.response?.status === 501 || error.response?.status === 401)) {
       // Devolver el error original para que el hook lo maneje silenciosamente
       return Promise.reject(error);
     }
@@ -204,6 +206,16 @@ apiClient.interceptors.response.use(
       // Verificar si hay un token antes de intentar refrescar
       const currentToken = getAccessToken();
       if (!currentToken) {
+        // Si es un endpoint de analytics, permitir que falle silenciosamente
+        const isAnalyticsEndpoint = originalRequest?.url?.includes('/analytics/events');
+        if (isAnalyticsEndpoint) {
+          // Crear un error especial que será manejado silenciosamente por el servicio
+          const silentError = new Error('UNAUTHENTICATED_ANALYTICS') as any;
+          silentError.response = error.response;
+          silentError.isAxiosError = true;
+          silentError.silent = true; // Marcar como silencioso
+          return Promise.reject(silentError);
+        }
         return Promise.reject(new Error("No autenticado. Por favor, inicia sesión."));
       }
 

@@ -9,11 +9,14 @@ import { ServicesPanel } from "@/components/dashboard/ServicesPanel";
 import { RoadmapPanel } from "@/components/dashboard/RoadmapPanel";
 import { TicketsTrendChart } from "@/components/dashboard/tickets-trend-chart";
 import { SLAMetrics } from "@/components/dashboard/sla-metrics";
+import { HealthScoreCard } from "@/components/customer-success/HealthScoreCard";
 import { Button } from "@/components/ui/button";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useCurrentUser } from "@/lib/hooks/useResources";
 
 export default function DashboardPage() {
   const { metrics, isLoading, isError, refetch } = useDashboard();
+  const { data: user } = useCurrentUser();
   const t = useTranslationsSafe("dashboard");
   const tCommon = useTranslationsSafe("common");
 
@@ -76,6 +79,13 @@ export default function DashboardPage() {
         {/* Métricas de SLA */}
         <SLAMetrics metrics={metrics} />
       </div>
+
+      {/* Health Score Card */}
+      {user?.organizationId && (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2" data-tour="health-score">
+          <HealthScoreCard organizationId={user.organizationId} />
+        </div>
+      )}
     </div>
   );
 }

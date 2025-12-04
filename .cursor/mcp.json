@@ -5,9 +5,9 @@
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
-        "C:\\Users\\Yoel\\Documents\\GitHub\\viotech-pro",
-        "C:\\Users\\Yoel\\Documents\\GitHub\\viotech-pro\\docs",
-        "C:\\Users\\Yoel\\Documents\\GitHub\\VioTech-main\\backend"
+        "C:\\Users\\Yoel-PC\\Documents\\GitHub\\viotech-pro",
+        "C:\\Users\\Yoel-PC\\Documents\\GitHub\\viotech-pro\\docs",
+        "C:\\Users\\Yoel-PC\\Documents\\GitHub\\VioTech-main\\backend"
       ]
     },
     "secure-terminal": {

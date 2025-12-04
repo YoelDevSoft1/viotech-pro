@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
@@ -9,6 +9,7 @@ import { OnboardingProvider } from "@/components/onboarding/OnboardingProvider";
 import { LocaleProvider } from "@/lib/contexts/LocaleContext";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { WebVitalsTracker } from "@/components/common/WebVitalsTracker";
+import { AnalyticsProvider } from "@/components/common/AnalyticsProvider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   // Inicializamos el cliente de React Query una sola vez por sesión
@@ -34,8 +35,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <OrgProvider>
             <OnboardingProvider>
               <ErrorBoundary>
-                <WebVitalsTracker />
-                {children}
+                <Suspense fallback={null}>
+                  <AnalyticsProvider>
+                    <WebVitalsTracker />
+                    {children}
+                  </AnalyticsProvider>
+                </Suspense>
               </ErrorBoundary>
             </OnboardingProvider>
           </OrgProvider>

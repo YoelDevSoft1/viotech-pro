@@ -423,6 +423,207 @@
       "system": "System"
     }
   },
+  "pushPermission": {
+    "title": "Want to stay informed instantly?",
+    "subtitle": "Never miss an important update",
+    "benefits": {
+      "tickets": {
+        "title": "Ticket changes",
+        "description": "Get alerts when a ticket status changes"
+      },
+      "mentions": {
+        "title": "When you're mentioned",
+        "description": "Know immediately if someone mentions you"
+      },
+      "projects": {
+        "title": "Project updates",
+        "description": "Stay up to date with your project progress"
+      }
+    },
+    "enableButton": "Enable notifications",
+    "dismissButton": "Not now",
+    "requesting": "Requesting permission...",
+    "requestingHint": "Click 'Allow' in the browser dialog",
+    "success": {
+      "title": "All set!",
+      "description": "You'll receive important alerts. You can adjust which notifications you receive in Settings."
+    },
+    "denied": {
+      "title": "Notifications blocked",
+      "description": "You've declined notifications. You can enable them later.",
+      "howToEnable": "To enable: Click the lock next to the URL → Permissions → Notifications → Allow",
+      "understood": "Got it"
+    },
+    "blocked": {
+      "title": "Notifications blocked",
+      "description": "Notifications are blocked in your browser. You need to enable them manually.",
+      "steps": {
+        "title": "How to enable:",
+        "step1": "Click the lock next to the URL",
+        "step2": "Find 'Notifications' in permissions",
+        "step3": "Change to 'Allow' and reload the page"
+      },
+      "close": "Close"
+    }
+  },
+  "pushThrottle": {
+    "title": "Notification Frequency",
+    "description": "Control how many and when you receive push notifications",
+    "maxPerHour": "Maximum per hour",
+    "groupNotifications": "Group notifications",
+    "groupDescription": "Combine multiple notifications from the same ticket/project",
+    "groupingWindow": "Grouping window",
+    "quietHours": "Quiet hours",
+    "quietHoursDescription": "Don't send push during these hours",
+    "from": "From",
+    "until": "Until",
+    "allowUrgent": "Allow urgent",
+    "allowUrgentDescription": "Receive critical alerts even during quiet hours",
+    "muteWhenActive": "Mute when active",
+    "muteWhenActiveDescription": "Don't send push if you're already using the app",
+    "saved": "Throttling settings saved"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "description": "Platform usage and performance metrics",
+    "period": "Period",
+    "compareWith": "Compare with",
+    "previousPeriod": "Previous period",
+    "previousYear": "Previous year",
+    "noCompare": "No comparison",
+    "export": "Export",
+    "refresh": "Refresh",
+    "dau": "Daily Active Users (DAU)",
+    "sessions": "Sessions",
+    "avgDuration": "Average Duration",
+    "optInRate": "Push Opt-in",
+    "activeUsers": "Active users",
+    "topFeatures": "Top Features",
+    "featureAdoption": "Adoption by feature",
+    "onboardingFunnel": "Onboarding Funnel",
+    "conversionByStep": "Conversion by step",
+    "recentErrors": "Recent Errors",
+    "errorTypes": "Most frequent error types",
+    "realtime": "Real-time",
+    "activeNow": "Users active now",
+    "eventsPerMin": "Events/min",
+    "topPages": "Most viewed pages",
+    "tabs": {
+      "users": "Users",
+      "features": "Features",
+      "conversions": "Conversions",
+      "errors": "Errors"
+    },
+    "metrics": {
+      "mau": "MAU",
+      "stickiness": "Stickiness (DAU/MAU)",
+      "pagesPerSession": "Pages/Session",
+      "trialConversion": "Trial Conversion",
+      "upgradeRate": "Upgrade Rate",
+      "churnRate": "Monthly Churn",
+      "errorRate": "Error Rate",
+      "formAbandonment": "Form Abandonment"
+    }
+  },
+  "customerSuccess": {
+    "title": "Customer Success",
+    "description": "Monitor customer health and manage success plans",
+    "healthScore": {
+      "title": "Health Score",
+      "description": "Customer health score",
+      "overall": "Overall score",
+      "components": {
+        "engagement": "Engagement",
+        "adoption": "Adoption",
+        "outcomes": "Outcomes",
+        "satisfaction": "Satisfaction",
+        "growth": "Growth"
+      },
+      "status": {
+        "healthy": "Healthy",
+        "stable": "Stable",
+        "atRisk": "At Risk",
+        "critical": "Critical"
+      },
+      "trend": {
+        "improving": "Improving",
+        "stable": "Stable",
+        "declining": "Declining"
+      },
+      "suggestions": "Suggested next steps",
+      "viewDetails": "View details"
+    },
+    "alerts": {
+      "title": "Customer Success Alerts",
+      "description": "Customers requiring immediate attention",
+      "noAlerts": "No pending alerts",
+      "excellent": "Excellent!",
+      "types": {
+        "inactivity": "Inactivity",
+        "healthDrop": "Health Drop",
+        "slaBreach": "SLA Breach",
+        "featureUnused": "Unused Feature",
+        "trialEnding": "Trial Ending",
+        "paymentFailed": "Payment Failed",
+        "churnRisk": "Churn Risk",
+        "expansionOpportunity": "Opportunity"
+      },
+      "severity": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High",
+        "critical": "Critical"
+      },
+      "actions": {
+        "view": "View details",
+        "acknowledge": "Acknowledge",
+        "resolve": "Mark resolved",
+        "dismiss": "Dismiss",
+        "email": "Email",
+        "call": "Call",
+        "schedule": "Schedule"
+      }
+    },
+    "plans": {
+      "title": "Success Plans",
+      "description": "Active success plans for customers",
+      "noPlans": "No active plans",
+      "createPlan": "Create a success plan to get started",
+      "newPlan": "New Plan",
+      "types": {
+        "onboarding": "Onboarding",
+        "adoption": "Adoption",
+        "expansion": "Expansion",
+        "recovery": "Recovery",
+        "custom": "Custom"
+      },
+      "progress": "Progress",
+      "dueDate": "Due",
+      "csm": "Assigned CSM"
+    },
+    "summary": {
+      "totalCustomers": "Total Customers",
+      "avgHealth": "Average Health",
+      "healthy": "Healthy",
+      "atRisk": "At Risk",
+      "critical": "Critical"
+    }
+  },
+  "privacySettings": {
+    "title": "Privacy & Analytics",
+    "description": "Control what data we share to improve the platform",
+    "usageAnalytics": "Usage analytics",
+    "usageAnalyticsDescription": "Helps us understand which features are most useful and prioritize improvements",
+    "performanceMonitoring": "Performance monitoring",
+    "performanceDescription": "Automatically detects and fixes speed issues",
+    "errorTracking": "Error reporting",
+    "errorTrackingDescription": "Automatically reports errors so we can fix them quickly",
+    "shareAnonymous": "Contribute to global improvements",
+    "shareAnonymousDescription": "Share anonymized data to help improve VioTech for everyone",
+    "privacyNotice": "Your privacy matters. We never sell your data or share it with third parties for advertising.",
+    "dataInfo": "The data we collect is anonymized and used exclusively to improve the platform.",
+    "viewDataCollected": "View what data we collect"
+  },
   "auditLog": {
     "title": "Change History",
     "description": "Record of all actions performed in the system",
@@ -1644,7 +1845,8 @@
     "blog": "Blog",
     "comments": "Comments",
     "auditLog": "Audit Log",
-    "partners": "Partners"
+    "partners": "Partners",
+    "projectMonitor": "Project Monitoring"
   },
   "partners": {
     "dashboard": {
@@ -2021,6 +2223,184 @@
         "creating": "Creating..."
       }
     }
+  },
+  "pushNotifications": {
+    "title": "Push Notifications",
+    "activateTitle": "Enable notifications?",
+    "activateDescription": "Receive alerts about tickets, projects and important updates.",
+    "activate": "Enable",
+    "activating": "Enabling...",
+    "deactivate": "Disable",
+    "noThanks": "No, thanks",
+    "notNow": "Not now",
+    "benefits": {
+      "realtime": {
+        "title": "Real-time updates",
+        "description": "Get notified immediately about changes to your tickets"
+      },
+      "alerts": {
+        "title": "Important alerts",
+        "description": "Receive SLA alerts and critical events"
+      },
+      "control": {
+        "title": "Full control",
+        "description": "You can disable them at any time"
+      }
+    },
+    "status": {
+      "active": "Notifications active",
+      "activeDescription": "You will receive push notifications on this device",
+      "inactive": "Notifications disabled",
+      "inactiveDescription": "Enable notifications to stay updated",
+      "blocked": "Notifications blocked",
+      "blockedDescription": "You have blocked notifications. Enable them in your browser settings.",
+      "unsupported": "Your browser does not support push notifications"
+    }
+  },
+  "customerSuccess": {
+    "healthScore": {
+      "title": "Health Score",
+      "description": "Customer health status",
+      "generalScore": "Overall score",
+      "previous": "Previous",
+      "factorsBreakdown": "Factors breakdown",
+      "nextReview": "Next review",
+      "noData": "No health score data available"
+    },
+    "riskLevel": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "trend": {
+      "improving": "Improving",
+      "stable": "Stable",
+      "declining": "Declining"
+    },
+    "factors": {
+      "engagement": "Engagement",
+      "support": "Support",
+      "payment": "Payments",
+      "product": "Product",
+      "sentiment": "Sentiment",
+      "lifecycle": "Lifecycle"
+    },
+    "alerts": {
+      "title": "Churn Alerts",
+      "noAlerts": "No active churn alerts",
+      "healthyBase": "Your customer base is healthy!",
+      "resolve": "Resolve",
+      "acknowledge": "Acknowledge",
+      "dismiss": "Dismiss",
+      "viewDetails": "View details",
+      "resolutionNotes": "Resolution notes",
+      "resolutionNotesPlaceholder": "Describe the actions taken to resolve this alert...",
+      "markResolved": "Mark as Resolved",
+      "resolving": "Resolving..."
+    },
+    "alertTypes": {
+      "no_login": "No activity",
+      "low_engagement": "Low engagement",
+      "support_issues": "Support issues",
+      "payment_failed": "Payment failed",
+      "negative_feedback": "Negative feedback",
+      "service_expiring": "Service expiring",
+      "score_drop": "Score drop",
+      "competitor_mention": "Competitor mention",
+      "custom": "Custom alert"
+    },
+    "alertSeverity": {
+      "info": "Info",
+      "warning": "Warning",
+      "urgent": "Urgent",
+      "critical": "Critical"
+    },
+    "alertStatus": {
+      "active": "Active",
+      "acknowledged": "Acknowledged",
+      "resolved": "Resolved",
+      "dismissed": "Dismissed"
+    }
+  },
+  "analytics": {
+    "events": {
+      "login": "Login",
+      "logout": "Logout",
+      "signup": "Signup",
+      "ticketCreated": "Ticket created",
+      "ticketViewed": "Ticket viewed",
+      "paymentCompleted": "Payment completed",
+      "serviceViewed": "Service viewed",
+      "featureUsed": "Feature used"
+    }
+  },
+  "projectMonitor": {
+    "pageTitle": "Project Monitoring",
+    "pageDescription": "Real-time risk analysis and proactive alerts for your projects",
+    "monitoringStatus": "Monitoring Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "lastCheck": "Last check",
+    "projects": "projects",
+    "projectsChecked": "projects checked",
+    "alertsSent": "Alerts sent",
+    "lastVerification": "Last verification",
+    "checkInterval": "Check interval",
+    "minutes": "minutes",
+    "hour": "hour",
+    "startMonitoring": "Start Monitoring",
+    "stopMonitoring": "Stop Monitoring",
+    "analyzeAll": "Analyze All",
+    "adminOnlyControls": "Only administrators can control monitoring.",
+    "retry": "Retry",
+    "project": "Project",
+    "riskScore": "Risk Score",
+    "estimatedDays": "Estimated days",
+    "estimatedDaysTooltip": "Remaining days according to current plan",
+    "predictedML": "ML Prediction",
+    "predictedMLTooltip": "Days predicted by the Machine Learning model",
+    "anomalyDetected": "anomaly detected",
+    "anomaliesDetected": "anomalies detected",
+    "riskFactors": "Risk factors",
+    "predictionMismatch": "ML prediction indicates more time than estimated",
+    "progressDelay": "Progress below expected",
+    "lowVelocity": "Low progress velocity",
+    "noRiskFactors": "No risk factors detected",
+    "confidence": "Confidence",
+    "analysisHistory": "Analysis History",
+    "noHistoryAvailable": "No analysis history available",
+    "progress": "Progress",
+    "overdueTasks": "Overdue tasks",
+    "velocity": "Velocity",
+    "day": "day",
+    "currentAnalysis": "Current Analysis",
+    "analyze": "Analyze",
+    "noAnalysisYet": "No analysis yet for this project",
+    "runFirstAnalysis": "Run first analysis",
+    "totalProjects": "Total Projects",
+    "activeAlerts": "Active Alerts",
+    "critical": "Critical",
+    "highRisk": "High Risk",
+    "projectsList": "Projects List",
+    "selectProjectToAnalyze": "Select a project to view its risk analysis",
+    "allProjects": "All",
+    "activeProjects": "Active",
+    "completedProjects": "Completed",
+    "noProjectsFound": "No projects found",
+    "filterByOrganization": "Filter by organization",
+    "export": "Export",
+    "alerts": "Alerts",
+    "analysisTab": "Analysis",
+    "loadingProjects": "Loading projects...",
+    "selectProjectPrompt": "Select a project from the list to view its analysis",
+    "selectProjectForAnalysis": "Select a project to view its detailed analysis",
+    "noActiveAlerts": "No active alerts",
+    "allProjectsHealthy": "All projects are healthy!",
+    "clearAll": "Clear all",
+    "dismiss": "Dismiss",
+    "agentPermissionsNote": "As an agent, you can only view analysis of projects where you have assigned tickets.",
+    "clientPermissionsNote": "As a client, you can only view analysis of your organization's projects."
   }
 }
 

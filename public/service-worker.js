@@ -1,10 +1,18 @@
-// Simple offline-first caching for static assets (_next/static, images, fonts) to avoid 404s and improve resilience.
-const CACHE_NAME = "viotech-static-v1";
+// VioTech Pro - Service Worker con Push Notifications
+// Simple offline-first caching for static assets + Push Notifications
 
+const CACHE_NAME = "viotech-static-v2";
+
+// ============================================
+// INSTALL EVENT
+// ============================================
 self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
+// ============================================
+// ACTIVATE EVENT
+// ============================================
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -18,6 +26,9 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+// ============================================
+// FETCH EVENT - Static Assets Caching
+// ============================================
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
@@ -46,4 +57,155 @@ self.addEventListener("fetch", (event) => {
       }
     }),
   );
+});
+
+// ============================================
+// PUSH NOTIFICATIONS
+// ============================================
+self.addEventListener("push", (event) => {
+  // Parsear datos del push o usar valores por defecto
+  let data = {};
+  try {
+    data = event.data?.json() || {};
+  } catch (e) {
+    // Si no es JSON, intentar como texto
+    data = { body: event.data?.text() || "Tienes una nueva notificación" };
+  }
+
+  const title = data.title || "VioTech Pro";
+  const options = {
+    body: data.body || "Tienes una nueva notificación",
+    icon: data.icon || "/icon-192.png",
+    badge: data.badge || "/badge-72.png",
+    image: data.image || undefined,
+    tag: data.tag || "viotech-notification",
+    renotify: data.renotify || false,
+    requireInteraction: data.requireInteraction || false,
+    silent: data.silent || false,
+    vibrate: data.vibrate || [200, 100, 200],
+    data: {
+      url: data.url || "/",
+      notificationId: data.notificationId,
+      type: data.type,
+      timestamp: Date.now(),
+    },
+    actions: data.actions || [
+      { action: "view", title: "Ver", icon: "/icons/view.png" },
+      { action: "dismiss", title: "Descartar", icon: "/icons/dismiss.png" },
+    ],
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// ============================================
+// NOTIFICATION CLICK HANDLER
+// ============================================
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  const action = event.action;
+  const notificationData = event.notification.data || {};
+  const url = notificationData.url || "/";
+
+  // Manejar acciones específicas
+  if (action === "dismiss") {
+    // El usuario descartó la notificación, opcionalmente marcar como leída
+    if (notificationData.notificationId) {
+      // Enviar evento al backend para marcar como leída (fire and forget)
+      fetch(`/api/notifications/${notificationData.notificationId}/read`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+      }).catch(() => {
+        // Silenciar errores
+      });
+    }
+    return;
+  }
+
+  // Acción por defecto: abrir la URL
+  event.waitUntil(
+    clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((windowClients) => {
+        // Buscar si ya hay una ventana abierta con la app
+        for (const client of windowClients) {
+          if (client.url.includes(self.location.origin) && "focus" in client) {
+            // Navegar a la URL dentro de la ventana existente
+            client.postMessage({
+              type: "NOTIFICATION_CLICK",
+              url: url,
+              notificationId: notificationData.notificationId,
+            });
+            return client.focus();
+          }
+        }
+        // Si no hay ventana abierta, abrir una nueva
+        if (clients.openWindow) {
+          return clients.openWindow(url);
+        }
+      }),
+  );
+});
+
+// ============================================
+// PUSH SUBSCRIPTION CHANGE
+// ============================================
+self.addEventListener("pushsubscriptionchange", (event) => {
+  // Cuando la suscripción cambia, necesitamos re-suscribir
+  event.waitUntil(
+    self.registration.pushManager
+      .subscribe({ userVisibleOnly: true })
+      .then((subscription) => {
+        // Enviar nueva suscripción al backend
+        return fetch("/api/push/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(subscription.toJSON()),
+        });
+      })
+      .catch((error) => {
+        console.error("Push subscription change error:", error);
+      }),
+  );
+});
+
+// ============================================
+// MESSAGE HANDLER - Comunicación con la app
+// ============================================
+self.addEventListener("message", (event) => {
+  const { type, payload } = event.data || {};
+
+  switch (type) {
+    case "SKIP_WAITING":
+      self.skipWaiting();
+      break;
+
+    case "GET_SUBSCRIPTION":
+      // Obtener la suscripción actual
+      self.registration.pushManager
+        .getSubscription()
+        .then((subscription) => {
+          event.ports[0]?.postMessage({
+            type: "SUBSCRIPTION_STATUS",
+            subscription: subscription ? subscription.toJSON() : null,
+          });
+        })
+        .catch((error) => {
+          event.ports[0]?.postMessage({
+            type: "SUBSCRIPTION_ERROR",
+            error: error.message,
+          });
+        });
+      break;
+
+    case "CLEAR_CACHE":
+      caches.delete(CACHE_NAME).then(() => {
+        event.ports[0]?.postMessage({ type: "CACHE_CLEARED" });
+      });
+      break;
+
+    default:
+      break;
+  }
 });

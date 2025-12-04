@@ -368,7 +368,223 @@
       "projectCreated": "Proyectos creados",
       "projectUpdated": "Proyectos actualizados",
       "system": "Sistema"
+    },
+    "pushNotifications": {
+      "title": "Notificaciones Push",
+      "notSupported": "Tu navegador no soporta notificaciones push",
+      "permissionDenied": "Has bloqueado las notificaciones. Habilítalas en la configuración del navegador.",
+      "enableInBrowser": "Para recibir notificaciones push, necesitas habilitar los permisos en la configuración de tu navegador.",
+      "enabledDescription": "Recibirás notificaciones en tiempo real en tu navegador",
+      "disabledDescription": "Activa para recibir notificaciones push sobre eventos importantes",
+      "statusEnabled": "Las notificaciones push están activas",
+      "statusDisabled": "Las notificaciones push están desactivadas",
+      "toggle": "Activar/desactivar notificaciones push",
+      "enabled": "Notificaciones push activadas",
+      "disabled": "Notificaciones push desactivadas",
+      "error": "Error al cambiar la suscripción",
+      "permissionRequired": "Se necesita permiso para enviar notificaciones push"
     }
+  },
+  "pushPermission": {
+    "title": "¿Quieres enterarte al instante?",
+    "subtitle": "Nunca te pierdas una actualización importante",
+    "benefits": {
+      "tickets": {
+        "title": "Cambios en tus tickets",
+        "description": "Recibe alertas cuando un ticket cambie de estado"
+      },
+      "mentions": {
+        "title": "Cuando te mencionen",
+        "description": "Entérate inmediatamente si alguien te menciona"
+      },
+      "projects": {
+        "title": "Actualizaciones de proyectos",
+        "description": "Mantente al día con el progreso de tus proyectos"
+      }
+    },
+    "enableButton": "Activar notificaciones",
+    "dismissButton": "Ahora no",
+    "requesting": "Solicitando permiso...",
+    "requestingHint": "Haz clic en 'Permitir' en el diálogo del navegador",
+    "success": {
+      "title": "¡Listo!",
+      "description": "Recibirás alertas importantes. Puedes ajustar qué notificaciones recibir en Configuración."
+    },
+    "denied": {
+      "title": "Notificaciones bloqueadas",
+      "description": "Has rechazado las notificaciones. Puedes habilitarlas más tarde.",
+      "howToEnable": "Para habilitar: Haz clic en el candado junto a la URL → Permisos → Notificaciones → Permitir",
+      "understood": "Entendido"
+    },
+    "blocked": {
+      "title": "Notificaciones bloqueadas",
+      "description": "Las notificaciones están bloqueadas en tu navegador. Necesitas habilitarlas manualmente.",
+      "steps": {
+        "title": "Cómo habilitar:",
+        "step1": "Haz clic en el candado junto a la URL",
+        "step2": "Busca 'Notificaciones' en los permisos",
+        "step3": "Cambia a 'Permitir' y recarga la página"
+      },
+      "close": "Cerrar"
+    }
+  },
+  "pushThrottle": {
+    "title": "Frecuencia de Notificaciones",
+    "description": "Controla cuántas y cuándo recibes notificaciones push",
+    "maxPerHour": "Máximo por hora",
+    "groupNotifications": "Agrupar notificaciones",
+    "groupDescription": "Combinar múltiples notificaciones del mismo ticket/proyecto",
+    "groupingWindow": "Ventana de agrupación",
+    "quietHours": "Horario silencioso",
+    "quietHoursDescription": "No enviar push durante estas horas",
+    "from": "Desde",
+    "until": "Hasta",
+    "allowUrgent": "Permitir urgentes",
+    "allowUrgentDescription": "Recibir alertas críticas incluso en horario silencioso",
+    "muteWhenActive": "Silenciar cuando estés activo",
+    "muteWhenActiveDescription": "No enviar push si ya estás usando la aplicación",
+    "saved": "Configuración de throttling guardada"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "description": "Métricas de uso y rendimiento de la plataforma",
+    "period": "Período",
+    "compareWith": "Comparar con",
+    "previousPeriod": "Período anterior",
+    "previousYear": "Año anterior",
+    "noCompare": "Sin comparar",
+    "export": "Exportar",
+    "refresh": "Actualizar",
+    "dau": "Usuarios Activos (DAU)",
+    "sessions": "Sesiones",
+    "avgDuration": "Duración Promedio",
+    "optInRate": "Opt-in Push",
+    "activeUsers": "Usuarios activos",
+    "topFeatures": "Top Features",
+    "featureAdoption": "Adopción por funcionalidad",
+    "onboardingFunnel": "Funnel de Onboarding",
+    "conversionByStep": "Conversión por etapa",
+    "recentErrors": "Errores Recientes",
+    "errorTypes": "Tipos de error más frecuentes",
+    "realtime": "Tiempo Real",
+    "activeNow": "Usuarios activos ahora",
+    "eventsPerMin": "Eventos/min",
+    "topPages": "Páginas más vistas",
+    "tabs": {
+      "users": "Usuarios",
+      "features": "Features",
+      "conversions": "Conversiones",
+      "errors": "Errores"
+    },
+    "metrics": {
+      "mau": "MAU",
+      "stickiness": "Stickiness (DAU/MAU)",
+      "pagesPerSession": "Páginas/Sesión",
+      "trialConversion": "Conversión Trial",
+      "upgradeRate": "Upgrade Rate",
+      "churnRate": "Churn Mensual",
+      "errorRate": "Tasa de Error",
+      "formAbandonment": "Abandono de Forms"
+    }
+  },
+  "customerSuccess": {
+    "title": "Customer Success",
+    "description": "Monitorea la salud de tus clientes y gestiona planes de éxito",
+    "healthScore": {
+      "title": "Health Score",
+      "description": "Puntuación de salud del cliente",
+      "overall": "Puntaje general",
+      "components": {
+        "engagement": "Engagement",
+        "adoption": "Adopción",
+        "outcomes": "Resultados",
+        "satisfaction": "Satisfacción",
+        "growth": "Crecimiento"
+      },
+      "status": {
+        "healthy": "Saludable",
+        "stable": "Estable",
+        "atRisk": "En Riesgo",
+        "critical": "Crítico"
+      },
+      "trend": {
+        "improving": "Mejorando",
+        "stable": "Estable",
+        "declining": "Declinando"
+      },
+      "suggestions": "Próximos pasos sugeridos",
+      "viewDetails": "Ver detalles"
+    },
+    "alerts": {
+      "title": "Alertas de Customer Success",
+      "description": "Clientes que requieren atención inmediata",
+      "noAlerts": "Sin alertas pendientes",
+      "excellent": "¡Excelente!",
+      "types": {
+        "inactivity": "Inactividad",
+        "healthDrop": "Caída de Health",
+        "slaBreach": "SLA Incumplido",
+        "featureUnused": "Feature sin usar",
+        "trialEnding": "Trial por terminar",
+        "paymentFailed": "Pago fallido",
+        "churnRisk": "Riesgo de Churn",
+        "expansionOpportunity": "Oportunidad"
+      },
+      "severity": {
+        "low": "Baja",
+        "medium": "Media",
+        "high": "Alta",
+        "critical": "Crítica"
+      },
+      "actions": {
+        "view": "Ver detalles",
+        "acknowledge": "Reconocer",
+        "resolve": "Marcar resuelta",
+        "dismiss": "Descartar",
+        "email": "Email",
+        "call": "Llamar",
+        "schedule": "Agendar"
+      }
+    },
+    "plans": {
+      "title": "Success Plans",
+      "description": "Planes de éxito activos para clientes",
+      "noPlans": "Sin planes activos",
+      "createPlan": "Crear un plan de éxito para comenzar",
+      "newPlan": "Nuevo Plan",
+      "types": {
+        "onboarding": "Onboarding",
+        "adoption": "Adopción",
+        "expansion": "Expansión",
+        "recovery": "Recuperación",
+        "custom": "Personalizado"
+      },
+      "progress": "Progreso",
+      "dueDate": "Vence",
+      "csm": "CSM asignado"
+    },
+    "summary": {
+      "totalCustomers": "Total Clientes",
+      "avgHealth": "Health Promedio",
+      "healthy": "Saludables",
+      "atRisk": "En Riesgo",
+      "critical": "Críticos"
+    }
+  },
+  "privacySettings": {
+    "title": "Privacidad y Analytics",
+    "description": "Controla qué datos compartimos para mejorar la plataforma",
+    "usageAnalytics": "Analytics de uso",
+    "usageAnalyticsDescription": "Nos ayuda a entender qué funciones son más útiles y priorizar mejoras",
+    "performanceMonitoring": "Monitoreo de rendimiento",
+    "performanceDescription": "Detecta y corrige problemas de velocidad automáticamente",
+    "errorTracking": "Reporte de errores",
+    "errorTrackingDescription": "Reporta errores automáticamente para que podamos solucionarlos rápido",
+    "shareAnonymous": "Contribuir a mejoras globales",
+    "shareAnonymousDescription": "Comparte datos anonimizados para ayudar a mejorar VioTech para todos",
+    "privacyNotice": "Tu privacidad es importante. Nunca vendemos tus datos ni los compartimos con terceros para publicidad.",
+    "dataInfo": "Los datos que recopilamos son anonimizados y se usan exclusivamente para mejorar la plataforma.",
+    "viewDataCollected": "Ver qué datos recopilamos"
   },
   "auditLog": {
     "title": "Historial de Cambios",
@@ -1646,7 +1862,8 @@
     "blog": "Blog",
     "comments": "Comentarios",
     "auditLog": "Audit Log",
-    "partners": "Partners"
+    "partners": "Partners",
+    "projectMonitor": "Monitoreo de Proyectos"
   },
   "partners": {
     "dashboard": {
@@ -2148,6 +2365,184 @@
         "creating": "Creando..."
       }
     }
+  },
+  "pushNotifications": {
+    "title": "Notificaciones Push",
+    "activateTitle": "¿Activar notificaciones?",
+    "activateDescription": "Recibe alertas sobre tickets, proyectos y actualizaciones importantes.",
+    "activate": "Activar",
+    "activating": "Activando...",
+    "deactivate": "Desactivar",
+    "noThanks": "No, gracias",
+    "notNow": "Ahora no",
+    "benefits": {
+      "realtime": {
+        "title": "Actualizaciones en tiempo real",
+        "description": "Entérate inmediatamente de cambios en tus tickets"
+      },
+      "alerts": {
+        "title": "Alertas importantes",
+        "description": "Recibe avisos de SLA y eventos críticos"
+      },
+      "control": {
+        "title": "Control total",
+        "description": "Puedes desactivarlas en cualquier momento"
+      }
+    },
+    "status": {
+      "active": "Notificaciones activas",
+      "activeDescription": "Recibirás notificaciones push en este dispositivo",
+      "inactive": "Notificaciones desactivadas",
+      "inactiveDescription": "Activa las notificaciones para no perderte nada",
+      "blocked": "Notificaciones bloqueadas",
+      "blockedDescription": "Has bloqueado las notificaciones. Habilítalas en la configuración del navegador.",
+      "unsupported": "Tu navegador no soporta notificaciones push"
+    }
+  },
+  "customerSuccess": {
+    "healthScore": {
+      "title": "Health Score",
+      "description": "Estado de salud del cliente",
+      "generalScore": "Puntuación general",
+      "previous": "Anterior",
+      "factorsBreakdown": "Desglose por factores",
+      "nextReview": "Próxima revisión",
+      "noData": "No hay datos de health score disponibles"
+    },
+    "riskLevel": {
+      "low": "Bajo",
+      "medium": "Medio",
+      "high": "Alto",
+      "critical": "Crítico"
+    },
+    "trend": {
+      "improving": "Mejorando",
+      "stable": "Estable",
+      "declining": "Declinando"
+    },
+    "factors": {
+      "engagement": "Engagement",
+      "support": "Soporte",
+      "payment": "Pagos",
+      "product": "Producto",
+      "sentiment": "Sentimiento",
+      "lifecycle": "Ciclo de vida"
+    },
+    "alerts": {
+      "title": "Alertas de Churn",
+      "noAlerts": "No hay alertas de churn activas",
+      "healthyBase": "¡Tu base de clientes está saludable!",
+      "resolve": "Resolver",
+      "acknowledge": "Reconocer",
+      "dismiss": "Descartar",
+      "viewDetails": "Ver detalles",
+      "resolutionNotes": "Notas de resolución",
+      "resolutionNotesPlaceholder": "Describe las acciones tomadas para resolver esta alerta...",
+      "markResolved": "Marcar como Resuelta",
+      "resolving": "Resolviendo..."
+    },
+    "alertTypes": {
+      "no_login": "Sin actividad",
+      "low_engagement": "Bajo engagement",
+      "support_issues": "Problemas de soporte",
+      "payment_failed": "Fallo de pago",
+      "negative_feedback": "Feedback negativo",
+      "service_expiring": "Servicio por expirar",
+      "score_drop": "Caída de score",
+      "competitor_mention": "Mención de competidor",
+      "custom": "Alerta personalizada"
+    },
+    "alertSeverity": {
+      "info": "Info",
+      "warning": "Atención",
+      "urgent": "Urgente",
+      "critical": "Crítico"
+    },
+    "alertStatus": {
+      "active": "Activa",
+      "acknowledged": "Reconocida",
+      "resolved": "Resuelta",
+      "dismissed": "Descartada"
+    }
+  },
+  "analytics": {
+    "events": {
+      "login": "Inicio de sesión",
+      "logout": "Cierre de sesión",
+      "signup": "Registro",
+      "ticketCreated": "Ticket creado",
+      "ticketViewed": "Ticket visto",
+      "paymentCompleted": "Pago completado",
+      "serviceViewed": "Servicio visto",
+      "featureUsed": "Feature utilizado"
+    }
+  },
+  "projectMonitor": {
+    "pageTitle": "Monitoreo de Proyectos",
+    "pageDescription": "Análisis de riesgo en tiempo real y alertas proactivas para tus proyectos",
+    "monitoringStatus": "Estado del Monitoreo",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "lastCheck": "Última verificación",
+    "projects": "proyectos",
+    "projectsChecked": "proyectos verificados",
+    "alertsSent": "Alertas enviadas",
+    "lastVerification": "Última verificación",
+    "checkInterval": "Intervalo de verificación",
+    "minutes": "minutos",
+    "hour": "hora",
+    "startMonitoring": "Iniciar Monitoreo",
+    "stopMonitoring": "Detener Monitoreo",
+    "analyzeAll": "Analizar Todos",
+    "adminOnlyControls": "Solo los administradores pueden controlar el monitoreo.",
+    "retry": "Reintentar",
+    "project": "Proyecto",
+    "riskScore": "Score de Riesgo",
+    "estimatedDays": "Días estimados",
+    "estimatedDaysTooltip": "Días restantes según el plan actual",
+    "predictedML": "Predicción ML",
+    "predictedMLTooltip": "Días predichos por el modelo de Machine Learning",
+    "anomalyDetected": "anomalía detectada",
+    "anomaliesDetected": "anomalías detectadas",
+    "riskFactors": "Factores de riesgo",
+    "predictionMismatch": "La predicción ML indica más tiempo del estimado",
+    "progressDelay": "Progreso por debajo de lo esperado",
+    "lowVelocity": "Velocidad de progreso baja",
+    "noRiskFactors": "Sin factores de riesgo detectados",
+    "confidence": "Confianza",
+    "analysisHistory": "Historial de Análisis",
+    "noHistoryAvailable": "No hay historial de análisis disponible",
+    "progress": "Progreso",
+    "overdueTasks": "Tareas atrasadas",
+    "velocity": "Velocidad",
+    "day": "día",
+    "currentAnalysis": "Análisis Actual",
+    "analyze": "Analizar",
+    "noAnalysisYet": "Aún no hay análisis para este proyecto",
+    "runFirstAnalysis": "Ejecutar primer análisis",
+    "totalProjects": "Total de Proyectos",
+    "activeAlerts": "Alertas Activas",
+    "critical": "Críticos",
+    "highRisk": "Alto Riesgo",
+    "projectsList": "Lista de Proyectos",
+    "selectProjectToAnalyze": "Selecciona un proyecto para ver su análisis de riesgo",
+    "allProjects": "Todos",
+    "activeProjects": "Activos",
+    "completedProjects": "Completados",
+    "noProjectsFound": "No se encontraron proyectos",
+    "filterByOrganization": "Filtrar por organización",
+    "export": "Exportar",
+    "alerts": "Alertas",
+    "analysisTab": "Análisis",
+    "loadingProjects": "Cargando proyectos...",
+    "selectProjectPrompt": "Selecciona un proyecto de la lista para ver su análisis",
+    "selectProjectForAnalysis": "Selecciona un proyecto para ver su análisis detallado",
+    "noActiveAlerts": "No hay alertas activas",
+    "allProjectsHealthy": "¡Todos los proyectos están saludables!",
+    "clearAll": "Limpiar todo",
+    "dismiss": "Descartar",
+    "agentPermissionsNote": "Como agente, solo puedes ver análisis de proyectos donde tienes tickets asignados.",
+    "clientPermissionsNote": "Como cliente, solo puedes ver análisis de los proyectos de tu organización."
   }
 }
 

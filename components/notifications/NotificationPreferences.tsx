@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bell, Mail, Smartphone, Volume2, Monitor, Settings } from "lucide-react";
+import { Bell, Mail, Smartphone, Volume2, Monitor, Settings, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -15,11 +15,14 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   useNotificationPreferences,
   useUpdateNotificationPreferences,
   useTestNotification,
 } from "@/lib/hooks/useNotificationPreferences";
+import { usePushNotifications } from "@/lib/hooks/usePushNotifications";
+import { PushNotificationToggle } from "@/components/notifications/PushNotificationToggle";
 import type { NotificationType } from "@/lib/types/notifications";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 import { toast } from "sonner";
@@ -73,6 +76,16 @@ export function NotificationPreferences() {
   const testNotification = useTestNotification();
   const tNotifications = useTranslationsSafe("notifications");
   const tCustomization = useTranslationsSafe("customization");
+
+  // Hook para manejar push notifications reales
+  const {
+    isSupported: isPushSupported,
+    permission: pushPermission,
+    isSubscribed: isPushSubscribed,
+    isLoading: isPushLoading,
+    subscribe: subscribePush,
+    unsubscribe: unsubscribePush,
+  } = usePushNotifications();
 
   const [localPreferences, setLocalPreferences] = useState<typeof preferences>(preferences);
 
@@ -164,6 +177,11 @@ export function NotificationPreferences() {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {/* Sección de Push Notifications */}
+        <div className="mb-6">
+          <PushNotificationToggle />
+        </div>
+
         <Tabs defaultValue="global" className="space-y-4">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="global">
@@ -212,17 +230,43 @@ export function NotificationPreferences() {
                   <Label htmlFor="push-global" className="flex items-center gap-2">
                     <Smartphone className="h-4 w-4" />
                     Push Notifications
+                    {isPushSubscribed && (
+                      <span className="text-xs text-green-600 dark:text-green-400 font-normal">
+                        (Activo)
+                      </span>
+                    )}
                   </Label>
                   <p className="text-xs text-muted-foreground">
-                    Notificaciones push en tu dispositivo
+                    {isPushSupported
+                      ? "Notificaciones push en tu dispositivo"
+                      : "Tu navegador no soporta notificaciones push"}
                   </p>
                 </div>
                 <Switch
                   id="push-global"
-                  checked={localPreferences?.push ?? false}
-                  onCheckedChange={(checked) => handleGlobalChange("push", checked)}
+                  checked={isPushSubscribed}
+                  disabled={!isPushSupported || isPushLoading || pushPermission === "denied"}
+                  onCheckedChange={async (checked) => {
+                    if (checked) {
+                      await subscribePush();
+                    } else {
+                      await unsubscribePush();
+                    }
+                    // También actualizar preferencia en backend
+                    handleGlobalChange("push", checked);
+                  }}
                 />
               </div>
+
+              {/* Alerta si push está denegado */}
+              {pushPermission === "denied" && (
+                <Alert variant="destructive" className="mt-2">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription className="text-xs">
+                    Las notificaciones están bloqueadas. Habilítalas en la configuración de tu navegador.
+                  </AlertDescription>
+                </Alert>
+              )}
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">

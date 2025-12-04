@@ -22,7 +22,8 @@ import {
   History,
   UserCog,
   BarChart3,
-  Handshake
+  Handshake,
+  Activity
 } from "lucide-react";
 import {
   Sidebar,
@@ -181,6 +182,11 @@ export function AppSidebar() {
       title: t("navigation.reports"),
       href: "/admin/reports",
       icon: BarChart3,
+    },
+    {
+      title: t("sidebar.projectMonitor"),
+      href: "/admin/project-monitor",
+      icon: Activity,
     },
     {
       title: t("navigation.settings"),

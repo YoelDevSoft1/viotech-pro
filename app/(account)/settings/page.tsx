@@ -94,11 +94,14 @@ export default function SettingsPage() {
   const handleSaveNotifications = async () => {
     setIsSavingNotifications(true);
     try {
-      await apiClient.put("/auth/notifications", {
-        email: emailNotifications,
-        push: pushNotifications,
-        ticketUpdates,
-        projectUpdates,
+      // El endpoint correcto es /user/preferences con las notificaciones dentro del objeto notifications
+      await apiClient.put("/user/preferences", {
+        notifications: {
+          email: emailNotifications,
+          push: pushNotifications,
+          inApp: true,
+          digest: false,
+        },
       });
       toast.success(tSettings("success.notificationsSaved"));
     } catch (error: any) {
