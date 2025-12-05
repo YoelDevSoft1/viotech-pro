@@ -82,29 +82,17 @@ export function PushNotificationToggle() {
         if (permission === "prompt") {
           const result = await Notification.requestPermission();
           if (result !== "granted") {
-            toast.error(
-              t(
-                "notifications.push.permissionRequired",
-                "Se necesita permiso para enviar notificaciones push"
-              )
-            );
+            toast.error(t("notifications.push.permissionRequired"));
             setIsToggling(false);
             return;
           }
         }
         await subscribe();
-        toast.success(
-          t("notifications.push.enabled", "Notificaciones push activadas")
-        );
+        toast.success(t("notifications.push.enabled"));
       }
     } catch (err) {
       console.error("Error cambiando suscripción:", err);
-      toast.error(
-        t(
-          "notifications.push.error",
-          "Error al cambiar la suscripción de notificaciones push"
-        )
-      );
+      toast.error(t("notifications.push.error"));
     } finally {
       setIsToggling(false);
     }
@@ -122,15 +110,9 @@ export function PushNotificationToggle() {
           {t("notifications.push.title", "Notificaciones Push")}
         </CardTitle>
         <CardDescription>
-          {isSubscribed
-            ? t(
-                "notifications.push.enabledDescription",
-                "Recibirás notificaciones en tiempo real en tu navegador"
-              )
-            : t(
-                "notifications.push.disabledDescription",
-                "Activa para recibir notificaciones push sobre eventos importantes"
-              )}
+              {isSubscribed
+                ? t("notifications.push.enabledDescription")
+                : t("notifications.push.disabledDescription")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -139,34 +121,21 @@ export function PushNotificationToggle() {
             {error && (
               <Alert variant="destructive" className="mb-4">
                 <AlertDescription>
-                  {error.message ||
-                    t(
-                      "notifications.push.error",
-                      "Error al cambiar la suscripción"
-                    )}
+                  {error.message || t("notifications.push.error")}
                 </AlertDescription>
               </Alert>
             )}
             <p className="text-sm text-muted-foreground">
               {isSubscribed
-                ? t(
-                    "notifications.push.statusEnabled",
-                    "Las notificaciones push están activas"
-                  )
-                : t(
-                    "notifications.push.statusDisabled",
-                    "Las notificaciones push están desactivadas"
-                  )}
+                ? t("notifications.push.statusEnabled")
+                : t("notifications.push.statusDisabled")}
             </p>
           </div>
           <Switch
             checked={isSubscribed}
             onCheckedChange={handleToggle}
             disabled={isLoading || isToggling}
-            aria-label={t(
-              "notifications.push.toggle",
-              "Activar/desactivar notificaciones push"
-            )}
+            aria-label={t("notifications.push.toggle")}
           />
         </div>
       </CardContent>
