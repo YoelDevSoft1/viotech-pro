@@ -169,8 +169,8 @@ export function NotificationCenter() {
   // Renderizar placeholder durante SSR para evitar diferencias de hidratación
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon" className="relative">
-        <Bell className="h-5 w-5" />
+      <Button variant="ghost" size="icon" className="relative h-9 w-9">
+        <Bell className="h-4 w-4" />
         {hasUnread && (
           <Badge
             variant="destructive"
@@ -186,8 +186,8 @@ export function NotificationCenter() {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className={cn("h-5 w-5 transition-all", hasUnread && "animate-pulse")} />
+        <Button variant="ghost" size="icon" className="relative h-9 w-9">
+          <Bell className={cn("h-4 w-4 transition-all", hasUnread && "animate-pulse")} />
           {hasUnread && (
             <Badge
               variant="destructive"

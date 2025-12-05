@@ -60,20 +60,25 @@ class AnalyticsService {
    */
   async trackEvent(event: AnalyticsEvent): Promise<boolean> {
     try {
-      // Intentar enviar el evento sin autenticación (usando auth: false)
+      // Enviar evento - el backend acepta autenticación opcional
+      // Si hay token, se enviará automáticamente para asociar con usuario
+      // Si no hay token, se trackea sin usuario (usuarios no autenticados)
       await apiClient.post("/analytics/events", {
         eventType: event.eventType,
         eventName: event.eventName,
         properties: event.properties || {},
         sessionId: event.sessionId || getSessionId(),
-      }, {
-        auth: false, // Marcar como no autenticado para evitar errores
-      } as any);
+      });
       return true;
     } catch (error: any) {
       // Silenciar errores de autenticación y otros errores para no interrumpir la UX
-      // Solo loguear en desarrollo si no es un error de autenticación esperado
-      if (process.env.NODE_ENV === 'development' && !error?.silent && error?.message !== 'UNAUTHENTICATED_ANALYTICS') {
+      // Los errores marcados como 'silent' o 'UNAUTHENTICATED_PUBLIC_ENDPOINT' no se loguean
+      const isSilentError = error?.silent || 
+                           error?.message === 'UNAUTHENTICATED_PUBLIC_ENDPOINT' ||
+                           error?.message === 'UNAUTHENTICATED_ANALYTICS';
+      
+      // Solo loguear en desarrollo si no es un error silencioso esperado
+      if (process.env.NODE_ENV === 'development' && !isSilentError) {
         console.debug("Error trackeando evento (silenciado):", error);
       }
       return false;

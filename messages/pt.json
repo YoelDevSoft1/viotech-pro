@@ -745,6 +745,22 @@
         "couldNotLoadHealth": "Erro ao carregar saúde",
         "couldNotReadAuth": "Não foi possível ler auth",
         "couldNotValidateRole": "Erro ao validar função"
+      },
+      "healthCheck": {
+        "healthy": "Saudável",
+        "unhealthy": "Não saudável",
+        "degraded": "Degradado",
+        "checking": "Verificando...",
+        "unknown": "Desconhecido",
+        "frontend": "Frontend",
+        "backend": "Backend",
+        "ok": "OK",
+        "down": "Indisponível",
+        "lastChecked": "Última verificação",
+        "frontendOk": "Frontend: OK",
+        "backendOk": "Backend: OK",
+        "frontendDegraded": "Frontend: Degradado",
+        "backendDegraded": "Backend: Degradado"
       }
     },
     "settings": {

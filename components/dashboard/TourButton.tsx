@@ -29,13 +29,13 @@ export function TourButton() {
     <>
       <Button
         variant="ghost"
-        size="sm"
+        size="icon"
         onClick={handleStartTour}
-        className="gap-2"
+        className="h-9 w-9"
         title={tOnboarding("startTour")}
       >
         <Sparkles className="h-4 w-4" />
-        <span className="hidden sm:inline">{tOnboarding("startTour")}</span>
+        <span className="sr-only">{tOnboarding("startTour")}</span>
       </Button>
       {activeTourData && (
         <NativeOnboardingTour

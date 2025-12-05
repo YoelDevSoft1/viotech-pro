@@ -9,6 +9,7 @@ import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 import { usePathname } from "next/navigation";
 import { HealthCheckBadge } from "@/components/admin/HealthCheckBadge";
 import { TourButton } from "@/components/dashboard/TourButton";
+import { cn } from "@/lib/utils";
 
 export function HeaderContent() {
   const { state, isMobile } = useSidebar();
@@ -19,17 +20,38 @@ export function HeaderContent() {
   const isAdminRoute = pathname?.startsWith("/admin");
 
   return (
-    <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-3 border-b bg-background px-4" data-tour="header">
+    <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4" data-tour="header">
       {showTriggerInHeader && <SidebarTrigger className="-ml-1" />}
-      <div className="flex flex-1 items-center justify-end gap-3">
-        {isAdminRoute && <HealthCheckBadge />}
-        <TourButton />
+      
+      <div className="flex flex-1 items-center justify-end gap-1">
+        {/* Grupo 1: Sistema/Admin (solo visible en admin) */}
+        {isAdminRoute && (
+          <>
+            <HealthCheckBadge />
+            <div className="h-6 w-px bg-border mx-1" aria-hidden="true" />
+          </>
+        )}
+
+        {/* Grupo 2: Notificaciones (prioridad alta - uso frecuente) */}
         <NotificationCenter />
-        <LocaleSelector />
-        <Button variant="ghost" size="sm" className="gap-2">
-          <RefreshCcw className="h-4 w-4" />
-          <span className="hidden sm:inline">{t("refresh")}</span>
-        </Button>
+
+        {/* Grupo 3: Ayuda/Onboarding */}
+        <TourButton />
+
+        {/* Grupo 4: Configuración y Acciones */}
+        <div className="flex items-center gap-1">
+          <div className="h-6 w-px bg-border mx-1" aria-hidden="true" />
+          <LocaleSelector />
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-9 w-9"
+            title={t("refresh")}
+          >
+            <RefreshCcw className="h-4 w-4" />
+            <span className="sr-only">{t("refresh")}</span>
+          </Button>
+        </div>
       </div>
     </header>
   );

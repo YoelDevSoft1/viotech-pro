@@ -79,17 +79,24 @@ apiClient.interceptors.request.use(
     // Si está marcado explícitamente como no autenticado, no agregar token
     if ((config as any).auth === false) return config;
 
-    // Si es un endpoint público, no agregar token
-    if (isPublicEndpoint(config.url, config.method)) {
-      return config;
-    }
-
     // Asegurar que headers existe
     if (!config.headers) {
       config.headers = {} as any;
     }
 
+    // Obtener token si está disponible
     const token = await getValidToken();
+    
+    // Si es un endpoint público, agregar token solo si está disponible (auth opcional)
+    // Esto permite asociar eventos con usuarios cuando hay sesión activa
+    if (isPublicEndpoint(config.url, config.method)) {
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    }
+
+    // Para endpoints privados, el token es requerido
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -156,6 +163,23 @@ apiClient.interceptors.response.use(
       return Promise.reject(new Error(connectionMessage));
     }
 
+    // Manejar errores 401 de endpoints públicos ANTES de cualquier otro procesamiento
+    // Esto es especialmente importante para analytics que puede funcionar sin autenticación
+    if (error.response?.status === 401 && originalRequest) {
+      const isAnalyticsEndpoint = originalRequest.url?.includes('/analytics/events');
+      const isPublicEndpointRequest = isPublicEndpoint(originalRequest.url, originalRequest.method);
+      
+      // Si es analytics o un endpoint público, manejar silenciosamente
+      if (isAnalyticsEndpoint || isPublicEndpointRequest) {
+        // Crear un error silencioso que será manejado por el servicio sin logging
+        const silentError = new Error('UNAUTHENTICATED_PUBLIC_ENDPOINT') as any;
+        silentError.response = error.response;
+        silentError.isAxiosError = true;
+        silentError.silent = true; // Marcar como silencioso para evitar logging
+        return Promise.reject(silentError);
+      }
+    }
+
     // Endpoints que pueden fallar silenciosamente (no implementados aún o pueden retornar errores esperados)
     const silentErrorEndpoints = [
       '/auth/me',
@@ -184,33 +208,19 @@ apiClient.interceptors.response.use(
         // Devolver el error original para que el hook lo maneje silenciosamente
         return Promise.reject(error);
       }
-      
-      // Si es un endpoint público, permitir el error 401 sin intentar refrescar
-      if (isPublicEndpoint(originalRequest.url)) {
-        // Para endpoints públicos, un 401 puede ser válido (no requiere autenticación)
-        // Pero si el backend retorna 401, puede ser un error de configuración
-        // Devolver el error original sin modificar el mensaje
-        const responseData = error.response?.data as any;
-        const publicError = new Error(
-          responseData?.error || 
-          responseData?.message || 
-          "El endpoint debería ser público pero requiere autenticación"
-        ) as any;
-        publicError.response = error.response;
-        publicError.isAxiosError = true;
-        return Promise.reject(publicError);
-      }
 
       originalRequest._retry = true;
 
       // Verificar si hay un token antes de intentar refrescar
       const currentToken = getAccessToken();
       if (!currentToken) {
-        // Si es un endpoint de analytics, permitir que falle silenciosamente
+        // Si es un endpoint público o analytics, permitir que falle silenciosamente
         const isAnalyticsEndpoint = originalRequest?.url?.includes('/analytics/events');
-        if (isAnalyticsEndpoint) {
+        const isPublicEndpointRequest = isPublicEndpoint(originalRequest.url, originalRequest.method);
+        
+        if (isAnalyticsEndpoint || isPublicEndpointRequest) {
           // Crear un error especial que será manejado silenciosamente por el servicio
-          const silentError = new Error('UNAUTHENTICATED_ANALYTICS') as any;
+          const silentError = new Error('UNAUTHENTICATED_PUBLIC_ENDPOINT') as any;
           silentError.response = error.response;
           silentError.isAxiosError = true;
           silentError.silent = true; // Marcar como silencioso
@@ -264,6 +274,11 @@ apiClient.interceptors.response.use(
         errorMessage;
     } else if (error.message) {
       errorMessage = error.message;
+    }
+
+    // No loguear errores silenciosos (marcados con error.silent = true)
+    if ((error as any)?.silent) {
+      return Promise.reject(error);
     }
 
     // Logging de errores de API según severidad

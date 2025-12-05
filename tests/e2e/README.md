@@ -160,3 +160,4 @@ await expect(page.locator(".animate-pulse").first()).toBeHidden();
 await page.waitForTimeout(5000);
 ```
 
+

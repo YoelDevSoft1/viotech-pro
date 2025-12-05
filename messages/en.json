@@ -778,6 +778,22 @@
         "couldNotLoadHealth": "Error loading health",
         "couldNotReadAuth": "Could not read auth",
         "couldNotValidateRole": "Error validating role"
+      },
+      "healthCheck": {
+        "healthy": "Healthy",
+        "unhealthy": "Unhealthy",
+        "degraded": "Degraded",
+        "checking": "Checking...",
+        "unknown": "Unknown",
+        "frontend": "Frontend",
+        "backend": "Backend",
+        "ok": "OK",
+        "down": "Down",
+        "lastChecked": "Last checked",
+        "frontendOk": "Frontend: OK",
+        "backendOk": "Backend: OK",
+        "frontendDegraded": "Frontend: Degraded",
+        "backendDegraded": "Backend: Degraded"
       }
     },
     "settings": {

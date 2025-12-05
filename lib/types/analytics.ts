@@ -318,3 +318,4 @@ export interface AnalyticsPrivacySettings {
   shareAnonymousData: boolean;
 }
 
+

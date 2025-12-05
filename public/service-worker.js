@@ -4,6 +4,35 @@
 const CACHE_NAME = "viotech-static-v2";
 
 // ============================================
+// ERROR HANDLER - Capturar errores no controlados
+// ============================================
+self.addEventListener("error", (event) => {
+  // Silenciar errores de extensiones del navegador
+  if (event.message && event.message.includes("runtime.lastError")) {
+    event.preventDefault();
+    return;
+  }
+  // Loguear otros errores solo en desarrollo
+  if (process.env.NODE_ENV === "development") {
+    console.error("Service Worker Error:", event.error);
+  }
+});
+
+self.addEventListener("unhandledrejection", (event) => {
+  // Silenciar errores de extensiones del navegador
+  const errorMessage = event.reason?.message || String(event.reason || "");
+  if (errorMessage.includes("runtime.lastError") || 
+      errorMessage.includes("Receiving end does not exist")) {
+    event.preventDefault();
+    return;
+  }
+  // Loguear otros errores solo en desarrollo
+  if (process.env.NODE_ENV === "development") {
+    console.error("Service Worker Unhandled Rejection:", event.reason);
+  }
+});
+
+// ============================================
 // INSTALL EVENT
 // ============================================
 self.addEventListener("install", (event) => {
@@ -132,18 +161,35 @@ self.addEventListener("notificationclick", (event) => {
         for (const client of windowClients) {
           if (client.url.includes(self.location.origin) && "focus" in client) {
             // Navegar a la URL dentro de la ventana existente
-            client.postMessage({
-              type: "NOTIFICATION_CLICK",
-              url: url,
-              notificationId: notificationData.notificationId,
-            });
-            return client.focus();
+            // Verificar que el cliente todavía existe antes de enviar mensaje
+            try {
+              if (client && typeof client.postMessage === "function") {
+                client.postMessage({
+                  type: "NOTIFICATION_CLICK",
+                  url: url,
+                  notificationId: notificationData.notificationId,
+                }).catch(() => {
+                  // Silenciar errores de comunicación (cliente cerrado)
+                });
+              }
+              return client.focus();
+            } catch (error) {
+              // Si falla, continuar con el siguiente cliente o abrir nueva ventana
+              console.debug("Error enviando mensaje a cliente:", error);
+            }
           }
         }
         // Si no hay ventana abierta, abrir una nueva
         if (clients.openWindow) {
-          return clients.openWindow(url);
+          return clients.openWindow(url).catch((error) => {
+            // Silenciar errores al abrir ventana (puede ser bloqueado por popup blocker)
+            console.debug("Error abriendo ventana:", error);
+          });
         }
+      })
+      .catch((error) => {
+        // Silenciar errores al obtener clientes
+        console.debug("Error obteniendo clientes:", error);
       }),
   );
 });
@@ -186,22 +232,46 @@ self.addEventListener("message", (event) => {
       self.registration.pushManager
         .getSubscription()
         .then((subscription) => {
-          event.ports[0]?.postMessage({
-            type: "SUBSCRIPTION_STATUS",
-            subscription: subscription ? subscription.toJSON() : null,
-          });
+          // Verificar que el puerto todavía existe antes de enviar mensaje
+          if (event.ports && event.ports[0]) {
+            try {
+              event.ports[0].postMessage({
+                type: "SUBSCRIPTION_STATUS",
+                subscription: subscription ? subscription.toJSON() : null,
+              });
+            } catch (error) {
+              // Silenciar errores si el puerto ya no existe
+              console.debug("Error enviando mensaje de suscripción:", error);
+            }
+          }
         })
         .catch((error) => {
-          event.ports[0]?.postMessage({
-            type: "SUBSCRIPTION_ERROR",
-            error: error.message,
-          });
+          // Verificar que el puerto todavía existe antes de enviar error
+          if (event.ports && event.ports[0]) {
+            try {
+              event.ports[0].postMessage({
+                type: "SUBSCRIPTION_ERROR",
+                error: error.message,
+              });
+            } catch (portError) {
+              // Silenciar errores si el puerto ya no existe
+              console.debug("Error enviando mensaje de error:", portError);
+            }
+          }
         });
       break;
 
     case "CLEAR_CACHE":
       caches.delete(CACHE_NAME).then(() => {
-        event.ports[0]?.postMessage({ type: "CACHE_CLEARED" });
+        // Verificar que el puerto todavía existe antes de enviar mensaje
+        if (event.ports && event.ports[0]) {
+          try {
+            event.ports[0].postMessage({ type: "CACHE_CLEARED" });
+          } catch (error) {
+            // Silenciar errores si el puerto ya no existe
+            console.debug("Error enviando mensaje de cache:", error);
+          }
+        }
       });
       break;
 

@@ -30,44 +30,80 @@ interface HealthResponse {
 
 async function checkBackend(): Promise<HealthCheck> {
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL || "https://viotech-main.onrender.com";
-  const healthUrl = `${backendUrl}/api/health`;
+  // Intentar diferentes rutas de health check
+  const healthUrls = [
+    `${backendUrl}/api/health`,
+    `${backendUrl}/health`,
+    `${backendUrl}/api/status`,
+  ];
 
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+  let lastError: Error | null = null;
 
-    const response = await fetch(healthUrl, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      signal: controller.signal,
-      cache: "no-store",
-    });
+  // Intentar cada URL hasta que una funcione
+  for (const healthUrl of healthUrls) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
 
-    clearTimeout(timeoutId);
+      const response = await fetch(healthUrl, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        signal: controller.signal,
+        cache: "no-store",
+      });
 
-    if (!response.ok) {
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        // Si no es 200, continuar con la siguiente URL
+        lastError = new Error(`Backend responded with status ${response.status}`);
+        continue;
+      }
+
+      const data = await response.json().catch(() => null);
+      
+      // Intentar obtener el status de diferentes formatos posibles de respuesta
+      const backendStatus = 
+        data?.status || 
+        data?.data?.status || 
+        data?.health?.status ||
+        data?.state ||
+        "unknown";
+
+      const statusLower = String(backendStatus).toLowerCase();
+      const isHealthy = ["ok", "up", "ready", "healthy", "operational"].includes(statusLower);
+
+      // Si el backend responde con 200 pero no tenemos un status claro, 
+      // asumimos que está OK si la respuesta es válida
+      const finalStatus = isHealthy 
+        ? "ok" 
+        : data !== null && response.ok 
+          ? "ok" // Si responde 200 y tiene datos, asumimos OK aunque no tenga status explícito
+          : "degraded";
+
       return {
-        status: "degraded",
+        status: finalStatus,
         timestamp: new Date().toISOString(),
-        message: `Backend responded with status ${response.status}`,
+        message: data?.message || data?.data?.message || (finalStatus === "ok" ? "Backend is responding" : `Backend status: ${backendStatus}`),
+        details: {
+          ...data,
+          detectedStatus: backendStatus,
+          httpStatus: response.status,
+          healthUrl: healthUrl,
+        },
       };
+    } catch (error) {
+      // Guardar el error y continuar con la siguiente URL
+      lastError = error instanceof Error ? error : new Error(String(error));
+      continue;
     }
+  }
 
-    const data = await response.json().catch(() => null);
-    const backendStatus = data?.status || data?.data?.status || "unknown";
-
-    return {
-      status: ["ok", "up", "ready", "healthy"].includes(String(backendStatus).toLowerCase())
-        ? "ok"
-        : "degraded",
-      timestamp: new Date().toISOString(),
-      message: data?.message || "Backend is responding",
-      details: data,
-    };
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+  // Si ninguna URL funcionó, retornar error
+  if (lastError) {
+    const errorMessage = lastError.message;
     
     // Si es un aborto por timeout, es degradado, no down
     if (errorMessage.includes("aborted") || errorMessage.includes("timeout")) {
@@ -84,6 +120,13 @@ async function checkBackend(): Promise<HealthCheck> {
       message: `Backend unreachable: ${errorMessage}`,
     };
   }
+
+  // Fallback si no hay error pero tampoco respuesta
+  return {
+    status: "down",
+    timestamp: new Date().toISOString(),
+    message: "Backend unreachable: No response from any health endpoint",
+  };
 }
 
 export async function GET() {
