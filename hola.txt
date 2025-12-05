@@ -1,0 +1,61 @@
+# Project environment variables for viotech
+# Context: production
+# Scope: any
+# Date: Fri, 05 Dec 2025 00:44:30 GMT
+# Updated: Noviembre 2025
+
+# ============================================
+# BACKEND API
+# ============================================
+BACKEND_API_URL=https://viotech-main.onrender.com
+NEXT_PUBLIC_BACKEND_API_URL=https://viotech-main.onrender.com
+PUBLIC_BACKEND_API_URL=https://viotech-main.onrender.com
+
+# ============================================
+# SUPABASE (Storage & Database)
+# ============================================
+NEXT_PUBLIC_SUPABASE_URL=https://sgyfiliutuvhvxyreizj.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNneWZpbGl1dHV2aHZ4eXJlaXpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MTQwMDYsImV4cCI6MjA3ODQ5MDAwNn0.JuU3gmJr67F4juxK-7pRGh2DyaCs-PWI-jBthb7X1OY
+NEXT_PUBLIC_SUPABASE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNneWZpbGl1dHV2aHZ4eXJlaXpqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjkxNDAwNiwiZXhwIjoyMDc4NDkwMDA2fQ.YDaSFIOEtpihRUeLYdJV8dAen4FDB7JHWcJJInuiZGI
+NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET=tickets
+
+# ============================================
+# SENTRY (Error Tracking & Monitoring)
+# ============================================
+NEXT_PUBLIC_SENTRY_DSN=https://8c9a05dc3544ec9b665fe593a9dd8da2@o4510465798766592.ingest.us.sentry.io/4510465799553024
+NEXT_PUBLIC_ENVIRONMENT=production
+NEXT_PUBLIC_APP_VERSION=1.0.0
+
+# ============================================
+# WEBSOCKETS (Notificaciones en Tiempo Real)
+# ============================================
+NEXT_PUBLIC_WS_URL=wss://viotech-main.onrender.com
+
+# ============================================
+# PUSH NOTIFICATIONS (PWA)
+# ============================================
+# Obtener del backend: GET /api/push/vapid-key
+# O configurar manualmente si el backend no lo expone
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=
+
+# ============================================
+# FEATURE FLAGS (Habilitar/Deshabilitar Features)
+# ============================================
+NEXT_PUBLIC_ENABLE_ADMIN=true
+NEXT_PUBLIC_ENABLE_AI_ASSISTANT=true
+NEXT_PUBLIC_ENABLE_PREDICTOR=true
+
+# ============================================
+# PAYMENTS (Wompi)
+# ============================================
+NEXT_PUBLIC_WOMPI_PUBLIC_KEY=pub_prod_fln0t6URdZkQoOMf2gOmcvSJ2ac6fPqi
+
+# ============================================
+# ANALYTICS (Opcional)
+# ============================================
+# NEXT_PUBLIC_GA4_MEASUREMENT_ID=G-XXXXXXXXXX
+
+# ============================================
+# LOGGING (Opcional)
+# ============================================
+# NEXT_PUBLIC_LOG_LEVEL=info
