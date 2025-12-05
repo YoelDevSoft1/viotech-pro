@@ -31,8 +31,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
-import { useUpdateAnalyticsPrivacy } from "@/lib/hooks/useAnalytics";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AnalyticsPrivacySettings } from "@/lib/types/analytics";
 import { apiClient } from "@/lib/apiClient";
 import { toast } from "sonner";
@@ -218,7 +217,19 @@ export function PrivacyAnalyticsSettings({ className }: PrivacyAnalyticsSettings
     staleTime: 5 * 60 * 1000,
   });
 
-  const updateSettings = useUpdateAnalyticsPrivacy();
+  const queryClient = useQueryClient();
+  const updateSettings = useMutation({
+    mutationFn: async (updates: Partial<AnalyticsPrivacySettings>) => {
+      const { data } = await apiClient.patch<{ data: AnalyticsPrivacySettings }>(
+        "/analytics/privacy-settings",
+        updates
+      );
+      return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["analytics", "privacy-settings"] });
+    },
+  });
 
   // Sincronizar estado local
   useEffect(() => {

@@ -107,7 +107,7 @@ export function PushNotificationToggle() {
           ) : (
             <BellOff className="h-5 w-5 text-muted-foreground" />
           )}
-          {t("notifications.push.title", "Notificaciones Push")}
+          {t("notifications.push.title")}
         </CardTitle>
         <CardDescription>
               {isSubscribed

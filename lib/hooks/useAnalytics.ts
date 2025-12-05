@@ -142,7 +142,7 @@ export function useAnalyticsDashboard(filters?: AnalyticsFilters) {
           },
           errors: {
             errorRate: 0,
-            errorsByType: summary?.eventsByType || {},
+            errorsByType: {},
             formAbandonmentRate: 0,
             noResultsRate: 0,
           },
