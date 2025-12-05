@@ -55,19 +55,13 @@ export function PushNotificationToggle() {
             {t("notifications.push.title")}
           </CardTitle>
           <CardDescription>
-            {t(
-              "notifications.push.permissionDenied",
-              "Has bloqueado las notificaciones. Habilítalas en la configuración del navegador."
-            )}
+            {t("notifications.push.permissionDenied")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Alert variant="destructive">
             <AlertDescription>
-              {t(
-                "notifications.push.enableInBrowser",
-                "Para recibir notificaciones push, necesitas habilitar los permisos en la configuración de tu navegador."
-              )}
+              {t("notifications.push.enableInBrowser")}
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -82,9 +76,7 @@ export function PushNotificationToggle() {
     try {
       if (isSubscribed) {
         await unsubscribe();
-        toast.success(
-          t("notifications.push.disabled", "Notificaciones push desactivadas")
-        );
+        toast.success(t("notifications.push.disabled"));
       } else {
         // Si el permiso es "prompt", solicitar permiso primero
         if (permission === "prompt") {
