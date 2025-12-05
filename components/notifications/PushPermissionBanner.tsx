@@ -14,7 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { usePushNotifications } from "@/lib/hooks/usePushNotifications";
-import { cn } from "@/lib/utils/utils";
+import { cn } from "@/lib/utils";
 
 /**
  * Props para el componente PushPermissionBanner
@@ -381,3 +381,4 @@ function PushPermissionBannerContent({ onClose }: { onClose?: () => void }) {
     </>
   );
 }
+

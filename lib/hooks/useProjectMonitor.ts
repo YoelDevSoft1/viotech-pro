@@ -140,3 +140,4 @@ function getDefaultStatus(): MonitoringStatus {
     alertHistory: [],
   };
 }
+

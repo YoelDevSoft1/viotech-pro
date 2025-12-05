@@ -390,3 +390,4 @@ function getMockAlertsSummary(): ChurnAlertsSummary {
     recentAlerts: alerts.slice(0, 3),
   };
 }
+

@@ -278,3 +278,4 @@
 **Tiempo Total Estimado:** 1-2 semanas  
 **Impacto Esperado:** Mejora de 10-20 puntos en Lighthouse Performance
 
+

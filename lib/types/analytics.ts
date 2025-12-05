@@ -317,3 +317,4 @@ export interface AnalyticsPrivacySettings {
   /** Compartir datos anonimizados para mejoras */
   shareAnonymousData: boolean;
 }
+

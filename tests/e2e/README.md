@@ -159,3 +159,4 @@ await expect(page.locator(".animate-pulse").first()).toBeHidden();
 // ❌ Mal: esperas fijas
 await page.waitForTimeout(5000);
 ```
+

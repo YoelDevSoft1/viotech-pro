@@ -221,3 +221,4 @@ function MonitoringStatusSkeleton({ compact }: { compact?: boolean }) {
     </Card>
   );
 }
+

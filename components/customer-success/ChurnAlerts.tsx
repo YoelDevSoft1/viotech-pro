@@ -38,7 +38,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils/utils";
+import { cn } from "@/lib/utils";
 import type { ChurnAlert, ChurnAlertType, AlertSeverity, AlertStatus } from "@/lib/types/customer-success";
 import { useUpdateAlertStatus } from "@/lib/hooks/useCustomerHealth";
 import { formatDistanceToNow } from "date-fns";
@@ -551,3 +551,4 @@ function ChurnAlertsSkeleton({
     </Card>
   );
 }
+

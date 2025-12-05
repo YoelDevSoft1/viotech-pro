@@ -201,3 +201,4 @@ export function getPermissions(role: UserRole): ProjectMonitorPermissions {
     canAnalyzeProject: () => true, // El backend valida permisos específicos
   };
 }
+

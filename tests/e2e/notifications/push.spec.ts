@@ -191,3 +191,4 @@ test.describe("Push Notifications - Service Worker", () => {
     console.log("Push support available:", hasPushSupport);
   });
 });
+

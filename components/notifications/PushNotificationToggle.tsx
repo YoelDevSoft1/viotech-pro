@@ -35,13 +35,10 @@ export function PushNotificationToggle() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BellOff className="h-5 w-5 text-muted-foreground" />
-            {t("notifications.push.title", "Notificaciones Push")}
+            {t("notifications.push.title")}
           </CardTitle>
           <CardDescription>
-            {t(
-              "notifications.push.notSupported",
-              "Tu navegador no soporta notificaciones push"
-            )}
+            {t("notifications.push.notSupported")}
           </CardDescription>
         </CardHeader>
       </Card>
@@ -55,7 +52,7 @@ export function PushNotificationToggle() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BellOff className="h-5 w-5 text-red-500" />
-            {t("notifications.push.title", "Notificaciones Push")}
+            {t("notifications.push.title")}
           </CardTitle>
           <CardDescription>
             {t(
@@ -184,4 +181,5 @@ export function PushNotificationToggle() {
     </Card>
   );
 }
+
 

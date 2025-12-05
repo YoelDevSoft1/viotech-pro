@@ -415,3 +415,4 @@ export interface QBRData {
     relevance: string;
   }>;
 }
+
