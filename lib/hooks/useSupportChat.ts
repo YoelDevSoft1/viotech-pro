@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { apiClient } from "@/lib/apiClient";
+import { supportApi, Message } from "@/lib/api/support";
 import { getAccessToken } from "@/lib/auth";
 
 export type ChatMessage = {
@@ -12,6 +12,14 @@ export type ChatMessage = {
   createdAt: string;
   status?: "sending" | "sent" | "delivered" | "read";
   attachments?: { name: string; url: string; type?: string }[];
+};
+
+export type AttachmentInput = {
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  storageUrl: string;
+  storagePath: string;
 };
 
 export type ChatStatus = "connecting" | "connected" | "error";
@@ -60,15 +68,33 @@ export function useSupportChat(chatId?: string | null) {
     });
   };
 
-  // Load initial history
+  // Load initial history usando el endpoint correcto
   useEffect(() => {
     let mounted = true;
-    apiClient
-      .get("/support/chat/history", { params: { limit: 100, chatId: chatIdRef.current } })
-      .then((res) => res?.data?.data || res?.data || [])
-      .then((list: ChatMessage[]) => {
+    if (!chatIdRef.current) {
+      setMessages([]);
+      return;
+    }
+    
+    supportApi
+      .getMessages(chatIdRef.current, undefined, 100)
+      .then((list: Message[]) => {
         if (mounted && Array.isArray(list)) {
-          setChatMessages(list);
+          // Convertir Message[] a ChatMessage[]
+          const chatMessages: ChatMessage[] = list.map((msg) => ({
+            id: msg.id,
+            tempId: msg.id,
+            from: msg.senderType === "user" ? "client" : msg.senderType === "agent" ? "agent" : "system",
+            body: msg.body,
+            createdAt: msg.createdAt,
+            status: msg.status,
+            attachments: msg.attachments?.map((att) => ({
+              name: att.fileName,
+              url: att.storageUrl,
+              type: att.fileType,
+            })) || [],
+          }));
+          setChatMessages(chatMessages);
         }
       })
       .catch(() => {});
@@ -134,21 +160,48 @@ export function useSupportChat(chatId?: string | null) {
   useEffect(() => {
     if (status !== "error") return;
     if (pollRef.current) return;
+    if (!chatIdRef.current) return;
 
-    const fetchUpdates = () =>
-      apiClient
-        .get("/support/chat/updates", {
-          params: {
-            chatId: chatIdRef.current,
-            ...(lastTimestamp ? { since: lastTimestamp } : {}),
-          },
-        })
-        .then((res) => res?.data?.data || res?.data || [])
-        .then((list: ChatMessage[]) => {
-          if (!Array.isArray(list) || list.length === 0) return;
-          setMessages((prev) => [...prev, ...list]);
-        })
-        .catch(() => {});
+    const fetchUpdates = async () => {
+      try {
+        // Usar el endpoint de mensajes con paginación
+        // Si hay lastTimestamp, cargar mensajes después de esa fecha
+        const newMessages = await supportApi.getMessages(chatIdRef.current!, undefined, 50);
+        
+        if (!Array.isArray(newMessages) || newMessages.length === 0) return;
+        
+        // Filtrar mensajes nuevos (después de lastTimestamp)
+        const filteredMessages = lastTimestamp
+          ? newMessages.filter((msg) => new Date(msg.createdAt) > new Date(lastTimestamp))
+          : newMessages;
+        
+        if (filteredMessages.length > 0) {
+          // Convertir Message[] a ChatMessage[]
+          const chatMessages: ChatMessage[] = filteredMessages.map((msg) => ({
+            id: msg.id,
+            tempId: msg.id,
+            from: msg.senderType === "user" ? "client" : msg.senderType === "agent" ? "agent" : "system",
+            body: msg.body,
+            createdAt: msg.createdAt,
+            status: msg.status,
+            attachments: msg.attachments?.map((att) => ({
+              name: att.fileName,
+              url: att.storageUrl,
+              type: att.fileType,
+            })) || [],
+          }));
+          
+          setMessages((prev) => {
+            // Evitar duplicados
+            const existingIds = new Set(prev.map((m) => m.id));
+            const newOnes = chatMessages.filter((m) => !existingIds.has(m.id));
+            return [...prev, ...newOnes];
+          });
+        }
+      } catch (err) {
+        // Silenciar errores en polling
+      }
+    };
 
     // activar fallback y marcar estado conectado
     setIsFallback(true);
@@ -160,37 +213,44 @@ export function useSupportChat(chatId?: string | null) {
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
     };
-  }, [status, lastTimestamp]);
+  }, [status, lastTimestamp, chatId]);
 
-  const sendMessage = async (body: string) => {
+  const sendMessage = async (body: string, tempId?: string, attachments: AttachmentInput[] = []) => {
     const trimmed = body.trim();
-    if (!trimmed) return;
-    const tempId = crypto.randomUUID();
+    if ((!trimmed && attachments.length === 0) || !chatIdRef.current) return;
+    
+    const messageTempId = tempId || crypto.randomUUID();
     const optimistic: ChatMessage = {
-      id: tempId,
-      tempId,
+      id: messageTempId,
+      tempId: messageTempId,
       from: "client",
-      body: trimmed,
+      body: trimmed || "📎 Archivo adjunto",
       createdAt: new Date().toISOString(),
       status: "sending",
+      attachments: attachments.map((att) => ({
+        name: att.fileName,
+        url: att.storageUrl,
+        type: att.fileType,
+      })),
     };
     setMessages((prev) => [...prev, optimistic]);
     setSending(true);
     try {
-      const { data } = await apiClient.post("/support/chat/send", {
-        message: trimmed,
-        tempId,
-        chatId: chatIdRef.current,
-      });
-      const persisted = data?.data || data;
+      // Usar el endpoint correcto según la guía
+      const persisted = await supportApi.sendMessage(
+        chatIdRef.current,
+        trimmed || "📎 Archivo adjunto",
+        messageTempId,
+        attachments
+      );
       if (persisted?.id) {
         setMessages((prev) =>
-          prev.map((m) => (m.id === tempId ? { ...m, id: persisted.id, status: "sent" } : m))
+          prev.map((m) => (m.id === messageTempId ? { ...m, id: persisted.id, status: "sent" } : m))
         );
       }
     } catch (err) {
       // remove optimistic on failure
-      setMessages((prev) => prev.filter((m) => m.id !== tempId));
+      setMessages((prev) => prev.filter((m) => m.id !== messageTempId));
       throw err;
     } finally {
       setSending(false);

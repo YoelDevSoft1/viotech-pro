@@ -30,22 +30,26 @@ export function SidebarUser() {
     setMounted(true);
   }, []);
   
-  // Iniciales para el fallback del avatar - usar datos reales o mostrar loading
-  const initials = user?.nombre
-    ?.split(" ")
-    .map((n: string) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase() || (isLoading ? "..." : "U");
+  // Calcular iniciales solo cuando esté montado y tengamos datos
+  // Esto evita diferencias entre servidor y cliente
+  const initials = mounted && user?.nombre
+    ? user.nombre
+        .split(" ")
+        .map((n: string) => n[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : "U";
 
   // Si no está montado o está cargando sin datos, mostrar skeleton sutil
+  // IMPORTANTE: Renderizar lo mismo en servidor y cliente hasta que esté montado
   if (!mounted || (isLoading && !user)) {
     return (
       <div className="p-3 border-t group-data-[collapsible=icon]:p-3">
         <div className="w-full flex items-center gap-3 p-2 rounded-md group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:rounded-md">
           <Avatar className="h-9 w-9 shrink-0 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10">
-            <AvatarFallback className="bg-muted text-muted-foreground text-xs font-semibold animate-pulse">
-              {initials}
+            <AvatarFallback className="bg-muted text-muted-foreground text-xs font-semibold animate-pulse" suppressHydrationWarning>
+              U
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 text-left min-w-0 group-data-[collapsible=icon]:hidden">
@@ -64,7 +68,7 @@ export function SidebarUser() {
           <button className="w-full flex items-center gap-3 p-2 rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:rounded-md">
             <Avatar className="h-9 w-9 shrink-0 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10">
               <AvatarImage src={user?.avatar} alt={user?.nombre} />
-              <AvatarFallback className="bg-green-500 text-white text-xs font-semibold">
+              <AvatarFallback className="bg-green-500 text-white text-xs font-semibold" suppressHydrationWarning>
                 {initials}
               </AvatarFallback>
             </Avatar>

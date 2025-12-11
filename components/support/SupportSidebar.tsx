@@ -34,7 +34,7 @@ type Agent = {
   id: string;
   name: string;
   role?: string;
-  status?: "online" | "offline" | "away";
+  status?: "online" | "offline" | "away" | "busy";
 };
 
 const localeMap: Record<string, Locale> = { es, en: enUS, pt: ptBR } as any;
@@ -88,11 +88,11 @@ export function SupportSidebar({
     );
   }, [agents, search]);
 
-  // Sort agents: online first, then away, then offline
+  // Sort agents: online first, then away, then busy, then offline
   const sortedAgents = useMemo(() => {
-    const order = { online: 0, away: 1, offline: 2 };
+    const order: Record<string, number> = { online: 0, away: 1, busy: 2, offline: 3 };
     return [...filteredAgents].sort(
-      (a, b) => (order[a.status || "offline"] || 2) - (order[b.status || "offline"] || 2)
+      (a, b) => (order[a.status || "offline"] ?? 3) - (order[b.status || "offline"] ?? 3)
     );
   }, [filteredAgents]);
 
@@ -383,7 +383,7 @@ function StatusDot({
   status,
   className,
 }: {
-  status?: "online" | "offline" | "away";
+  status?: "online" | "offline" | "away" | "busy";
   className?: string;
 }) {
   return (
@@ -392,6 +392,7 @@ function StatusDot({
         "h-3 w-3 rounded-full border-2 border-background",
         status === "online" && "bg-green-500",
         status === "away" && "bg-yellow-400",
+        status === "busy" && "bg-red-500",
         (!status || status === "offline") && "bg-muted-foreground",
         className
       )}

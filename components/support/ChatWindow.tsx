@@ -20,7 +20,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useSupportChat, ChatMessage } from "@/lib/hooks/useSupportChat";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { supportApi } from "@/lib/api/support";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import {
   Loader2,
   Send,
@@ -39,7 +41,13 @@ import {
   Smile,
   Image as ImageIcon,
   Circle,
+  Search,
+  X,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { useChatMessages } from "@/lib/hooks/useChatMessages";
 
 interface ChatWindowProps {
   chatId?: string | null;
@@ -63,9 +71,23 @@ export function ChatWindow({
     retryConnection,
   } = useSupportChat(chatId);
   const [input, setInput] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [attachments, setAttachments] = useState<{ name: string; url: string; type?: string }[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<ChatMessage[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [currentSearchIndex, setCurrentSearchIndex] = useState(-1);
+  const [showSearch, setShowSearch] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const messageRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const t = useTranslationsSafe("support");
+  
+  // Hook para búsqueda de mensajes
+  const { searchMessages } = useChatMessages(chatId || null);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -81,15 +103,92 @@ export function ChatWindow({
     }
   }, [chatId]);
 
+  // Marcar como leído cuando se abre el chat
+  useEffect(() => {
+    if (chatId && messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage && lastMessage.from !== "client") {
+        // Solo marcar como leído si el último mensaje es del agente
+        import("@/lib/api/support").then(({ supportApi }) => {
+          supportApi.markAsRead(chatId, lastMessage.id).catch(() => {
+            // Silenciar errores
+          });
+        });
+      }
+    }
+  }, [chatId, messages]);
+
   const handleSend = async () => {
     const trimmed = input.trim();
-    if (!trimmed || !chatId) return;
+    if ((!trimmed && attachments.length === 0) || !chatId) return;
+    
+    const messageText = trimmed;
+    const currentAttachments = [...attachments];
     setInput("");
+    setAttachments([]);
+    
     try {
-      await sendMessage(trimmed);
-    } catch {
-      setInput(trimmed);
+      // Convertir attachments al formato esperado por la API
+      const apiAttachments = currentAttachments.map((att) => ({
+        fileName: att.name,
+        fileType: att.type || "application/octet-stream",
+        fileSize: 0, // Se calculará en el backend
+        storageUrl: att.url,
+        storagePath: att.url,
+      }));
+      
+      const tempId = crypto.randomUUID();
+      await sendMessage(messageText || "📎 Archivo adjunto", tempId, apiAttachments);
+    } catch (error) {
+      setInput(messageText);
+      setAttachments(currentAttachments);
+      toast.error(t("sendError", { defaultValue: "Error al enviar mensaje" }));
     }
+  };
+
+  const handleFileUpload = async (file: File, isImage: boolean) => {
+    if (!chatId) {
+      toast.error(t("selectChatFirst", { defaultValue: "Selecciona un chat primero" }));
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const attachment = await supportApi.uploadAttachment(file);
+      setAttachments((prev) => [
+        ...prev,
+        {
+          name: attachment.fileName,
+          url: attachment.storageUrl,
+          type: attachment.fileType,
+        },
+      ]);
+      toast.success(t("fileUploaded", { defaultValue: "Archivo subido correctamente" }));
+    } catch (error) {
+      toast.error(t("uploadError", { defaultValue: "Error al subir archivo" }));
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, isImage: boolean) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (isImage && !file.type.startsWith("image/")) {
+      toast.error(t("invalidImage", { defaultValue: "Por favor selecciona una imagen" }));
+      return;
+    }
+
+    // Limitar tamaño (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error(t("fileTooLarge", { defaultValue: "El archivo es demasiado grande (máx. 10MB)" }));
+      return;
+    }
+
+    handleFileUpload(file, isImage);
+    // Reset input
+    e.target.value = "";
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -98,6 +197,110 @@ export function ChatWindow({
       handleSend();
     }
   };
+
+  // Búsqueda de mensajes
+  const handleSearch = async (query: string) => {
+    if (!chatId || !query.trim()) {
+      setSearchResults([]);
+      setCurrentSearchIndex(-1);
+      return;
+    }
+
+    setSearching(true);
+    try {
+      const results = await searchMessages(query.trim());
+      // Convertir Message[] a ChatMessage[]
+      const chatResults: ChatMessage[] = results.map((msg) => ({
+        id: msg.id,
+        tempId: msg.id,
+        from: msg.senderType === "user" ? "client" : msg.senderType === "agent" ? "agent" : "system",
+        body: msg.body,
+        createdAt: msg.createdAt,
+        status: msg.status,
+        attachments: msg.attachments?.map((att) => ({
+          name: att.fileName,
+          url: att.storageUrl,
+          type: att.fileType,
+        })) || [],
+      }));
+      setSearchResults(chatResults);
+      setCurrentSearchIndex(chatResults.length > 0 ? 0 : -1);
+    } catch (error) {
+      toast.error(t("searchError", { defaultValue: "Error al buscar mensajes" }));
+      setSearchResults([]);
+      setCurrentSearchIndex(-1);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const handleSearchInputChange = (value: string) => {
+    setSearchQuery(value);
+    if (value.trim()) {
+      handleSearch(value);
+    } else {
+      setSearchResults([]);
+      setCurrentSearchIndex(-1);
+    }
+  };
+
+  const navigateSearch = (direction: "up" | "down") => {
+    if (searchResults.length === 0) return;
+
+    const newIndex =
+      direction === "up"
+        ? currentSearchIndex > 0
+          ? currentSearchIndex - 1
+          : searchResults.length - 1
+        : currentSearchIndex < searchResults.length - 1
+        ? currentSearchIndex + 1
+        : 0;
+
+    setCurrentSearchIndex(newIndex);
+    scrollToMessage(searchResults[newIndex].id);
+  };
+
+  const scrollToMessage = (messageId: string) => {
+    const messageElement = messageRefs.current.get(messageId);
+    if (messageElement) {
+      messageElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      // Resaltar temporalmente
+      messageElement.classList.add("ring-2", "ring-primary", "ring-offset-2");
+      setTimeout(() => {
+        messageElement.classList.remove("ring-2", "ring-primary", "ring-offset-2");
+      }, 2000);
+    }
+  };
+
+  // Efecto para cerrar búsqueda cuando cambia el chat
+  useEffect(() => {
+    setShowSearch(false);
+    setSearchQuery("");
+    setSearchResults([]);
+    setCurrentSearchIndex(-1);
+  }, [chatId]);
+
+  // Efecto para abrir búsqueda con Ctrl+F o Cmd+F
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "f") {
+        e.preventDefault();
+        if (chatId) {
+          setShowSearch(true);
+          setTimeout(() => searchInputRef.current?.focus(), 100);
+        }
+      }
+      if (e.key === "Escape" && showSearch) {
+        setShowSearch(false);
+        setSearchQuery("");
+        setSearchResults([]);
+        setCurrentSearchIndex(-1);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [chatId, showSearch]);
 
   // Group messages by date
   const groupedMessages = useMemo(() => {
@@ -173,6 +376,29 @@ export function ChatWindow({
         <div className="flex items-center gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hidden sm:flex"
+                onClick={() => {
+                  if (chatId) {
+                    setShowSearch(!showSearch);
+                    if (!showSearch) {
+                      setTimeout(() => searchInputRef.current?.focus(), 100);
+                    }
+                  }
+                }}
+              >
+                <Search className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {t("searchMessages", { defaultValue: "Buscar mensajes" })} (Ctrl+F)
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" className="hidden sm:flex">
                 <Phone className="h-4 w-4" />
               </Button>
@@ -198,6 +424,19 @@ export function ChatWindow({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => {
+                  if (chatId) {
+                    setShowSearch(!showSearch);
+                    if (!showSearch) {
+                      setTimeout(() => searchInputRef.current?.focus(), 100);
+                    }
+                  }
+                }}
+              >
+                <Search className="h-4 w-4 mr-2" />
+                {t("searchMessages", { defaultValue: "Buscar mensajes" })}
+              </DropdownMenuItem>
               <DropdownMenuItem>
                 <Info className="h-4 w-4 mr-2" />
                 {t("chatInfo", { defaultValue: "Info del chat" })}
@@ -210,6 +449,97 @@ export function ChatWindow({
           </DropdownMenu>
         </div>
       </header>
+
+      {/* Search Bar */}
+      {showSearch && chatId && (
+        <div className="border-b bg-muted/30 p-3">
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                ref={searchInputRef}
+                placeholder={t("searchPlaceholder", { defaultValue: "Buscar en mensajes..." })}
+                value={searchQuery}
+                onChange={(e) => handleSearchInputChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && e.shiftKey) {
+                    e.preventDefault();
+                    navigateSearch("up");
+                  } else if (e.key === "Enter") {
+                    e.preventDefault();
+                    navigateSearch("down");
+                  }
+                }}
+                className="pl-9 pr-20"
+              />
+              {searchQuery && (
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                  {searchResults.length > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      {currentSearchIndex + 1} / {searchResults.length}
+                    </span>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => {
+                      setShowSearch(false);
+                      setSearchQuery("");
+                      setSearchResults([]);
+                      setCurrentSearchIndex(-1);
+                    }}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+            </div>
+            {searchResults.length > 0 && (
+              <div className="flex items-center gap-1">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-9 w-9"
+                      onClick={() => navigateSearch("up")}
+                    >
+                      <ChevronUp className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {t("previousResult", { defaultValue: "Anterior" })} (Shift+Enter)
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-9 w-9"
+                      onClick={() => navigateSearch("down")}
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {t("nextResult", { defaultValue: "Siguiente" })} (Enter)
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            )}
+            {searching && (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            )}
+          </div>
+          {searchQuery && !searching && searchResults.length === 0 && (
+            <p className="text-xs text-muted-foreground mt-2">
+              {t("noResults", { defaultValue: "No se encontraron mensajes" })}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Connection Error Alert */}
       {status === "error" && !isFallback && (
@@ -247,17 +577,36 @@ export function ChatWindow({
                 !isClient &&
                 !isSystem &&
                 (idx === 0 || group.messages[idx - 1]?.from === "client");
+              
+              // Verificar si este mensaje está en los resultados de búsqueda
+              const isSearchResult = searchResults.some((r) => r.id === msg.id);
+              const isCurrentSearchResult = searchResults[currentSearchIndex]?.id === msg.id;
 
               return (
-                <MessageBubble
+                <div
                   key={msg.id}
-                  message={msg}
-                  isClient={isClient}
-                  isSystem={isSystem}
-                  showAvatar={showAvatar}
-                  agentInitials={initials}
-                  t={t}
-                />
+                  ref={(el) => {
+                    if (el) {
+                      messageRefs.current.set(msg.id, el);
+                    } else {
+                      messageRefs.current.delete(msg.id);
+                    }
+                  }}
+                  className={cn(
+                    isCurrentSearchResult && "ring-2 ring-primary ring-offset-2 rounded-lg transition-all",
+                    isSearchResult && searchQuery && !isCurrentSearchResult && "opacity-70"
+                  )}
+                >
+                  <MessageBubble
+                    message={msg}
+                    isClient={isClient}
+                    isSystem={isSystem}
+                    showAvatar={showAvatar}
+                    agentInitials={initials}
+                    searchQuery={searchQuery}
+                    t={t}
+                  />
+                </div>
               );
             })}
           </div>
@@ -300,10 +649,34 @@ export function ChatWindow({
         <div className="flex items-end gap-2">
           {/* Attachment buttons */}
           <div className="hidden sm:flex items-center gap-1 pb-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              onChange={(e) => handleFileSelect(e, false)}
+              accept="*/*"
+            />
+            <input
+              ref={imageInputRef}
+              type="file"
+              className="hidden"
+              onChange={(e) => handleFileSelect(e, true)}
+              accept="image/*"
+            />
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9">
-                  <Paperclip className="h-4 w-4" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading || !chatId}
+                >
+                  {uploading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Paperclip className="h-4 w-4" />
+                  )}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -312,8 +685,18 @@ export function ChatWindow({
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9">
-                  <ImageIcon className="h-4 w-4" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9"
+                  onClick={() => imageInputRef.current?.click()}
+                  disabled={uploading || !chatId}
+                >
+                  {uploading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <ImageIcon className="h-4 w-4" />
+                  )}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -321,6 +704,26 @@ export function ChatWindow({
               </TooltipContent>
             </Tooltip>
           </div>
+          
+          {/* Show attached files */}
+          {attachments.length > 0 && (
+            <div className="w-full mb-2 flex flex-wrap gap-2">
+              {attachments.map((att, idx) => (
+                <Badge key={idx} variant="secondary" className="gap-2">
+                  <Paperclip className="h-3 w-3" />
+                  <span className="text-xs truncate max-w-[100px]">{att.name}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                    onClick={() => setAttachments((prev) => prev.filter((_, i) => i !== idx))}
+                  >
+                    ×
+                  </Button>
+                </Badge>
+              ))}
+            </div>
+          )}
 
           {/* Text input */}
           <div className="flex-1 relative">
@@ -376,12 +779,32 @@ export function ChatWindow({
   );
 }
 
+// Función helper para resaltar texto de búsqueda
+function highlightText(text: string, query: string): React.ReactNode {
+  if (!query.trim()) return text;
+  
+  const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
+  const parts = text.split(regex);
+  
+  return parts.map((part, index) => {
+    if (regex.test(part)) {
+      return (
+        <mark key={index} className="bg-yellow-200 dark:bg-yellow-900/50 px-0.5 rounded">
+          {part}
+        </mark>
+      );
+    }
+    return part;
+  });
+}
+
 function MessageBubble({
   message,
   isClient,
   isSystem,
   showAvatar,
   agentInitials,
+  searchQuery,
   t,
 }: {
   message: ChatMessage;
@@ -389,6 +812,7 @@ function MessageBubble({
   isSystem: boolean;
   showAvatar: boolean;
   agentInitials?: string;
+  searchQuery?: string;
   t: (key: string, opts?: any) => string;
 }) {
   const time = new Date(message.createdAt).toLocaleTimeString([], {
@@ -400,7 +824,7 @@ function MessageBubble({
     return (
       <div className="flex justify-center">
         <div className="bg-muted text-muted-foreground text-xs px-3 py-1.5 rounded-full">
-          {message.body}
+          {searchQuery ? highlightText(message.body, searchQuery) : message.body}
         </div>
       </div>
     );
@@ -440,7 +864,9 @@ function MessageBubble({
               : "bg-muted rounded-bl-md"
           )}
         >
-          <p className="whitespace-pre-wrap">{message.body}</p>
+          <p className="whitespace-pre-wrap">
+            {searchQuery ? highlightText(message.body, searchQuery) : message.body}
+          </p>
         </div>
 
         {/* Message meta */}
