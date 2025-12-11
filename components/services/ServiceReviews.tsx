@@ -385,17 +385,19 @@ function ReviewCard({
             <AvatarImage src={review.userAvatar || undefined} />
             <AvatarFallback>
               {review.userName
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase()}
+                ? review.userName
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()
+                : "U"}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 space-y-2">
             <div className="flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold">{review.userName}</span>
+                  <span className="font-semibold">{review.userName || "Usuario Anónimo"}</span>
                   {review.verified && (
                     <Badge variant="secondary" className="text-xs">     
                       <CheckCircle2 className="h-3 w-3 mr-1" />

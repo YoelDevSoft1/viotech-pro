@@ -51,15 +51,15 @@ export interface ServiceReview {
   id: string;
   serviceId: string;
   userId: string;
-  userName: string;
-  userAvatar?: string | null;
+  userName: string | null; // Puede ser null si el usuario fue eliminado
+  userAvatar: string | null; // Puede ser null
   rating: number; // 1-5
   title: string;
   comment: string;
   verified: boolean; // Cliente que compró el servicio
-  createdAt: string;
-  updatedAt?: string;
   helpful: number; // Contador de "útil"
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ServiceMetadata {
@@ -156,11 +156,7 @@ export interface ServiceReviewsResponse {
     average: number;
     count: number;
     distribution: {
-      '5': number;
-      '4': number;
-      '3': number;
-      '2': number;
-      '1': number;
+      [key: string]: number; // "1" | "2" | "3" | "4" | "5"
     };
   };
 }
