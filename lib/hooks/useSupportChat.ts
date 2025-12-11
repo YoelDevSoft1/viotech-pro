@@ -173,6 +173,7 @@ export function useSupportChat() {
   return {
     messages,
     status,
+    isFallback,
     sending,
     sendMessage,
     retryConnection,
