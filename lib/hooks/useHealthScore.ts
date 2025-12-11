@@ -26,8 +26,27 @@ export function useHealthScore(organizationId: string | undefined) {
     queryFn: async () => {
       if (!organizationId) throw new Error("Organization ID required");
       
-      const { healthScoreService } = await import("@/lib/services/healthScoreService");
-      return await healthScoreService.getOrganizationHealth(organizationId);
+      try {
+        const { healthScoreService } = await import("@/lib/services/healthScoreService");
+        const result = await healthScoreService.getOrganizationHealth(organizationId);
+        // Retornar null es válido - significa que no hay suficiente actividad
+        return result;
+      } catch (error: any) {
+        // Si el error es de "insuficiente actividad", retornar null en lugar de lanzar
+        if (
+          error?.isInsufficientActivity ||
+          error?.silent ||
+          (error?.response?.status === 400 && 
+           (error?.message?.toLowerCase().includes('insuficiente actividad') ||
+            error?.message?.toLowerCase().includes('no hay suficiente actividad') ||
+            error?.message?.toLowerCase().includes('se requiere al menos')))
+        ) {
+          // No es un error real, es un estado válido
+          return null;
+        }
+        // Solo lanzar errores reales
+        throw error;
+      }
     },
     enabled: !!organizationId,
     staleTime: 5 * 60 * 1000, // 5 minutos
@@ -45,6 +64,13 @@ export function useHealthScore(organizationId: string | undefined) {
       }
       // Reintentar otros errores hasta 2 veces
       return failureCount < 2;
+    },
+    // No mostrar errores silenciosos en la consola
+    onError: (error: any) => {
+      // Solo loguear errores que no sean silenciosos
+      if (!error?.silent && !error?.isInsufficientActivity) {
+        console.error("Error obteniendo health score:", error);
+      }
     },
   });
 }

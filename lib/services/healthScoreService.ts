@@ -83,18 +83,24 @@ class HealthScoreService {
       // 404 significa que el health score no existe
       const status = error.response?.status;
       const isInsufficientActivity = error.isInsufficientActivity || 
+        error.silent ||
         (status === 400 && (
           error.message?.toLowerCase().includes('insuficiente actividad') ||
-          error.message?.toLowerCase().includes('no hay suficiente actividad')
+          error.message?.toLowerCase().includes('no hay suficiente actividad') ||
+          error.message?.toLowerCase().includes('se requiere al menos')
         ));
       
       if (status === 404 || status === 400 || isInsufficientActivity) {
         // No loguear estos errores como errores críticos, son casos válidos
         // Retornar null silenciosamente sin propagar el error
+        // No mostrar en consola - estos son estados esperados, no errores
         return null;
       }
       // Solo loguear errores inesperados (500, 401, 403, etc.)
-      console.error("Error obteniendo health score:", error);
+      // Pero solo si no está marcado como silent
+      if (!error.silent) {
+        console.error("Error obteniendo health score:", error);
+      }
       throw error;
     }
   }

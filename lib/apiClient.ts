@@ -312,12 +312,21 @@ apiClient.interceptors.response.use(
       endpoint?.includes('/health') && 
       status === 400 && 
       (errorMessage?.toLowerCase().includes('insuficiente actividad') || 
-       errorMessage?.toLowerCase().includes('no hay suficiente actividad'));
+       errorMessage?.toLowerCase().includes('no hay suficiente actividad') ||
+       errorMessage?.toLowerCase().includes('se requiere al menos'));
     
     if (isHealthScoreInsufficientActivity) {
       // Marcar como silent para que no se loguee ni se muestre en consola
       (error as any).silent = true;
       (error as any).isInsufficientActivity = true;
+      
+      // Crear un error silencioso que no se mostrará en consola
+      const silentError = new Error(errorMessage);
+      (silentError as any).silent = true;
+      (silentError as any).isInsufficientActivity = true;
+      (silentError as any).response = error.response;
+      // No loguear ni mostrar este error - es un caso válido
+      return Promise.reject(silentError);
     }
 
     // No loguear errores silenciosos (marcados con error.silent = true)

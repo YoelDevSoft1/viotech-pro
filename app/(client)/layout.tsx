@@ -11,9 +11,10 @@ import {
 } from "@/components/ui/sidebar";
 
 function FixedHeader() {
-  const { state } = useSidebar();
+  const { state, isMobile } = useSidebar();
   const isCollapsed = state === "collapsed";
-  const marginLeft = isCollapsed ? "var(--sidebar-width-icon)" : "var(--sidebar-width)";
+  // En móvil, el sidebar está oculto (Sheet), así que no debe haber marginLeft
+  const marginLeft = isMobile ? "0" : (isCollapsed ? "var(--sidebar-width-icon)" : "var(--sidebar-width)");
   
   return (
     <div 
