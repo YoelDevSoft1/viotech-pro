@@ -41,21 +41,21 @@ export default function ClientSupportPage() {
   const activeThread = threads.find((th) => th.id === chatId);
 
   const onlineAgents = useMemo(
-    () => agents.filter((a) => a.status === "online").length,
+    () => (Array.isArray(agents) ? agents.filter((a) => a.status === "online").length : 0),
     [agents]
   );
   const activeChats = useMemo(
-    () => threads.filter((c) => !c.hidden).length,
+    () => (Array.isArray(threads) ? threads.filter((c) => !c.hidden).length : 0),
     [threads]
   );
   const unreadTotal = useMemo(
-    () => threads.reduce((acc, th) => acc + (th.unreadCount || 0), 0),
+    () => (Array.isArray(threads) ? threads.reduce((acc, th) => acc + (th.unreadCount || 0), 0) : 0),
     [threads]
   );
 
   // Auto-select first chat
   useEffect(() => {
-    if (!chatId && threads.length > 0) {
+    if (!chatId && Array.isArray(threads) && threads.length > 0) {
       setChatId(threads[0].id);
     }
   }, [threads, chatId]);

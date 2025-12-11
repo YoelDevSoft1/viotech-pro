@@ -67,6 +67,7 @@ export function SupportSidebar({
 
   // Filter threads
   const filteredThreads = useMemo(() => {
+    if (!Array.isArray(threads)) return [];
     const q = search.toLowerCase();
     return threads.filter(
       (c) =>
@@ -78,6 +79,7 @@ export function SupportSidebar({
 
   // Filter agents
   const filteredAgents = useMemo(() => {
+    if (!Array.isArray(agents)) return [];
     const q = search.toLowerCase();
     return agents.filter(
       (a) =>
@@ -95,12 +97,12 @@ export function SupportSidebar({
   }, [filteredAgents]);
 
   const onlineCount = useMemo(
-    () => agents.filter((a) => a.status === "online").length,
+    () => (Array.isArray(agents) ? agents.filter((a) => a.status === "online").length : 0),
     [agents]
   );
 
   const unreadCount = useMemo(
-    () => threads.reduce((acc, t) => acc + (t.unreadCount || 0), 0),
+    () => (Array.isArray(threads) ? threads.reduce((acc, t) => acc + (t.unreadCount || 0), 0) : 0),
     [threads]
   );
 

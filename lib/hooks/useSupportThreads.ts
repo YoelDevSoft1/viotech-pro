@@ -25,7 +25,10 @@ export function useSupportThreads() {
     queryFn: async () => {
       try {
         const { data } = await apiClient.get("/support/chats");
-        return (data?.data || data || []) as SupportThread[];
+        // El backend retorna: { success: true, message: "...", data: { chats: [...] } }
+        // Acceder correctamente a data.data.chats (o data.data si es array directo)
+        const chats = data?.data?.chats || data?.data || data || [];
+        return Array.isArray(chats) ? chats : [];
       } catch (error) {
         // Si es un error 500, retornar array vacío en lugar de lanzar
         const axiosError = error as AxiosError;
@@ -47,6 +50,8 @@ export function useSupportThreads() {
       return failureCount < 1;
     },
     retryDelay: 1000,
+    // Valor inicial por defecto
+    initialData: [],
   });
 
   const createThread = useMutation({
@@ -69,8 +74,11 @@ export function useSupportThreads() {
     },
   });
 
+  // Asegurar que siempre sea un array, incluso si query.data es undefined o no es array
+  const threads = Array.isArray(threadsQuery.data) ? threadsQuery.data : [];
+
   return {
-    threads: threadsQuery.data || [],
+    threads,
     isLoading: threadsQuery.isLoading,
     isError: threadsQuery.isError,
     error: threadsQuery.error,

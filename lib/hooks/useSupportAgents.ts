@@ -19,7 +19,10 @@ export function useSupportAgents() {
     queryFn: async () => {
       try {
         const { data } = await apiClient.get("/support/agents");
-        return (data?.data || data || []) as SupportAgent[];
+        // El backend retorna: { success: true, message: "...", data: { agents: [...] } }
+        // Acceder correctamente a data.data.agents
+        const agents = data?.data?.agents || data?.data || data || [];
+        return Array.isArray(agents) ? agents : [];
       } catch (error) {
         // Si es un error 500, retornar array vacío en lugar de lanzar
         const axiosError = error as AxiosError;
@@ -41,10 +44,15 @@ export function useSupportAgents() {
       return failureCount < 1;
     },
     retryDelay: 1000,
+    // Valor inicial por defecto
+    initialData: [],
   });
 
+  // Asegurar que siempre sea un array, incluso si query.data es undefined o no es array
+  const agents = Array.isArray(query.data) ? query.data : [];
+
   return {
-    agents: query.data || [],
+    agents,
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error,
