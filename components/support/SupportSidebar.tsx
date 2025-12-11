@@ -206,12 +206,20 @@ export function SupportSidebar({
         <TabsContent value="agents" className="flex-1 m-0 data-[state=inactive]:hidden">
           <ScrollArea className="h-full">
             <div className="p-2 space-y-1">
-              {sortedAgents.length === 0 ? (
+              {!Array.isArray(agents) || agents.length === 0 ? (
                 <EmptyState
                   icon={<Users className="h-8 w-8" />}
                   title={t("noAgents", { defaultValue: "Sin agentes" })}
                   description={t("noAgentsDesc", {
                     defaultValue: "No hay agentes disponibles en este momento",
+                  })}
+                />
+              ) : sortedAgents.length === 0 ? (
+                <EmptyState
+                  icon={<Search className="h-8 w-8" />}
+                  title={t("noAgentsFound", { defaultValue: "No se encontraron agentes" })}
+                  description={t("noAgentsFoundDesc", {
+                    defaultValue: "Intenta con otro término de búsqueda",
                   })}
                 />
               ) : (

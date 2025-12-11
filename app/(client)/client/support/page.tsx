@@ -104,6 +104,8 @@ export default function ClientSupportPage() {
   // Mostrar alerta discreta si hay errores del servidor (500)
   const hasServerError = (isErrorAgents || isErrorThreads) && 
     (!isLoadingAgents && !isLoadingThreads);
+  
+
 
   return (
     <TooltipProvider>

@@ -10,9 +10,11 @@ export interface Agent {
   id: string;
   name: string;
   role: string;
-  status: "online" | "offline" | "away" | "busy";
+  status: "online" | "offline" | "away" | "busy"; // Sincronizado automáticamente basado en sesiones activas
   avatarUrl: string | null;
   skills: string[];
+  isActive: boolean; // Indica si el agente está activo en el sistema (no relacionado con presencia)
+  lastSeenAt: string | null; // Última actividad detectada (basada en sesiones activas)
 }
 
 export interface Chat {
@@ -60,11 +62,33 @@ export interface Attachment {
 export const supportApi = {
   /**
    * Obtener agentes de soporte
+   * 
+   * Por defecto incluye TODOS los agentes (activos e inactivos) con estado sincronizado.
+   * El backend sincroniza automáticamente la presencia basada en sesiones activas:
+   * - Si tiene sesiones activas → status = "online"
+   * - Si no tiene sesiones activas → status = "offline"
+   * - Actualiza lastSeenAt con la última actividad
+   * 
+   * @param filters - Filtros opcionales
+   * @param filters.status - Filtrar por estado: 'online', 'offline', 'away', 'busy'
+   * @param filters.role - Filtrar por rol: 'agent', 'supervisor', 'admin'
+   * @param filters.includeInactive - Incluir agentes inactivos (default: true)
+   * @returns Array de agentes con estado sincronizado automáticamente
    */
-  getAgents: async (filters?: { status?: string; role?: string }): Promise<Agent[]> => {
+  getAgents: async (filters?: { 
+    status?: string; 
+    role?: string; 
+    includeInactive?: boolean;
+  }): Promise<Agent[]> => {
     const params = new URLSearchParams();
     if (filters?.status) params.append("status", filters.status);
     if (filters?.role) params.append("role", filters.role);
+    // Por defecto incluir todos (activos e inactivos)
+    if (filters?.includeInactive !== undefined) {
+      params.append("includeInactive", filters.includeInactive.toString());
+    } else {
+      params.append("includeInactive", "true"); // Default: incluir todos
+    }
 
     const query = params.toString();
     const { data } = await apiClient.get<{
@@ -72,7 +96,7 @@ export const supportApi = {
       data: { agents: Agent[] };
     }>(`/support/agents${query ? `?${query}` : ""}`);
 
-    // El backend retorna: { success: true, data: { agents: [...] } }
+    // El backend ya sincronizó el estado automáticamente
     return data?.data?.agents || [];
   },
 

@@ -8,12 +8,33 @@ import { AxiosError } from "axios";
 // Re-exportar tipo para compatibilidad
 export type SupportAgent = Agent;
 
-export function useSupportAgents(filters?: { status?: string; role?: string }) {
+/**
+ * Hook para obtener y gestionar agentes de soporte
+ * 
+ * El backend sincroniza automáticamente la presencia de los agentes:
+ * - Verifica sesiones activas para cada agente
+ * - Actualiza status (online/offline) automáticamente
+ * - Actualiza lastSeenAt con la última actividad
+ * 
+ * Por defecto incluye TODOS los agentes (activos e inactivos) con estado sincronizado.
+ */
+export function useSupportAgents(filters?: { 
+  status?: string; 
+  role?: string; 
+  includeInactive?: boolean;
+}) {
   const query = useQuery({
     queryKey: ["support-agents", filters],
     queryFn: async () => {
       try {
-        const agents = await supportApi.getAgents(filters);
+        // Por defecto incluir todos los agentes (activos e inactivos)
+        // El backend sincroniza automáticamente el estado basado en sesiones activas
+        const agents = await supportApi.getAgents({
+          ...filters,
+          includeInactive: filters?.includeInactive !== undefined 
+            ? filters.includeInactive 
+            : true, // Default: incluir todos
+        });
         return Array.isArray(agents) ? agents : [];
       } catch (error) {
         // Si es un error 500, retornar array vacío en lugar de lanzar
@@ -43,27 +64,50 @@ export function useSupportAgents(filters?: { status?: string; role?: string }) {
   // Asegurar que siempre sea un array
   const agents = Array.isArray(query.data) ? query.data : [];
 
-  // Agrupar agentes por estado
+  // Agentes con sesiones activas (status sincronizado automáticamente)
   const onlineAgents = useMemo(
     () => agents.filter((agent) => agent.status === "online"),
     [agents]
   );
 
+  // Agentes sin sesiones activas
   const offlineAgents = useMemo(
     () => agents.filter((agent) => agent.status === "offline"),
     [agents]
   );
 
+  // Agentes marcados como "away"
   const awayAgents = useMemo(
     () => agents.filter((agent) => agent.status === "away"),
     [agents]
   );
 
+  // Agentes marcados como "busy"
+  const busyAgents = useMemo(
+    () => agents.filter((agent) => agent.status === "busy"),
+    [agents]
+  );
+
+  // Agentes activos en el sistema (isActive = true)
+  const activeAgents = useMemo(
+    () => agents.filter((agent) => agent.isActive === true),
+    [agents]
+  );
+
+  // Agentes inactivos en el sistema (isActive = false)
+  const inactiveAgents = useMemo(
+    () => agents.filter((agent) => agent.isActive === false),
+    [agents]
+  );
+
   return {
-    agents,
-    onlineAgents,
-    offlineAgents,
-    awayAgents,
+    agents,              // Todos los agentes con estado sincronizado
+    onlineAgents,        // Agentes con sesiones activas (status = "online")
+    offlineAgents,       // Agentes sin sesiones activas (status = "offline")
+    awayAgents,          // Agentes marcados como "away"
+    busyAgents,          // Agentes marcados como "busy"
+    activeAgents,        // Agentes con isActive = true
+    inactiveAgents,      // Agentes con isActive = false
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error,

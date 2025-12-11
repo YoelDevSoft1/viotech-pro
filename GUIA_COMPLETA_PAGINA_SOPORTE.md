@@ -47,11 +47,21 @@ https://viotech-main.onrender.com/api
 ### GET /api/support/agents
 
 **Query Parameters:**
-- `includeInactive` (boolean, default: `true`) - Incluir agentes inactivos
+- `includeInactive` (boolean, default: `true`) - Incluir agentes inactivos (por defecto incluye todos)
 - `status` (string, optional) - Filtrar por estado: `online`, `offline`, `away`, `busy`
 - `role` (string, optional) - Filtrar por rol: `agent`, `supervisor`, `admin`
 
-**Nota:** El estado se sincroniza automáticamente basado en sesiones activas antes de retornar.
+**Sincronización Automática de Presencia:**
+El endpoint sincroniza automáticamente el estado de presencia de todos los agentes antes de retornar:
+- Verifica sesiones activas de cada agente
+- Si tiene sesiones activas → `status = "online"`
+- Si no tiene sesiones activas → `status = "offline"`
+- Actualiza `lastSeenAt` con la última actividad detectada
+
+**Comportamiento por Defecto:**
+- Por defecto, `includeInactive: true` - Retorna TODOS los agentes (activos e inactivos)
+- El estado se sincroniza automáticamente basado en sesiones activas
+- No requiere llamadas adicionales para actualizar presencia
 
 **Respuesta:**
 ```json
@@ -64,15 +74,38 @@ https://viotech-main.onrender.com/api
         "id": "uuid",
         "name": "Juan Pérez",
         "role": "agent",
-        "status": "online",  // ← Sincronizado automáticamente
+        "status": "online",  // ← Sincronizado automáticamente basado en sesiones activas
         "avatarUrl": "https://...",
         "skills": ["tickets", "billing"],
-        "isActive": true,     // ← Nuevo campo
-        "lastSeenAt": "2025-12-11T22:00:00Z"  // ← Nuevo campo
+        "isActive": true,     // ← Campo que indica si el agente está activo en el sistema
+        "lastSeenAt": "2025-12-11T22:00:00Z"  // ← Última actividad detectada (sesiones activas)
       }
     ]
   }
 }
+```
+
+**Ejemplos de Uso:**
+
+```typescript
+// 1. Obtener todos los agentes (activos e inactivos) con estado sincronizado
+const agents = await supportApi.getAgents();
+// Retorna TODOS los agentes con estado sincronizado automáticamente
+
+// 2. Solo agentes online (con sesiones activas)
+const onlineAgents = await supportApi.getAgents({ status: 'online' });
+// Solo agentes con sesiones activas (status = "online")
+
+// 3. Solo agentes activos (excluir inactivos)
+const activeAgents = await supportApi.getAgents({ includeInactive: false });
+// Solo agentes con isActive = true
+
+// 4. Combinar filtros
+const onlineActiveAgents = await supportApi.getAgents({ 
+  status: 'online',
+  includeInactive: false 
+});
+// Agentes activos que tienen sesiones activas
 ```
 
 ### GET /api/support/chats
@@ -174,8 +207,33 @@ async function apiRequest<T>(
 
 // Agentes
 export const supportApi = {
-  // Obtener agentes (incluye activos e inactivos por defecto)
-  // El estado se sincroniza automáticamente basado en sesiones activas
+  /**
+   * Obtener agentes de soporte
+   * 
+   * Por defecto incluye TODOS los agentes (activos e inactivos) con estado sincronizado.
+   * El backend sincroniza automáticamente la presencia basada en sesiones activas:
+   * - Si tiene sesiones activas → status = "online"
+   * - Si no tiene sesiones activas → status = "offline"
+   * - Actualiza lastSeenAt con la última actividad
+   * 
+   * @param filters - Filtros opcionales
+   * @param filters.status - Filtrar por estado: 'online', 'offline', 'away', 'busy'
+   * @param filters.role - Filtrar por rol: 'agent', 'supervisor', 'admin'
+   * @param filters.includeInactive - Incluir agentes inactivos (default: true)
+   * @returns Array de agentes con estado sincronizado automáticamente
+   * 
+   * @example
+   * // Obtener todos los agentes (activos e inactivos)
+   * const agents = await supportApi.getAgents();
+   * 
+   * @example
+   * // Solo agentes online (con sesiones activas)
+   * const onlineAgents = await supportApi.getAgents({ status: 'online' });
+   * 
+   * @example
+   * // Solo agentes activos (excluir inactivos)
+   * const activeAgents = await supportApi.getAgents({ includeInactive: false });
+   */
   getAgents: async (filters?: { 
     status?: string; 
     role?: string; 
@@ -195,6 +253,7 @@ export const supportApi = {
     const data = await apiRequest<{ agents: Agent[] }>(
       `/support/agents?${query}`
     );
+    // El backend ya sincronizó el estado automáticamente
     return data.agents || [];
   },
 
@@ -319,11 +378,11 @@ export interface Agent {
   id: string;
   name: string;
   role: string;
-  status: 'online' | 'offline' | 'away' | 'busy';
+  status: 'online' | 'offline' | 'away' | 'busy';  // Sincronizado automáticamente basado en sesiones activas
   avatarUrl: string | null;
   skills: string[];
-  isActive: boolean;  // ← Nuevo campo
-  lastSeenAt: string | null;  // ← Nuevo campo
+  isActive: boolean;  // Indica si el agente está activo en el sistema (no relacionado con presencia)
+  lastSeenAt: string | null;  // Última actividad detectada (basada en sesiones activas)
 }
 
 export interface Chat {
@@ -376,6 +435,16 @@ Crea hooks para manejar el estado y la lógica:
 import { useState, useEffect, useMemo } from 'react';
 import { supportApi, Agent } from '@/lib/api/support';
 
+/**
+ * Hook para obtener y gestionar agentes de soporte
+ * 
+ * El backend sincroniza automáticamente la presencia de los agentes:
+ * - Verifica sesiones activas para cada agente
+ * - Actualiza status (online/offline) automáticamente
+ * - Actualiza lastSeenAt con la última actividad
+ * 
+ * Por defecto incluye TODOS los agentes (activos e inactivos) con estado sincronizado.
+ */
 export function useSupportAgents(filters?: { 
   status?: string; 
   role?: string; 
@@ -391,6 +460,7 @@ export function useSupportAgents(filters?: {
         setLoading(true);
         setError(null);
         // Por defecto incluir todos los agentes (activos e inactivos)
+        // El backend sincroniza automáticamente el estado basado en sesiones activas
         const agentsData = await supportApi.getAgents({
           ...filters,
           includeInactive: filters?.includeInactive !== undefined 
@@ -409,43 +479,50 @@ export function useSupportAgents(filters?: {
     fetchAgents();
   }, [filters?.status, filters?.role, filters?.includeInactive]);
 
+  // Agentes con sesiones activas (status sincronizado automáticamente)
   const onlineAgents = useMemo(() => {
     return agents.filter(agent => agent.status === 'online');
   }, [agents]);
 
+  // Agentes sin sesiones activas
   const offlineAgents = useMemo(() => {
     return agents.filter(agent => agent.status === 'offline');
   }, [agents]);
 
+  // Agentes marcados como "away"
   const awayAgents = useMemo(() => {
     return agents.filter(agent => agent.status === 'away');
   }, [agents]);
 
+  // Agentes marcados como "busy"
   const busyAgents = useMemo(() => {
     return agents.filter(agent => agent.status === 'busy');
   }, [agents]);
 
+  // Agentes activos en el sistema (isActive = true)
   const activeAgents = useMemo(() => {
     return agents.filter(agent => agent.isActive === true);
   }, [agents]);
 
+  // Agentes inactivos en el sistema (isActive = false)
   const inactiveAgents = useMemo(() => {
     return agents.filter(agent => agent.isActive === false);
   }, [agents]);
 
   return {
-    agents,
-    onlineAgents,
-    offlineAgents,
-    awayAgents,
-    busyAgents,
-    activeAgents,
-    inactiveAgents,
+    agents,              // Todos los agentes con estado sincronizado
+    onlineAgents,        // Agentes con sesiones activas (status = "online")
+    offlineAgents,       // Agentes sin sesiones activas (status = "offline")
+    awayAgents,          // Agentes marcados como "away"
+    busyAgents,          // Agentes marcados como "busy"
+    activeAgents,        // Agentes con isActive = true
+    inactiveAgents,      // Agentes con isActive = false
     loading,
     error,
     refetch: () => {
       const fetchAgents = async () => {
         try {
+          // Al refetch, el backend vuelve a sincronizar el estado automáticamente
           const agentsData = await supportApi.getAgents({
             ...filters,
             includeInactive: filters?.includeInactive !== undefined 
@@ -1293,17 +1370,50 @@ export class SupportErrorBoundary extends Component<Props, State> {
 
 ## ✅ Checklist de Implementación
 
-- [ ] Configurar API client (`lib/api/support.ts`)
-- [ ] Crear hooks personalizados (`useSupportAgents`, `useSupportChats`, `useChatMessages`)
-- [ ] Implementar componente `AgentsList`
-- [ ] Implementar componente `ChatsList`
-- [ ] Implementar componente `ChatWindow`
-- [ ] Implementar componente principal `SupportPage`
-- [ ] Agregar manejo de errores y estados de carga
-- [ ] Integrar WebSocket para tiempo real (opcional)
-- [ ] Agregar funcionalidad de subir adjuntos
-- [ ] Agregar búsqueda de mensajes
+- [x] Configurar API client (`lib/api/support.ts`)
+- [x] Crear hooks personalizados (`useSupportAgents`, `useSupportChats`, `useChatMessages`)
+- [x] Implementar componente `AgentsList`
+- [x] Implementar componente `ChatsList`
+- [x] Implementar componente `ChatWindow`
+- [x] Implementar componente principal `SupportPage`
+- [x] Agregar manejo de errores y estados de carga
+- [x] Integrar WebSocket para tiempo real
+- [x] Agregar funcionalidad de subir adjuntos
+- [x] Agregar búsqueda de mensajes
+- [x] Sincronización automática de presencia de agentes
 - [ ] Probar todos los flujos de usuario
+
+---
+
+## 🔄 Sincronización Automática de Presencia
+
+### Flujo Completo
+
+1. **Frontend** → `GET /api/support/agents`
+2. **Backend** sincroniza presencia de TODOS los agentes
+3. **Backend** verifica sesiones activas para cada agente
+4. **Backend** actualiza estado (`online`/`offline`) automáticamente
+5. **Backend** actualiza `lastSeenAt` con la última actividad
+6. **Backend** retorna agentes con estado actualizado
+7. **Frontend** muestra agentes con estado correcto en tiempo real
+
+### Características
+
+- ✅ **Sincronización automática**: No requiere llamadas adicionales
+- ✅ **Basado en sesiones activas**: Estado real basado en actividad del agente
+- ✅ **Incluye todos los agentes por defecto**: Activos e inactivos
+- ✅ **Campos adicionales**: `isActive` y `lastSeenAt` para mejor gestión
+- ✅ **Filtros flexibles**: Por estado, rol, y actividad
+
+### Diferencias entre `status` e `isActive`
+
+- **`status`**: Presencia en tiempo real (online/offline/away/busy)
+  - Sincronizado automáticamente basado en sesiones activas
+  - Indica si el agente está disponible AHORA
+  
+- **`isActive`**: Estado del agente en el sistema
+  - Indica si el agente está activo en el sistema (no relacionado con presencia)
+  - No cambia automáticamente, es una configuración del sistema
 
 ---
 
@@ -1322,4 +1432,51 @@ export class SupportErrorBoundary extends Component<Props, State> {
 **Última actualización:** 2025-12-11  
 **Backend API:** `https://viotech-main.onrender.com/api`  
 **Documentación Swagger:** `https://viotech-main.onrender.com/api-docs`
+
+---
+
+## 🔍 Cambios Recientes (2025-12-11)
+
+### Endpoint GET /api/support/agents - Actualizado
+
+**Cambios implementados:**
+
+1. **Sincronización automática de presencia**
+   - Verifica sesiones activas de cada agente antes de retornar
+   - Actualiza `status` automáticamente: `online` si tiene sesiones activas, `offline` si no
+   - Actualiza `lastSeenAt` con la última actividad detectada
+
+2. **Nuevos campos en la respuesta**
+   - `isActive` (boolean): Indica si el agente está activo en el sistema
+   - `lastSeenAt` (string | null): Última actividad detectada basada en sesiones activas
+
+3. **Parámetros de consulta**
+   - `includeInactive` (boolean, default: `true`): Incluir agentes inactivos por defecto
+   - `status` (string, optional): Filtrar por estado sincronizado
+   - `role` (string, optional): Filtrar por rol
+
+4. **Hook actualizado**
+   - `useSupportAgents` ahora incluye:
+     - `onlineAgents`: Agentes con sesiones activas
+     - `offlineAgents`: Agentes sin sesiones activas
+     - `awayAgents`: Agentes marcados como away
+     - `busyAgents`: Agentes marcados como busy
+     - `activeAgents`: Agentes con `isActive = true`
+     - `inactiveAgents`: Agentes con `isActive = false`
+
+**El sistema ahora muestra todos los agentes y detecta automáticamente su actividad basada en sesiones activas.**
+
+---
+
+## 📚 Documentación Adicional
+
+- **Sincronización de Presencia**: `docs/AGENT_PRESENCE_SYNC.md` - Documentación técnica de la sincronización automática
+- **Backend Fix**: `docs/BACKEND_FIX_SUPPORT_ENDPOINTS.md` - Detalles de los cambios en el backend
+
+---
+
+## 📚 Documentación Adicional
+
+- **Sincronización de Presencia**: `docs/AGENT_PRESENCE_SYNC.md` - Documentación técnica de la sincronización automática
+- **Backend Fix**: `docs/BACKEND_FIX_SUPPORT_ENDPOINTS.md` - Detalles de los cambios en el backend
 
