@@ -165,7 +165,8 @@ export function HealthScoreCard({ organizationId, className }: HealthScoreCardPr
   }
 
   // Validar si el Health Score es válido antes de mostrarlo
-  const isValid = isValidHealthScore(healthScore, serviciosActivos, ticketsAbiertos, ticketsResueltos);
+  // TypeScript ya sabe que healthScore no es null aquí (por el check anterior)
+  const isValid = healthScore ? isValidHealthScore(healthScore, serviciosActivos, ticketsAbiertos, ticketsResueltos) : false;
   
   if (!isValid) {
     return (
