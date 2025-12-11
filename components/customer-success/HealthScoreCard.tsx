@@ -132,9 +132,10 @@ export function HealthScoreCard({ organizationId, className }: HealthScoreCardPr
   }
 
   // Manejar errores que no sean 400/404 (errores reales del servidor)
+  const errorStatus = (error as any)?.response?.status;
   const isRealError = error && 
-    !(error as any)?.response?.status === 400 && 
-    !(error as any)?.response?.status === 404;
+    errorStatus !== 400 && 
+    errorStatus !== 404;
 
   if (isRealError) {
     return (
