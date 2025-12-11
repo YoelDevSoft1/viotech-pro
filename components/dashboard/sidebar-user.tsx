@@ -19,7 +19,7 @@ import { logout } from "@/lib/auth";
 import { useSentryUser } from "@/lib/hooks/useSentryUser";
 
 export function SidebarUser() {
-  const { data: user } = useCurrentUser();
+  const { data: user, isLoading } = useCurrentUser();
   const [mounted, setMounted] = useState(false);
   
   // Configurar usuario en Sentry para tracking
@@ -30,34 +30,29 @@ export function SidebarUser() {
     setMounted(true);
   }, []);
   
-  // Iniciales para el fallback del avatar
+  // Iniciales para el fallback del avatar - usar datos reales o mostrar loading
   const initials = user?.nombre
     ?.split(" ")
     .map((n: string) => n[0])
     .join("")
     .slice(0, 2)
-    .toUpperCase() || "U";
+    .toUpperCase() || (isLoading ? "..." : "U");
 
-  // Renderizar placeholder durante SSR para evitar diferencias de hidratación
-  if (!mounted) {
+  // Si no está montado o está cargando sin datos, mostrar skeleton sutil
+  if (!mounted || (isLoading && !user)) {
     return (
       <div className="p-3 border-t group-data-[collapsible=icon]:p-3">
-        <button className="w-full flex items-center gap-3 p-2 rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:rounded-md">
+        <div className="w-full flex items-center gap-3 p-2 rounded-md group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:rounded-md">
           <Avatar className="h-9 w-9 shrink-0 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10">
-            <AvatarFallback className="bg-green-500 text-white text-xs font-semibold">
+            <AvatarFallback className="bg-muted text-muted-foreground text-xs font-semibold animate-pulse">
               {initials}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 text-left min-w-0 group-data-[collapsible=icon]:hidden">
-            <p className="text-sm font-medium leading-tight truncate">
-              {user?.nombre || "Usuario"}
-            </p>
-            <p className="text-xs text-sidebar-foreground/70 leading-tight mt-0.5 truncate">
-              {user?.email || "email@example.com"}
-            </p>
+            <div className="h-4 w-24 bg-muted rounded animate-pulse mb-1" />
+            <div className="h-3 w-32 bg-muted rounded animate-pulse" />
           </div>
-          <MoreVertical className="h-4 w-4 text-sidebar-foreground/50 shrink-0 group-data-[collapsible=icon]:hidden" />
-        </button>
+        </div>
       </div>
     );
   }
@@ -75,10 +70,10 @@ export function SidebarUser() {
             </Avatar>
             <div className="flex-1 text-left min-w-0 group-data-[collapsible=icon]:hidden">
               <p className="text-sm font-medium leading-tight truncate">
-                {user?.nombre || "Usuario"}
+                {user?.nombre || ""}
               </p>
               <p className="text-xs text-sidebar-foreground/70 leading-tight mt-0.5 truncate">
-                {user?.email || "email@example.com"}
+                {user?.email || ""}
               </p>
             </div>
             <MoreVertical className="h-4 w-4 text-sidebar-foreground/50 shrink-0 group-data-[collapsible=icon]:hidden" />
@@ -87,9 +82,9 @@ export function SidebarUser() {
         <DropdownMenuContent className="w-56" align="end" side="right" sideOffset={8}>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{user?.nombre}</p>
+              <p className="text-sm font-medium leading-none">{user?.nombre || ""}</p>
               <p className="text-xs leading-none text-muted-foreground">
-                {user?.email}
+                {user?.email || ""}
               </p>
             </div>
           </DropdownMenuLabel>

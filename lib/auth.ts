@@ -41,6 +41,7 @@ export function clearTokens() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(REFRESH_KEY);
   localStorage.removeItem(USER_KEY);
+  localStorage.removeItem("current-user"); // Limpiar cache de usuario
   sessionStorage.removeItem(TOKEN_KEY);
   sessionStorage.removeItem(REFRESH_KEY);
   sessionStorage.removeItem(USER_KEY);

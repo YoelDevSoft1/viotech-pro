@@ -2062,8 +2062,29 @@
     "required": "Required",
     "minutes": "minutes",
     "expires": "Expires",
+    "loading": {
+      "title": "Loading Partner Portal",
+      "message": "Verifying access and loading information...",
+      "pleaseWait": "Please wait"
+    },
     "error": {
-      "loading": "Error loading dashboard"
+      "loading": "Error loading dashboard",
+      "loadingDescription": "Please try again in a few moments",
+      "forbidden": "Access denied",
+      "forbiddenMessage": "You don't have access to the Partner Portal. If you need access, you can request permissions by opening a support ticket.",
+      "notRegistered": "You are not registered as a Partner",
+      "notRegisteredMessage": "You are not registered as a Partner in the system. If you need access to the Partner Portal, you can request registration by opening a support ticket. Our team will review your request and notify you when your account is active.",
+      "unauthorized": "Session expired",
+      "createLead": "Could not create lead",
+      "createLeadDescription": "Verify that the email is not duplicated",
+      "startTraining": "Could not start training",
+      "completeTraining": "Could not complete training",
+      "createCode": "Could not create referral code",
+      "retry": "Retry",
+      "goToLogin": "Go to login",
+      "contactSupport": "Contact support",
+      "openTicket": "Open support ticket",
+      "backToDashboard": "Back to dashboard"
     },
     "admin": {
       "title": "Partners Management",

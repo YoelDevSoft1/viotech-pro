@@ -21,6 +21,31 @@ export function Providers({ children }: { children: React.ReactNode }) {
         refetchOnWindowFocus: false,
       },
     },
+    // Logger global que ignora errores silenciosos
+    logger: {
+      log: (...args) => {
+        // No loguear si el último argumento es un error silencioso
+        const lastArg = args[args.length - 1];
+        if (lastArg && typeof lastArg === 'object' && (lastArg.silent || lastArg.isInsufficientActivity || lastArg.__suppressConsole)) {
+          return; // No loguear errores silenciosos
+        }
+        console.log(...args);
+      },
+      warn: (...args) => {
+        const lastArg = args[args.length - 1];
+        if (lastArg && typeof lastArg === 'object' && (lastArg.silent || lastArg.isInsufficientActivity || lastArg.__suppressConsole)) {
+          return; // No loguear errores silenciosos
+        }
+        console.warn(...args);
+      },
+      error: (...args) => {
+        const lastArg = args[args.length - 1];
+        if (lastArg && typeof lastArg === 'object' && (lastArg.silent || lastArg.isInsufficientActivity || lastArg.__suppressConsole)) {
+          return; // No loguear errores silenciosos
+        }
+        console.error(...args);
+      },
+    },
   }));
 
   return (

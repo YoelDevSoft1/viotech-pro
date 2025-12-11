@@ -316,16 +316,29 @@ apiClient.interceptors.response.use(
        errorMessage?.toLowerCase().includes('se requiere al menos'));
     
     if (isHealthScoreInsufficientActivity) {
-      // Marcar como silent para que no se loguee ni se muestre en consola
-      (error as any).silent = true;
-      (error as any).isInsufficientActivity = true;
-      
       // Crear un error silencioso que no se mostrará en consola
-      const silentError = new Error(errorMessage);
+      // Usar una clase especial que React Query pueda detectar como "no-error"
+      const SilentError = class extends Error {
+        constructor(message: string) {
+          super(message);
+          this.name = 'SilentError';
+          // Prevenir que el error se muestre en la consola
+          Object.defineProperty(this, 'stack', {
+            get: () => undefined,
+            configurable: true,
+          });
+        }
+      };
+      
+      const silentError = new SilentError(errorMessage);
       (silentError as any).silent = true;
       (silentError as any).isInsufficientActivity = true;
       (silentError as any).response = error.response;
+      (silentError as any).__suppressConsole = true;
+      (silentError as any).isAxiosError = true;
+      
       // No loguear ni mostrar este error - es un caso válido
+      // Retornar el error silencioso sin procesamiento adicional
       return Promise.reject(silentError);
     }
 

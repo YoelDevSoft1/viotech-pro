@@ -2117,10 +2117,18 @@
     "required": "Requerido",
     "minutes": "minutos",
     "expires": "Expira",
+    "loading": {
+      "title": "Cargando Portal de Partners",
+      "message": "Verificando acceso y cargando información...",
+      "pleaseWait": "Por favor espera"
+    },
     "error": {
       "loading": "Error al cargar el dashboard",
       "loadingDescription": "Por favor, intenta de nuevo en unos momentos",
       "forbidden": "Acceso denegado",
+      "forbiddenMessage": "No tienes acceso al Portal de Partners. Si necesitas acceso, puedes solicitar permisos abriendo un ticket de soporte.",
+      "notRegistered": "No estás registrado como Partner",
+      "notRegisteredMessage": "No estás registrado como Partner en el sistema. Si necesitas acceso al Portal de Partners, puedes solicitar el registro abriendo un ticket de soporte. Nuestro equipo revisará tu solicitud y te notificará cuando tu cuenta esté activa.",
       "unauthorized": "Sesión expirada",
       "createLead": "No se pudo crear el lead",
       "createLeadDescription": "Verifica que el email no esté duplicado",
@@ -2129,7 +2137,9 @@
       "createCode": "No se pudo crear el código de referido",
       "retry": "Reintentar",
       "goToLogin": "Ir a iniciar sesión",
-      "contactSupport": "Contactar soporte"
+      "contactSupport": "Contactar soporte",
+      "openTicket": "Abrir ticket de soporte",
+      "backToDashboard": "Volver al dashboard"
     },
     "success": {
       "leadCreated": "Lead creado exitosamente",

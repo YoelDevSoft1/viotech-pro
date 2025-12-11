@@ -15,7 +15,8 @@ import {
   Clock,
   FileText,
   Gift,
-  Plus
+  Plus,
+  Ticket
 } from "lucide-react";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 import { useI18n } from "@/lib/hooks/useI18n";
@@ -27,56 +28,80 @@ export function PartnerDashboard() {
   const t = useTranslationsSafe("partners");
   const { formatCurrency, formatNumber } = useI18n();
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-4" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-8 w-32 mb-1" />
-                <Skeleton className="h-4 w-20" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
+  // No mostrar skeleton durante la carga inicial - PartnerGate maneja la carga
+  // Solo mostrar contenido cuando hay datos o error
+  // Si está cargando y no hay datos ni error, no mostrar nada (PartnerGate mostrará la carga)
+  if (isLoading && !data && !error) {
+    return null;
   }
 
   if (error) {
     const errorMessage = error instanceof Error ? error.message : t("error.loading");
-    const isForbidden = errorMessage.includes("permisos") || errorMessage.includes("403");
+    const isForbidden = errorMessage.includes("permisos") || errorMessage.includes("403") || errorMessage.includes("acceso");
     const isUnauthorized = errorMessage.includes("sesión") || errorMessage.includes("401");
+    // Detectar si el mensaje indica que no es partner registrado
+    const isNotRegistered = errorMessage.toLowerCase().includes("partner registrado") || 
+                            errorMessage.toLowerCase().includes("regístrate como partner") ||
+                            errorMessage.toLowerCase().includes("no eres un partner");
     
     return (
       <Card>
         <CardContent className="pt-6">
-          <div className="flex flex-col items-center gap-4 text-center py-8">
-            <AlertCircle className="h-12 w-12 text-destructive" />
-            <div>
-              <h3 className="text-lg font-semibold mb-2">
-                {isForbidden 
+          <div className="flex flex-col items-center gap-6 text-center py-8 px-4">
+            <div className="h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center">
+              <AlertCircle className="h-8 w-8 text-destructive" />
+            </div>
+            <div className="space-y-3 max-w-md">
+              <h3 className="text-xl font-semibold">
+                {isNotRegistered
+                  ? t("error.notRegistered", { defaultValue: "No estás registrado como Partner" })
+                  : isForbidden 
                   ? t("error.forbidden") 
                   : isUnauthorized
                   ? t("error.unauthorized")
                   : t("error.loading")
                 }
               </h3>
-              <p className="text-sm text-muted-foreground mb-4 max-w-md">
-                {errorMessage}
+              <p className="text-sm text-muted-foreground">
+                {isNotRegistered
+                  ? t("error.notRegisteredMessage", {
+                      defaultValue: "No estás registrado como Partner en el sistema. Si necesitas acceso al Portal de Partners, puedes solicitar el registro abriendo un ticket de soporte. Nuestro equipo revisará tu solicitud y te notificará cuando tu cuenta esté activa."
+                    })
+                  : isForbidden 
+                  ? t("error.forbiddenMessage", {
+                      defaultValue: "No tienes acceso al Portal de Partners. Si necesitas acceso, puedes solicitar permisos abriendo un ticket de soporte."
+                    })
+                  : errorMessage
+                }
               </p>
-              {!isForbidden && !isUnauthorized && (
+              {(isForbidden || isNotRegistered) && (
+                <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => window.location.href = "/client/tickets?subject=Solicitud de acceso a Partners"}
+                    className="gap-2"
+                  >
+                    <Ticket className="h-4 w-4" />
+                    {t("error.openTicket", { defaultValue: "Abrir ticket de soporte" })}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.location.href = "/dashboard"}
+                  >
+                    {t("error.backToDashboard", { defaultValue: "Volver al dashboard" })}
+                  </Button>
+                </div>
+              )}
+              {!isForbidden && !isUnauthorized && !isNotRegistered && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => window.location.reload()}
+                  className="gap-2"
                 >
-                  <AlertCircle className="h-4 w-4 mr-2" />
+                  <AlertCircle className="h-4 w-4" />
                   {t("error.retry")}
                 </Button>
               )}

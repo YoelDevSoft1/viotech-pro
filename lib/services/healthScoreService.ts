@@ -82,26 +82,40 @@ class HealthScoreService {
       // 400 generalmente significa "No hay suficiente actividad para calcular el Health Score"
       // 404 significa que el health score no existe
       const status = error.response?.status;
+      const errorMessage = error.message || error.response?.data?.message || error.response?.data?.error || "";
       const isInsufficientActivity = error.isInsufficientActivity || 
         error.silent ||
+        error.__suppressConsole ||
+        error.name === 'SilentError' ||
         (status === 400 && (
-          error.message?.toLowerCase().includes('insuficiente actividad') ||
-          error.message?.toLowerCase().includes('no hay suficiente actividad') ||
-          error.message?.toLowerCase().includes('se requiere al menos')
+          errorMessage.toLowerCase().includes('insuficiente actividad') ||
+          errorMessage.toLowerCase().includes('no hay suficiente actividad') ||
+          errorMessage.toLowerCase().includes('se requiere al menos')
         ));
       
+      // Si es un error de "insuficiente actividad" o 404/400, retornar null silenciosamente
+      // Estos son casos válidos, no errores reales
+      // IMPORTANTE: Capturar el error aquí antes de que se propague a React Query
       if (status === 404 || status === 400 || isInsufficientActivity) {
-        // No loguear estos errores como errores críticos, son casos válidos
-        // Retornar null silenciosamente sin propagar el error
-        // No mostrar en consola - estos son estados esperados, no errores
+        // No loguear, no mostrar en consola, no propagar el error
+        // Simplemente retornar null como un estado válido
+        // Esto evita que React Query lo trate como un error y lo muestre en la consola
         return null;
       }
+      
       // Solo loguear errores inesperados (500, 401, 403, etc.)
       // Pero solo si no está marcado como silent
-      if (!error.silent) {
+      if (!error.silent && !error.isInsufficientActivity && !error.__suppressConsole && error.name !== 'SilentError') {
         console.error("Error obteniendo health score:", error);
       }
-      throw error;
+      
+      // Solo lanzar errores reales que no sean silenciosos
+      if (!error.silent && !error.isInsufficientActivity && !error.__suppressConsole && error.name !== 'SilentError') {
+        throw error;
+      }
+      
+      // Si es silencioso, retornar null (no lanzar error)
+      return null;
     }
   }
 

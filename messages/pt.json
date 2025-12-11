@@ -2068,8 +2068,29 @@
     "required": "Obrigatório",
     "minutes": "minutos",
     "expires": "Expira",
+    "loading": {
+      "title": "Carregando Portal de Parceiros",
+      "message": "Verificando acesso e carregando informações...",
+      "pleaseWait": "Por favor aguarde"
+    },
     "error": {
-      "loading": "Erro ao carregar o painel"
+      "loading": "Erro ao carregar o painel",
+      "loadingDescription": "Por favor, tente novamente em alguns momentos",
+      "forbidden": "Acesso negado",
+      "forbiddenMessage": "Você não tem acesso ao Portal de Parceiros. Se precisar de acesso, pode solicitar permissões abrindo um ticket de suporte.",
+      "notRegistered": "Você não está registrado como Parceiro",
+      "notRegisteredMessage": "Você não está registrado como Parceiro no sistema. Se precisar de acesso ao Portal de Parceiros, pode solicitar o registro abrindo um ticket de suporte. Nossa equipe revisará sua solicitação e notificará quando sua conta estiver ativa.",
+      "unauthorized": "Sessão expirada",
+      "createLead": "Não foi possível criar o lead",
+      "createLeadDescription": "Verifique se o email não está duplicado",
+      "startTraining": "Não foi possível iniciar o treinamento",
+      "completeTraining": "Não foi possível completar o treinamento",
+      "createCode": "Não foi possível criar o código de referência",
+      "retry": "Tentar novamente",
+      "goToLogin": "Ir para login",
+      "contactSupport": "Contatar suporte",
+      "openTicket": "Abrir ticket de suporte",
+      "backToDashboard": "Voltar ao painel"
     },
     "admin": {
       "title": "Gestão de Parceiros",

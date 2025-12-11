@@ -71,11 +71,10 @@ export default function RoleGate({ allowedRoles, children, fallbackHref }: Props
   }, [allowedRoles, fallbackHref, router]);
 
   if (state === "checking") {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
-        Verificando permisos...
-      </div>
-    );
+    // Renderizar children normalmente para que componentes como PartnerGate puedan montarse
+    // y mostrar su propia pantalla de carga bonita
+    // RoleGate verifica en paralelo sin bloquear el renderizado
+    return <>{children}</>;
   }
 
   if (state === "denied") {

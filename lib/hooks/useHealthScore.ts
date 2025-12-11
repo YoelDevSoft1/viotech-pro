@@ -33,15 +33,18 @@ export function useHealthScore(organizationId: string | undefined) {
         return result;
       } catch (error: any) {
         // Si el error es de "insuficiente actividad", retornar null en lugar de lanzar
+        const errorMessage = error?.message || error?.response?.data?.message || "";
         if (
           error?.isInsufficientActivity ||
           error?.silent ||
+          error?.__suppressConsole ||
           (error?.response?.status === 400 && 
-           (error?.message?.toLowerCase().includes('insuficiente actividad') ||
-            error?.message?.toLowerCase().includes('no hay suficiente actividad') ||
-            error?.message?.toLowerCase().includes('se requiere al menos')))
+           (errorMessage.toLowerCase().includes('insuficiente actividad') ||
+            errorMessage.toLowerCase().includes('no hay suficiente actividad') ||
+            errorMessage.toLowerCase().includes('se requiere al menos')))
         ) {
           // No es un error real, es un estado válido
+          // Retornar null sin lanzar error para que React Query no lo trate como error
           return null;
         }
         // Solo lanzar errores reales
@@ -54,11 +57,15 @@ export function useHealthScore(organizationId: string | undefined) {
     retry: (failureCount, error: any) => {
       // No reintentar si es un 400 o 404 (no hay datos suficientes)
       // o si es un error de "insuficiente actividad" (marcado como silent)
+      const errorMessage = error?.message || "";
       if (
         error?.response?.status === 400 || 
         error?.response?.status === 404 ||
         error?.isInsufficientActivity ||
-        error?.silent
+        error?.silent ||
+        error?.__suppressConsole ||
+        errorMessage.toLowerCase().includes('insuficiente actividad') ||
+        errorMessage.toLowerCase().includes('se requiere al menos')
       ) {
         return false;
       }
@@ -68,9 +75,10 @@ export function useHealthScore(organizationId: string | undefined) {
     // No mostrar errores silenciosos en la consola
     onError: (error: any) => {
       // Solo loguear errores que no sean silenciosos
-      if (!error?.silent && !error?.isInsufficientActivity) {
+      if (!error?.silent && !error?.isInsufficientActivity && !error?.__suppressConsole) {
         console.error("Error obteniendo health score:", error);
       }
+      // Si es un error silencioso, no hacer nada (no mostrar en consola)
     },
   });
 }

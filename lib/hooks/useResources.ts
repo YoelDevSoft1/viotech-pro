@@ -357,13 +357,46 @@ export function useUpdateResourceAvailability() {
  * Hook para obtener el usuario actual
  */
 export function useCurrentUser() {
+  // Obtener datos del usuario desde localStorage si existen
+  const getCachedUser = () => {
+    if (typeof window === "undefined") return undefined;
+    try {
+      const cached = localStorage.getItem("current-user");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        // Verificar que no esté expirado (24 horas)
+        if (parsed.timestamp && Date.now() - parsed.timestamp < 1000 * 60 * 60 * 24) {
+          return parsed.data;
+        }
+      }
+    } catch {
+      // Ignorar errores de parseo
+    }
+    return undefined;
+  };
+
+  // Guardar datos del usuario en localStorage
+  const setCachedUser = (userData: any) => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem("current-user", JSON.stringify({
+        data: userData,
+        timestamp: Date.now(),
+      }));
+    } catch {
+      // Ignorar errores de almacenamiento
+    }
+  };
+
+  const cachedUser = getCachedUser();
+  
   return useQuery({
     queryKey: ["auth", "me"],
     queryFn: async () => {
       const { data } = await apiClient.get("/auth/me");
       const raw = data?.data || data;
       const user = raw?.user || raw;
-      return {
+      const userData = {
         id: user?.id,
         nombre: user?.nombre || user?.name,
         email: user?.email,
@@ -371,9 +404,15 @@ export function useCurrentUser() {
         rol: user?.rol || user?.role,
         organizationId: user?.organizationId || user?.organization_id,
       };
+      // Guardar en cache
+      setCachedUser(userData);
+      return userData;
     },
     staleTime: 1000 * 60 * 5, // 5 minutos
     retry: false,
+    // Usar datos cacheados como initialData y placeholderData
+    initialData: cachedUser,
+    placeholderData: cachedUser,
   });
 }
 
