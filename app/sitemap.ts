@@ -35,7 +35,8 @@ async function getBlogPosts(): Promise<Array<{ slug: string; updatedAt: string }
 async function getCatalogServices(): Promise<Array<{ slug: string; updatedAt?: string }>> {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL || process.env.BACKEND_API_URL || 'https://viotech-main.onrender.com';
-    const response = await fetch(`${baseUrl}/api/services/catalog?limit=1000`, {
+    // Usar parámetros correctos: active=true y limit razonable
+    const response = await fetch(`${baseUrl}/api/services/catalog?active=true&limit=500`, {
       next: { revalidate: 3600 }, // Revalidar cada hora
       headers: {
         'Content-Type': 'application/json',
@@ -43,6 +44,32 @@ async function getCatalogServices(): Promise<Array<{ slug: string; updatedAt?: s
     });
 
     if (!response.ok) {
+      // Si el error es 400, puede ser por parámetros inválidos, intentar sin parámetros
+      if (response.status === 400) {
+        console.warn('⚠️ Error 400 al obtener servicios del catálogo. Intentando sin parámetros...');
+        const fallbackResponse = await fetch(`${baseUrl}/api/services/catalog`, {
+          next: { revalidate: 3600 },
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (!fallbackResponse.ok) {
+          console.warn('⚠️ Error al obtener servicios del catálogo para sitemap:', fallbackResponse.status);
+          return [];
+        }
+        
+        const fallbackData = await fallbackResponse.json();
+        const services = fallbackData?.data?.services || fallbackData?.services || [];
+        
+        return services
+          .filter((service: any) => service.slug && (service.activo !== false && service.active !== false))
+          .map((service: any) => ({
+            slug: service.slug,
+            updatedAt: service.updatedAt || service.createdAt,
+          }));
+      }
+      
       console.warn('⚠️ Error al obtener servicios del catálogo para sitemap:', response.status);
       return [];
     }
@@ -51,7 +78,7 @@ async function getCatalogServices(): Promise<Array<{ slug: string; updatedAt?: s
     const services = data?.data?.services || data?.services || [];
     
     return services
-      .filter((service: any) => service.slug && service.activo !== false)
+      .filter((service: any) => service.slug && (service.activo !== false && service.active !== false))
       .map((service: any) => ({
         slug: service.slug,
         updatedAt: service.updatedAt || service.createdAt,
