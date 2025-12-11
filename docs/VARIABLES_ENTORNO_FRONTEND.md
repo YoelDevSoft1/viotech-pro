@@ -284,5 +284,79 @@ NEXT_PUBLIC_BACKEND_API_URL=https://viotech-main.onrender.com
 
 ---
 
+---
+
+## 🚫 Deshabilitar Rate Limiting para Desarrollo Local
+
+El rate limiting está configurado en el **backend** (usando `express-rate-limit`). Para deshabilitarlo en desarrollo local:
+
+### **Opción 1: Variable de Entorno en el Backend (Recomendado)**
+
+En el backend, agrega una variable de entorno para deshabilitar el rate limiting:
+
+```env
+# En el backend (.env o .env.local)
+DISABLE_RATE_LIMIT=true
+NODE_ENV=development
+```
+
+Luego, en el código del backend donde se configura `express-rate-limit`, agrega:
+
+```javascript
+// En el backend (ejemplo)
+const rateLimit = require('express-rate-limit');
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: process.env.DISABLE_RATE_LIMIT === 'true' ? 0 : 100, // 0 = deshabilitado
+  message: 'Demasiadas solicitudes desde esta IP, por favor intenta más tarde.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// O simplemente no aplicar el middleware si está deshabilitado:
+if (process.env.DISABLE_RATE_LIMIT !== 'true') {
+  app.use('/api/', limiter);
+}
+```
+
+### **Opción 2: Configuración por Entorno**
+
+En el backend, configura diferentes límites según el entorno:
+
+```javascript
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'development' ? 0 : 100, // Deshabilitado en dev
+  // ... resto de la configuración
+});
+```
+
+### **Opción 3: Whitelist de IPs Locales**
+
+Permitir que las IPs locales no tengan límite:
+
+```javascript
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  skip: (req) => {
+    // Saltar rate limiting para localhost
+    return req.ip === '127.0.0.1' || req.ip === '::1' || req.ip === '::ffff:127.0.0.1';
+  },
+  // ... resto de la configuración
+});
+```
+
+### **Verificación**
+
+Después de aplicar los cambios en el backend:
+
+1. Reinicia el servidor backend
+2. Ejecuta los tests E2E: `npm run test:e2e:client`
+3. Verifica que no aparezcan errores 429 en los logs del backend
+
+---
+
 **Documento generado:** Noviembre 2025
 

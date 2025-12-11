@@ -4,7 +4,7 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { X, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,9 +70,39 @@ export function ServiceFilters({
     onFiltersChange(newFilters);
   };
 
+  // Ref para el timer del debounce
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // Ref para evitar actualizaciones cuando el componente se desmonta
+  const isMountedRef = useRef(true);
+  // Ref para mantener la referencia estable de onFiltersChange
+  const onFiltersChangeRef = useRef(onFiltersChange);
+  // Ref para marcar cuando el cambio viene del slider interno (evitar loops)
+  const isInternalUpdateRef = useRef(false);
+  
+  // Actualizar ref cuando cambia onFiltersChange
+  useEffect(() => {
+    onFiltersChangeRef.current = onFiltersChange;
+  }, [onFiltersChange]);
+  
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
+
   // Debounce para el slider de precios (evita refrescos constantes)
   useEffect(() => {
-    const timer = setTimeout(() => {
+    // Limpiar timer anterior si existe
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      if (!isMountedRef.current) return;
+      
       const currentMin = priceRange?.min ?? 0;
       const currentMax = priceRange?.max ?? 1000000;
       
@@ -81,27 +111,44 @@ export function ServiceFilters({
       const newMaxPrice = priceValues[1] !== currentMax ? priceValues[1] : undefined;
       
       // Comparar con los filtros actuales para evitar actualizaciones innecesarias
-      if (
-        newMinPrice !== localFilters.minPrice ||
-        newMaxPrice !== localFilters.maxPrice
-      ) {
-        const newFilters = {
-          ...localFilters,
-          minPrice: newMinPrice,
-          maxPrice: newMaxPrice,
-        };
-        setLocalFilters(newFilters);
-        onFiltersChange(newFilters);
-      }
+      // Usar una función de actualización para evitar dependencias
+      setLocalFilters((prevFilters) => {
+        if (
+          newMinPrice !== prevFilters.minPrice ||
+          newMaxPrice !== prevFilters.maxPrice
+        ) {
+          // Marcar que este es un cambio interno del slider
+          isInternalUpdateRef.current = true;
+          
+          const newFilters = {
+            ...prevFilters,
+            minPrice: newMinPrice,
+            maxPrice: newMaxPrice,
+          };
+          // Llamar onFiltersChange solo si realmente cambió usando el ref
+          onFiltersChangeRef.current(newFilters);
+          return newFilters;
+        }
+        return prevFilters;
+      });
     }, 500); // 500ms de debounce
 
-    return () => clearTimeout(timer);
-  }, [priceValues]); // Solo dependemos de priceValues
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [priceValues, priceRange?.min, priceRange?.max]); // Removemos onFiltersChange y localFilters de las dependencias
 
   const handlePriceChange = useCallback((values: number[]) => {
+    // Asegurar que los valores estén ordenados correctamente (min <= max)
+    const sortedValues: [number, number] = [
+      Math.min(values[0], values[1]),
+      Math.max(values[0], values[1])
+    ];
     // Solo actualizar el estado local inmediatamente para feedback visual
     // El useEffect con debounce se encargará de actualizar los filtros después de 500ms
-    setPriceValues([values[0], values[1]]);
+    setPriceValues(sortedValues);
   }, []);
 
   const handleRatingChange = (rating: number) => {
@@ -127,14 +174,32 @@ export function ServiceFilters({
   };
 
   // Sincronizar priceValues cuando cambian los filtros externos
+  // Solo sincronizar si los valores realmente cambiaron para evitar loops
+  // IMPORTANTE: No sincronizar si el cambio viene del slider mismo (evitar loops)
   useEffect(() => {
-    if (priceRange) {
-      setPriceValues([
-        filters.minPrice ?? priceRange.min,
-        filters.maxPrice ?? priceRange.max,
-      ]);
+    // Si el cambio viene del slider interno, no sincronizar (evitar que desaparezca)
+    if (isInternalUpdateRef.current) {
+      isInternalUpdateRef.current = false;
+      return;
     }
-  }, [filters.minPrice, filters.maxPrice, priceRange]);
+    
+    if (priceRange) {
+      const newMin = filters.minPrice ?? priceRange.min;
+      const newMax = filters.maxPrice ?? priceRange.max;
+      
+      // Asegurar que los valores estén ordenados correctamente
+      const sortedMin = Math.min(newMin, newMax);
+      const sortedMax = Math.max(newMin, newMax);
+      
+      // Solo actualizar si realmente cambió (evitar re-renders innecesarios)
+      setPriceValues((prev) => {
+        if (prev[0] !== sortedMin || prev[1] !== sortedMax) {
+          return [sortedMin, sortedMax];
+        }
+        return prev;
+      });
+    }
+  }, [filters.minPrice, filters.maxPrice, priceRange?.min, priceRange?.max]);
 
   const hasActiveFilters = !!(
     localFilters.category ||
@@ -148,7 +213,7 @@ export function ServiceFilters({
     <div className="space-y-6">
       {/* Resultados */}
       {resultCount !== undefined && (
-        <div className="text-sm text-muted-foreground">
+        <div className="text-sm text-muted-foreground break-words overflow-wrap-anywhere">
           {t("resultsCount", { count: resultCount })}
         </div>
       )}
@@ -180,7 +245,7 @@ export function ServiceFilters({
                 />
                 <Label
                   htmlFor={`category-${category.id}`}
-                  className="text-sm font-normal cursor-pointer flex-1"
+                  className="text-sm font-normal cursor-pointer flex-1 break-words overflow-wrap-anywhere"
                 >
                   {category.nombre}
                 </Label>
@@ -188,7 +253,7 @@ export function ServiceFilters({
             ))}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground py-2">
+          <p className="text-sm text-muted-foreground py-2 break-words overflow-wrap-anywhere">
             {t("noCategoriesAvailable") || "No hay categorías disponibles"}
           </p>
         )}
@@ -205,7 +270,7 @@ export function ServiceFilters({
                 <Badge
                   key={tag.id}
                   variant={isSelected ? "default" : "outline"}
-                  className="cursor-pointer"
+                  className="cursor-pointer break-words max-w-full"
                   onClick={() => handleTagToggle(tag.slug)}
                 >
                   {tag.nombre}
@@ -214,34 +279,39 @@ export function ServiceFilters({
             })}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground py-2">
+          <p className="text-sm text-muted-foreground py-2 break-words overflow-wrap-anywhere">
             {t("noTagsAvailable") || "No hay tags disponibles"}
           </p>
         )}
       </div>
 
       {/* Rango de precios */}
-      {priceRange && (
-        <div>
-          <Label className="text-base font-semibold mb-3 block">
-            {t("price") || "Precio"}
-          </Label>
-          <div className="space-y-4">
+      <div>
+        <Label className="text-base font-semibold mb-3 block">
+          {t("price") || "Precio"}
+        </Label>
+        <div className="space-y-4">
+          {priceRange ? (
             <Slider
               min={priceRange.min}
               max={priceRange.max}
               step={10000}
-              value={priceValues}
-              onValueChange={handlePriceChange}
+              value={[priceValues[0]]}
+              onValueChange={(values) => {
+                // Mantener el máximo fijo y solo cambiar el mínimo
+                handlePriceChange([values[0], priceValues[1]]);
+              }}
               className="w-full"
             />
-            <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>{formatPrice(priceValues[0], "COP")}</span>
-              <span>{formatPrice(priceValues[1], "COP")}</span>
-            </div>
+          ) : (
+            <div className="h-6 w-full bg-muted rounded-full animate-pulse" />
+          )}
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <span>{priceRange ? formatPrice(priceValues[0], "COP") : "..."}</span>
+            <span>{priceRange ? formatPrice(priceValues[1], "COP") : "..."}</span>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Rating mínimo */}
       <div>
@@ -259,7 +329,7 @@ export function ServiceFilters({
               onClick={() => handleRatingChange(rating)}
             >
               <ServiceRating rating={rating} size="sm" />
-              <span className="text-sm text-muted-foreground">{t("andMore") || "y más"}</span>
+              <span className="text-sm text-muted-foreground whitespace-nowrap">{t("andMore")}</span>
             </div>
           ))}
         </div>
@@ -270,14 +340,14 @@ export function ServiceFilters({
   return (
     <>
       {/* Desktop: Panel lateral */}
-      <Card className={cn("hidden lg:block", className)}>
+      <Card className={cn("hidden lg:block overflow-hidden", className)}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            {t("filters")}
+            <Filter className="h-5 w-5 flex-shrink-0" />
+            <span className="break-words overflow-wrap-anywhere">{t("filters")}</span>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-hidden">
           <FilterContent />
         </CardContent>
       </Card>

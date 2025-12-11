@@ -59,6 +59,7 @@ import { toast } from "sonner";
 import { TicketComments } from "@/components/tickets/TicketComments";
 import { useTicket } from "@/lib/hooks/useTicket";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useLocaleContext } from "@/lib/contexts/LocaleContext";
 import { useI18n } from "@/lib/hooks/useI18n";
 
 type Ticket = {
@@ -91,8 +92,57 @@ type SortOrder = "asc" | "desc";
 
 export default function AdminTicketsPage() {
   const router = useRouter();
-  const tTickets = useTranslationsSafe("tickets");
+  const { t: contextT, locale, messages } = useLocaleContext();
   const { formatDate } = useI18n();
+  
+  // Función de traducción mejorada para tickets con fallback directo a mensajes
+  const tTickets = useCallback((key: string, values?: Record<string, string | number>) => {
+    // Primero intentar buscar directamente en los mensajes del locale actual
+    if (messages && typeof messages === "object") {
+      const ticketsMessages = (messages as any)?.tickets;
+      if (ticketsMessages && typeof ticketsMessages === "object") {
+        // Si la clave tiene puntos, navegar por la estructura
+        const keys = key.split(".");
+        let value: any = ticketsMessages;
+        let found = true;
+        for (const k of keys) {
+          if (value && typeof value === "object" && k in value) {
+            value = value[k];
+          } else {
+            found = false;
+            value = null;
+            break;
+          }
+        }
+        if (found && typeof value === "string") {
+          // Aplicar interpolación si hay valores
+          if (values) {
+            let result = value;
+            for (const [k, v] of Object.entries(values)) {
+              result = result.replace(new RegExp(`\\{${k}\\}`, "g"), String(v));
+            }
+            return result;
+          }
+          return value;
+        }
+      }
+    }
+    
+    // Si no se encuentra directamente, usar el contexto como fallback
+    try {
+      const result = contextT(key, "tickets", values);
+      // Si el resultado es la clave completa o empieza con "tickets.", significa que no encontró la traducción
+      if (result && (result === `tickets.${key}` || result.startsWith("tickets."))) {
+        // Intentar una vez más buscar directamente con console.warn para debug
+        console.warn(`Translation not found for key: ${key} in namespace tickets for locale: ${locale}`);
+        return key;
+      }
+      return result;
+    } catch (error) {
+      console.error("Translation error:", error);
+      return key;
+    }
+  }, [contextT, locale, messages]);
   const [filters, setFilters] = useState({
     estado: "",
     prioridad: "",

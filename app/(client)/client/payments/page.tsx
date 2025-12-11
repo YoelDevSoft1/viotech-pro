@@ -79,29 +79,46 @@ export default function ClientPaymentsPage() {
     setCheckoutOpen(true);
   };
 
-  const handleCheckoutSuccess = (serviceName?: string) => {
+  // VALIDACIÓN C2.3: Flujo éxito/error después de pago
+  const handleCheckoutSuccess = async (serviceName?: string) => {
     setCheckoutOpen(false);
     setSelectedPlan(null);
     
     // Invalidar y refrescar servicios sin recargar la página
     queryClient.invalidateQueries({ queryKey: ["services"] });
-    refreshServices();
     
-    // Toast de éxito con acción
-    toast.success(
-      serviceName 
-        ? `¡Pago procesado exitosamente! Tu servicio ${serviceName} está activo.`
-        : "¡Pago procesado exitosamente! Tu servicio está activo.",
-      {
-        action: {
-          label: "Ver Servicios",
-          onClick: () => {
-            // Scroll suave a la sección de servicios activos
-            document.getElementById("active-services")?.scrollIntoView({ behavior: "smooth" });
+    // Esperar a que se refresquen los servicios para verificar que realmente se actualizó
+    try {
+      await refreshServices();
+      
+      // Verificar que el servicio realmente se agregó (opcional, solo para validación)
+      // El backend ya valida que el pago fue exitoso antes de actualizar
+      
+      // Toast de éxito con acción
+      toast.success(
+        serviceName 
+          ? `¡Pago procesado exitosamente! Tu servicio ${serviceName} está activo.`
+          : "¡Pago procesado exitosamente! Tu servicio está activo.",
+        {
+          action: {
+            label: "Ver Servicios",
+            onClick: () => {
+              // Scroll suave a la sección de servicios activos
+              document.getElementById("active-services")?.scrollIntoView({ behavior: "smooth" });
+            },
           },
-        },
-      }
-    );
+        }
+      );
+    } catch (error) {
+      // Si falla al refrescar, aún mostrar éxito pero con advertencia
+      console.warn("Error al refrescar servicios después del pago:", error);
+      toast.success(
+        "¡Pago procesado exitosamente! Los servicios se actualizarán en breve.",
+        {
+          description: "Si no ves tu servicio, recarga la página.",
+        }
+      );
+    }
   };
 
   const getServiceStatusBadge = (estado: string) => {

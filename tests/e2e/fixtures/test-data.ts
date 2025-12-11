@@ -18,6 +18,14 @@ export const testRegularUser = {
   name: "Regular Test User",
 };
 
+// Usuario Cliente de prueba
+export const testClient = {
+  email: process.env.TEST_CLIENT_EMAIL || "cliente@test.viotech.com",
+  password: process.env.TEST_CLIENT_PASSWORD || "TestPassword123!",
+  name: "Cliente Test User",
+  organizationId: process.env.TEST_CLIENT_ORG_ID || "org-test-001",
+};
+
 // Lead de prueba para crear
 export const testLead = {
   name: "Test Lead",
@@ -65,6 +73,14 @@ export const urls = {
   
   // Dashboard
   dashboard: "/dashboard",
+  
+  // Cliente
+  clientDashboard: "/client/dashboard",
+  clientTickets: "/client/tickets",
+  clientPayments: "/client/payments",
+  clientNotifications: "/client/notifications",
+  clientSettings: "/client/settings",
+  clientIA: "/client/ia/asistente",
 };
 
 // Selectores comunes (data-testid preferidos)
@@ -101,6 +117,12 @@ export const selectors = {
   // Errors
   errorAlert: '[role="alert"]',
   toast: '[data-sonner-toast]',
+  
+  // Cliente
+  clientMetrics: '[data-testid="client-metrics"]',
+  ticketCard: '[data-testid="ticket-card"]',
+  serviceCard: '[data-testid="service-card"]',
+  notificationItem: '[data-testid="notification-item"]',
 };
 
 

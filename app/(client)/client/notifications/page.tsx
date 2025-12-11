@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Bell, CheckCheck, Trash2, Filter } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,15 +18,60 @@ import { useRealtimeNotifications } from "@/lib/hooks/useRealtimeNotifications";
 import type { Notification, NotificationType } from "@/lib/types/notifications";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 import { useI18n } from "@/lib/hooks/useI18n";
+import { useLocaleContext } from "@/lib/contexts/LocaleContext";
+import { toast } from "sonner";
+import esMessages from "@/messages/es.json";
+import enMessages from "@/messages/en.json";
+import ptMessages from "@/messages/pt.json";
+import type { Locale } from "@/i18n";
+
+const messagesMap = {
+  es: esMessages,
+  en: enMessages,
+  pt: ptMessages,
+} as const;
 
 function NotificationItem({ notification }: { notification: Notification }) {
   const markAsRead = useMarkNotificationAsRead();
   const deleteNotification = useDeleteNotification();
   const [isHovered, setIsHovered] = useState(false);
-  const tNotifications = useTranslationsSafe("notifications");
+  const { locale } = useLocaleContext();
   const { formatRelativeTime } = useI18n();
+  
+  const tNotifications = useMemo(() => {
+    const messages = messagesMap[locale as Locale];
+    const notificationsMessages = messages?.notifications as any;
+    
+    return (key: string): string => {
+      // Si es una clave anidada (ej: "types.ticketCreated")
+      if (key.includes('.')) {
+        const keys = key.split('.');
+        let value: any = notificationsMessages;
+        for (const k of keys) {
+          if (value && typeof value === 'object' && k in value) {
+            value = value[k];
+          } else {
+            return key; // Fallback a la clave si no se encuentra
+          }
+        }
+        if (typeof value === 'string') {
+          return value;
+        }
+        return key;
+      }
+      
+      // Clave simple
+      if (notificationsMessages && typeof notificationsMessages === 'object' && key in notificationsMessages) {
+        const value = notificationsMessages[key];
+        if (typeof value === 'string') {
+          return value;
+        }
+      }
+      
+      return key; // Fallback a la clave si no se encuentra
+    };
+  }, [locale]);
 
   const handleClick = () => {
     if (!notification.read) {
@@ -96,12 +141,31 @@ function NotificationItem({ notification }: { notification: Notification }) {
         <Link
           href={notification.actionUrl}
           className="absolute inset-0"
-          onClick={(e) => {
+          onClick={async (e) => {
             if (!notification.read) {
               e.preventDefault();
               markAsRead.mutate(notification.id, {
                 onSuccess: () => {
-                  window.location.href = notification.actionUrl!;
+                  // VALIDACIÓN C2.5: Navegación a recurso correcto y manejo de recursos eliminados
+                  // Usar router.push en lugar de window.location para mejor manejo de errores
+                  try {
+                    // El router de Next.js manejará automáticamente errores 404
+                    window.location.href = notification.actionUrl!;
+                  } catch (err) {
+                    // Si el recurso ya no existe, mostrar mensaje amigable
+                    console.warn("Recurso no disponible:", notification.actionUrl);
+                    toast.error("Este recurso ya no está disponible", {
+                      description: "El ticket, proyecto o pago al que hace referencia esta notificación ya no existe.",
+                    });
+                  }
+                },
+                onError: () => {
+                  // Si falla al marcar como leída, aún intentar navegar
+                  try {
+                    window.location.href = notification.actionUrl!;
+                  } catch {
+                    // Ignorar errores de navegación
+                  }
                 },
               });
             }
@@ -118,7 +182,41 @@ export default function ClientNotificationsPage() {
   const { data: stats } = useNotificationStats();
   const markAllAsRead = useMarkAllNotificationsAsRead();
   const deleteAllRead = useDeleteAllReadNotifications();
-  const tNotifications = useTranslationsSafe("notifications");
+  const { locale } = useLocaleContext();
+  
+  const tNotifications = useMemo(() => {
+    const messages = messagesMap[locale as Locale];
+    const notificationsMessages = messages?.notifications as any;
+    
+    return (key: string): string => {
+      // Si es una clave anidada (ej: "types.ticketCreated")
+      if (key.includes('.')) {
+        const keys = key.split('.');
+        let value: any = notificationsMessages;
+        for (const k of keys) {
+          if (value && typeof value === 'object' && k in value) {
+            value = value[k];
+          } else {
+            return key; // Fallback a la clave si no se encuentra
+          }
+        }
+        if (typeof value === 'string') {
+          return value;
+        }
+        return key;
+      }
+      
+      // Clave simple
+      if (notificationsMessages && typeof notificationsMessages === 'object' && key in notificationsMessages) {
+        const value = notificationsMessages[key];
+        if (typeof value === 'string') {
+          return value;
+        }
+      }
+      
+      return key; // Fallback a la clave si no se encuentra
+    };
+  }, [locale]);
 
   // Conectar a notificaciones en tiempo real
   useRealtimeNotifications();

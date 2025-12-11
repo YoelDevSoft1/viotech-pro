@@ -4,6 +4,11 @@
  */
 
 import { defineConfig, devices } from "@playwright/test";
+import { config } from "dotenv";
+import path from "path";
+
+// Cargar variables de entorno desde .env.test si existe
+config({ path: path.resolve(__dirname, ".env.test") });
 
 export default defineConfig({
   // Directorio de tests
@@ -53,42 +58,129 @@ export default defineConfig({
     timezoneId: "America/Bogota",
   },
 
+  // Variables de entorno para tests
+  // Las credenciales se cargan automáticamente desde:
+  // 1. Variables de entorno del sistema (prioridad)
+  // 2. Archivo .env.test en la raíz del proyecto (si existe)
+  // 
+  // Para configurar localmente:
+  // 1. Copia .env.test.example a .env.test
+  // 2. Completa con tus credenciales de test
+  // 
+  // Para CI/CD, configurar como secrets en GitHub Actions:
+  // - TEST_CLIENT_EMAIL
+  // - TEST_CLIENT_PASSWORD
+
   // Proyectos (navegadores)
   projects: [
-    // Setup project para autenticación
+    // Setup project para autenticación de partners
     {
-      name: "setup",
-      testMatch: /.*\.setup\.ts/,
+      name: "setup-partner",
+      testMatch: /.*partner.*\.setup\.ts/,
     },
 
-    // Chromium (Desktop)
+    // Setup project para autenticación de cliente
     {
-      name: "chromium",
+      name: "setup-client",
+      testMatch: /.*client.*\.setup\.ts/,
+    },
+
+    // Chromium (Desktop) - Partners
+    {
+      name: "chromium-partner",
       use: {
         ...devices["Desktop Chrome"],
         storageState: "tests/e2e/.auth/partner.json",
       },
-      dependencies: ["setup"],
+      dependencies: ["setup-partner"],
+      testMatch: /.*partners.*\.spec\.ts/,
     },
 
-    // Firefox (Desktop)
+    // Chromium (Desktop) - Cliente
     {
-      name: "firefox",
+      name: "chromium-client",
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: "tests/e2e/.auth/client.json",
+      },
+      dependencies: ["setup-client"],
+      testMatch: /.*client.*\.spec\.ts/,
+    },
+
+    // Chromium (Desktop) - Cliente sin autenticación (para tests de protección de rutas)
+    {
+      name: "chromium-client-unauth",
+      use: {
+        ...devices["Desktop Chrome"],
+        // No usar storageState para este proyecto
+      },
+      testMatch: /.*smoke.*\.spec\.ts/,
+      // Solo ejecutar el test de protección de rutas
+      grep: /TC-C1\.1\.1/,
+    },
+
+    // Firefox (Desktop) - Partners
+    {
+      name: "firefox-partner",
       use: {
         ...devices["Desktop Firefox"],
         storageState: "tests/e2e/.auth/partner.json",
       },
-      dependencies: ["setup"],
+      dependencies: ["setup-partner"],
+      testMatch: /.*partners.*\.spec\.ts/,
     },
 
-    // Mobile Chrome
+    // Firefox (Desktop) - Cliente
     {
-      name: "mobile-chrome",
+      name: "firefox-client",
+      use: {
+        ...devices["Desktop Firefox"],
+        storageState: "tests/e2e/.auth/client.json",
+      },
+      dependencies: ["setup-client"],
+      testMatch: /.*client.*\.spec\.ts/,
+    },
+
+    // Firefox (Desktop) - Cliente sin autenticación
+    {
+      name: "firefox-client-unauth",
+      use: {
+        ...devices["Desktop Firefox"],
+      },
+      testMatch: /.*smoke.*\.spec\.ts/,
+      grep: /TC-C1\.1\.1/,
+    },
+
+    // Mobile Chrome - Partners
+    {
+      name: "mobile-chrome-partner",
       use: {
         ...devices["Pixel 5"],
         storageState: "tests/e2e/.auth/partner.json",
       },
-      dependencies: ["setup"],
+      dependencies: ["setup-partner"],
+      testMatch: /.*partners.*\.spec\.ts/,
+    },
+
+    // Mobile Chrome - Cliente
+    {
+      name: "mobile-chrome-client",
+      use: {
+        ...devices["Pixel 5"],
+        storageState: "tests/e2e/.auth/client.json",
+      },
+      dependencies: ["setup-client"],
+      testMatch: /.*client.*\.spec\.ts/,
+    },
+
+    // Mobile Chrome - Cliente sin autenticación
+    {
+      name: "mobile-chrome-client-unauth",
+      use: {
+        ...devices["Pixel 5"],
+      },
+      testMatch: /.*smoke.*\.spec\.ts/,
+      grep: /TC-C1\.1\.1/,
     },
   ],
 

@@ -200,3 +200,29 @@
 .glass-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.28);
 }
+
+/* Estilos para Recharts - Asegurar que los textos se vean en modo oscuro */
+.recharts-cartesian-axis-tick-value {
+  fill: oklch(var(--foreground)) !important;
+  color: oklch(var(--foreground)) !important;
+}
+
+.recharts-cartesian-axis-tick-value text {
+  fill: oklch(var(--foreground)) !important;
+  color: oklch(var(--foreground)) !important;
+}
+
+.dark .recharts-cartesian-axis-tick-value {
+  fill: #ffffff !important;
+  color: #ffffff !important;
+}
+
+.dark .recharts-cartesian-axis-tick-value text {
+  fill: #ffffff !important;
+  color: #ffffff !important;
+}
+
+.recharts-legend-item-text {
+  fill: oklch(var(--foreground)) !important;
+  color: oklch(var(--foreground)) !important;
+}

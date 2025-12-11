@@ -17,6 +17,9 @@ import { useCurrentUser } from "@/lib/hooks/useResources";
 import { apiClient } from "@/lib/apiClient";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { LocaleSelector } from "@/components/i18n/LocaleSelector";
+import { useLocaleContext } from "@/lib/contexts/LocaleContext";
+import { locales, type Locale } from "@/i18n";
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(1, "La contraseña actual es requerida"),
@@ -29,8 +32,15 @@ const passwordSchema = z.object({
 
 type PasswordFormValues = z.infer<typeof passwordSchema>;
 
+const localeNames: Record<Locale, string> = {
+  es: "Español",
+  en: "English",
+  pt: "Português",
+};
+
 export default function SettingsPage() {
   const { data: user, isLoading } = useCurrentUser();
+  const { locale } = useLocaleContext();
   const [isSavingPassword, setIsSavingPassword] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -424,12 +434,15 @@ export default function SettingsPage() {
                 <div className="space-y-0.5">
                   <p className="text-sm font-medium">Idioma</p>
                   <p className="text-xs text-muted-foreground">
-                    Selecciona tu idioma preferido
+                    Selecciona tu idioma preferido (VALIDACIÓN C2.6: es, en, pt)
                   </p>
                 </div>
-                <Button variant="outline" size="sm" disabled>
-                  Español (Próximamente)
-                </Button>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    {localeNames[locale]}
+                  </span>
+                  <LocaleSelector />
+                </div>
               </div>
               <Separator />
               <div className="flex items-center justify-between">

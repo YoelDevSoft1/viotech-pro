@@ -1,6 +1,7 @@
 "use client";
 
 import { useHealthScore } from "@/lib/hooks/useHealthScore";
+import { useDashboard } from "@/lib/hooks/useDashboard";
 import type { HealthScore } from "@/lib/services/healthScoreService";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -21,6 +22,36 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
 /**
+ * Detecta si un factor de health score es un valor real o un valor por defecto
+ * Los factores relacionados con tickets (ticketResponseTime, ticketResolutionRate)
+ * requieren tickets resueltos para tener datos reales
+ */
+function normalizeHealthFactor(
+  factorName: string,
+  value: number,
+  ticketsAbiertos: number = 0,
+  ticketsResueltos: number = 0
+): number | null {
+  // Factores relacionados con tickets requieren tickets resueltos para ser válidos
+  const ticketRelatedFactors = ["ticketResponseTime", "ticketResolutionRate", "Tiempo Respuesta", "Tasa Resolución"];
+  
+  if (ticketRelatedFactors.includes(factorName)) {
+    // Si no hay tickets resueltos, el valor 0% es un valor por defecto (no hay datos)
+    if (ticketsResueltos === 0 && value === 0) {
+      return null; // Tratar como ausencia de datos
+    }
+    // Si hay tickets abiertos pero no resueltos y el valor es 0%, también es sospechoso
+    if (ticketsAbiertos > 0 && ticketsResueltos === 0 && value === 0) {
+      return null; // Tratar como ausencia de datos (no se ha realizado análisis)
+    }
+  }
+  
+  // Para otros factores, 0% podría ser un valor real (ej: 0 proyectos activos)
+  // Pero si el valor es exactamente 0 y no hay contexto, lo dejamos como está
+  return value;
+}
+
+/**
  * Componente para mostrar el health score de una organización
  * Sprint 4.4 - VioTech Pro
  */
@@ -29,9 +60,56 @@ interface HealthScoreCardProps {
   className?: string;
 }
 
+/**
+ * Valida si un Health Score es válido y debería mostrarse
+ * Un Health Score no debería mostrarse si:
+ * - La organización no tiene actividad suficiente (sin servicios, proyectos, tickets)
+ * - Todos los factores críticos están en 0% o sin datos
+ */
+function isValidHealthScore(
+  healthScore: HealthScore | null | undefined,
+  serviciosActivos: number = 0,
+  ticketsAbiertos: number = 0,
+  ticketsResueltos: number = 0
+): boolean {
+  if (!healthScore) return false;
+  
+  // Si no hay servicios activos, no debería haber Health Score
+  if (serviciosActivos === 0) {
+    return false;
+  }
+  
+  // Si no hay proyectos activos Y no hay tickets, probablemente es una organización sin actividad
+  const hasProjects = healthScore.factors.activeProjects > 0;
+  const hasTickets = ticketsAbiertos > 0 || ticketsResueltos > 0;
+  
+  if (!hasProjects && !hasTickets) {
+    // Sin proyectos ni tickets, pero verificar si hay otros factores con datos reales
+    const hasPaymentData = healthScore.factors.paymentStatus > 0;
+    const hasEngagementData = healthScore.factors.engagement > 0;
+    
+    // Si solo tiene usuarios activos pero nada más, probablemente no es válido
+    if (!hasPaymentData && !hasEngagementData && healthScore.factors.activeUsers === 100) {
+      return false; // Probablemente es un valor por defecto
+    }
+  }
+  
+  // Si el score es muy bajo (< 30) y no hay actividad real, probablemente no es válido
+  if (healthScore.score < 30 && !hasProjects && !hasTickets) {
+    return false;
+  }
+  
+  return true;
+}
+
 export function HealthScoreCard({ organizationId, className }: HealthScoreCardProps) {
   const t = useTranslationsSafe();
   const { data: healthScore, isLoading, error } = useHealthScore(organizationId);
+  // Obtener métricas de tickets para detectar valores por defecto
+  const { metrics: dashboardMetrics } = useDashboard();
+  const ticketsAbiertos = dashboardMetrics?.ticketsAbiertos ?? dashboardMetrics?.openTickets ?? 0;
+  const ticketsResueltos = dashboardMetrics?.ticketsResueltos ?? dashboardMetrics?.solvedTickets ?? 0;
+  const serviciosActivos = dashboardMetrics?.serviciosActivos ?? dashboardMetrics?.activeServices ?? 0;
 
   if (isLoading) {
     return (
@@ -61,7 +139,23 @@ export function HealthScoreCard({ organizationId, className }: HealthScoreCardPr
           <CardDescription>
             {error
               ? "Error al cargar el health score"
-              : "Health score no disponible. Se calculará automáticamente."}
+              : "Health score no disponible. Se calculará automáticamente cuando haya suficiente actividad."}
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  // Validar si el Health Score es válido antes de mostrarlo
+  const isValid = isValidHealthScore(healthScore, serviciosActivos, ticketsAbiertos, ticketsResueltos);
+  
+  if (!isValid) {
+    return (
+      <Card className={className}>
+        <CardHeader>
+          <CardTitle>Health Score</CardTitle>
+          <CardDescription>
+            El Health Score se calculará automáticamente cuando tu organización tenga suficiente actividad (servicios activos, proyectos o tickets).
           </CardDescription>
         </CardHeader>
       </Card>
@@ -175,12 +269,12 @@ export function HealthScoreCard({ organizationId, className }: HealthScoreCardPr
             />
             <FactorItem
               label="Tiempo Respuesta"
-              value={healthScore.factors.ticketResponseTime}
+              value={normalizeHealthFactor("Tiempo Respuesta", healthScore.factors.ticketResponseTime, ticketsAbiertos, ticketsResueltos)}
               color="bg-indigo-500"
             />
             <FactorItem
               label="Tasa Resolución"
-              value={healthScore.factors.ticketResolutionRate}
+              value={normalizeHealthFactor("Tasa Resolución", healthScore.factors.ticketResolutionRate, ticketsAbiertos, ticketsResueltos)}
               color="bg-green-500"
             />
             <FactorItem
@@ -203,18 +297,30 @@ export function HealthScoreCard({ organizationId, className }: HealthScoreCardPr
 /**
  * Componente para mostrar un factor individual
  */
-function FactorItem({ label, value, color }: { label: string; value: number; color: string }) {
+function FactorItem({ label, value, color }: { label: string; value: number | null; color: string }) {
+  const hasData = value != null;
+  const displayValue = hasData ? value : 0;
+  const displayText = hasData ? `${value.toFixed(0)}%` : "N/A";
+  
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-xs">
         <span className="text-muted-foreground">{label}</span>
-        <span className="font-medium">{value.toFixed(0)}%</span>
+        <span className={cn("font-medium", !hasData && "text-muted-foreground")}>
+          {displayText}
+        </span>
       </div>
       <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-2">
-        <div
-          className={cn("h-2 rounded-full transition-all", color)}
-          style={{ width: `${value}%` }}
-        />
+        {hasData ? (
+          <div
+            className={cn("h-2 rounded-full transition-all", color)}
+            style={{ width: `${displayValue}%` }}
+          />
+        ) : (
+          <div className="h-2 rounded-full bg-muted flex items-center justify-center">
+            <span className="text-[8px] text-muted-foreground">Sin datos</span>
+          </div>
+        )}
       </div>
     </div>
   );

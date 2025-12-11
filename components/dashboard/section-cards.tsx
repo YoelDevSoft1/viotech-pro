@@ -16,8 +16,9 @@ import {
   CardTitle,
   CardContent,
 } from "@/components/ui/card";
-import { DashboardMetrics } from "@/lib/hooks/useDashboard";
+import { DashboardMetrics, normalizeSLAValue } from "@/lib/hooks/useDashboard";
 import { cn } from "@/lib/utils";
+import { getSLAStatus } from "@/lib/config/metricRanges";
 
 interface SectionCardsProps {
   metrics: DashboardMetrics | undefined;
@@ -25,12 +26,24 @@ interface SectionCardsProps {
 
 export function SectionCards({ metrics }: SectionCardsProps) {
   // Calcular porcentaje de SLA cumplido
-  const slaPercentage = metrics?.slaCumplido ?? metrics?.slaCompliance ?? 0;
-  const slaFormatted = typeof slaPercentage === 'number' ? `${slaPercentage.toFixed(1)}%` : slaPercentage;
+  // Detectar valores por defecto del backend (100 cuando no hay tickets)
+  const ticketsAbiertos = metrics?.ticketsAbiertos ?? metrics?.openTickets ?? 0;
+  const ticketsResueltos = metrics?.ticketsResueltos ?? metrics?.solvedTickets ?? 0;
+  const rawSlaPercentage = metrics?.slaCumplido ?? metrics?.slaCompliance ?? null;
+  
+  // Normalizar: si es 100 pero no hay tickets, tratarlo como null
+  const slaPercentage = normalizeSLAValue(rawSlaPercentage, ticketsAbiertos, ticketsResueltos);
+  
+  const slaFormatted = slaPercentage != null && typeof slaPercentage === 'number' 
+    ? `${slaPercentage.toFixed(1)}%` 
+    : "N/A";
   
   // Calcular avance promedio
-  const avancePromedio = metrics?.avancePromedio ?? 0;
-  const avanceFormatted = typeof avancePromedio === 'number' ? `${avancePromedio.toFixed(1)}%` : avancePromedio;
+  // Preservar null/undefined para indicar ausencia de datos
+  const avancePromedio = metrics?.avancePromedio ?? null;
+  const avanceFormatted = avancePromedio != null && typeof avancePromedio === 'number'
+    ? `${avancePromedio.toFixed(1)}%`
+    : "N/A";
 
   const cards = [
     {
@@ -57,14 +70,21 @@ export function SectionCards({ metrics }: SectionCardsProps) {
     },
     {
       title: "SLA Cumplido",
-      value: slaPercentage,
+      value: slaPercentage ?? null,
       formattedValue: slaFormatted,
-      trend: (typeof slaPercentage === 'number' && slaPercentage >= 95) ? "up" : "down" as const,
-      trendValue: typeof slaPercentage === 'number' && slaPercentage >= 95 ? "Excelente" : "Mejorar",
+      trend: (slaPercentage != null && typeof slaPercentage === 'number' && slaPercentage >= 95) ? "up" : "down" as const,
+      // VALIDACIÓN C2.1: Usar configuración centralizada
+      trendValue: (() => {
+        const status = getSLAStatus(slaPercentage);
+        return status.status === "sin_datos" ? "Sin datos" : status.label;
+      })(),
       description: "Cumplimiento de tiempos de respuesta",
-      subDescription: "Objetivo: ≥95%",
+      subDescription: slaPercentage != null ? "Objetivo: ≥95%" : "No se ha realizado análisis de tiempos",
       icon: Activity,
-      trendColor: typeof slaPercentage === 'number' && slaPercentage >= 95 ? "text-green-500" : "text-orange-500",
+      trendColor: (() => {
+        const status = getSLAStatus(slaPercentage);
+        return status.status === "sin_datos" ? "text-muted-foreground" : status.color;
+      })(),
     },
     {
       title: "Servicios Activos",

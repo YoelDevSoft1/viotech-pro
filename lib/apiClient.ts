@@ -122,6 +122,14 @@ apiClient.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
+    // Endpoints que pueden fallar silenciosamente (definir al inicio para uso en múltiples lugares)
+    const silentErrorEndpoints = [
+      '/auth/me',
+      '/blog/comments/pending',
+      '/blog/comments/admin',
+      '/analytics/events', // Analytics puede funcionar sin autenticación
+    ];
+
     // Endpoints que sabemos que no están implementados aún - silenciar 404
     const nonImplementedEndpoints = ['/activity/recent'];
     const isNonImplemented = originalRequest?.url && 
@@ -142,18 +150,41 @@ apiClient.interceptors.response.use(
 
     // Manejo específico de errores de timeout
     if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-      logger.warn("Request timeout", {
-        endpoint: originalRequest?.url,
-        method: originalRequest?.method,
-        timeout: apiClient.defaults.timeout,
-        apiError: true,
-      });
+      // Verificar si es un endpoint silencioso antes de loguear
+      const isSilentTimeout = originalRequest?.url && 
+        silentErrorEndpoints.some(endpoint => originalRequest.url?.includes(endpoint));
+      
+      if (!isSilentTimeout) {
+        logger.warn("Request timeout", {
+          endpoint: originalRequest?.url,
+          method: originalRequest?.method,
+          timeout: apiClient.defaults.timeout,
+          apiError: true,
+        });
+      }
+      
       const timeoutMessage = "El servidor está tardando demasiado en responder. Esto puede deberse a un 'cold start' del servidor. Por favor, intenta nuevamente en unos segundos.";
-      return Promise.reject(new Error(timeoutMessage));
+      const timeoutError = new Error(timeoutMessage) as any;
+      timeoutError.silent = isSilentTimeout;
+      return Promise.reject(timeoutError);
     }
 
     // Manejo de errores de conexión (sin respuesta del servidor)
     if (!error.response && error.request) {
+      // Verificar si es un endpoint que puede fallar silenciosamente (como analytics)
+      const isAnalyticsEndpoint = originalRequest?.url?.includes('/analytics/events');
+      const isSilentConnectionError = isAnalyticsEndpoint || 
+        (originalRequest?.url && silentErrorEndpoints.some(endpoint => originalRequest.url?.includes(endpoint)));
+      
+      // Si es un endpoint silencioso, crear un error silencioso sin logging
+      if (isSilentConnectionError) {
+        const silentError = new Error('CONNECTION_ERROR_SILENT') as any;
+        silentError.isAxiosError = true;
+        silentError.silent = true;
+        return Promise.reject(silentError);
+      }
+      
+      // Para otros endpoints, loguear el error normalmente
       logger.error("Connection error - no response from server", undefined, {
         endpoint: originalRequest?.url,
         method: originalRequest?.method,
@@ -180,13 +211,7 @@ apiClient.interceptors.response.use(
       }
     }
 
-    // Endpoints que pueden fallar silenciosamente (no implementados aún o pueden retornar errores esperados)
-    const silentErrorEndpoints = [
-      '/auth/me',
-      '/blog/comments/pending',
-      '/blog/comments/admin',
-      '/analytics/events', // Analytics puede funcionar sin autenticación
-    ];
+    // Verificar si es un endpoint que puede fallar silenciosamente
     const isSilentError = originalRequest?.url && 
       silentErrorEndpoints.some(endpoint => originalRequest.url?.includes(endpoint));
     

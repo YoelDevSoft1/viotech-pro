@@ -1241,13 +1241,6 @@
       "mfaDisableFailed": "Erro ao desabilitar MFA"
     }
   },
-  "notifications": {
-    "title": "Notificações",
-    "unread": "Não lidas",
-    "markAllRead": "Marcar todas como lidas",
-    "deleteAllRead": "Excluir lidas",
-    "noNotifications": "Sem notificações"
-  },
   "onboarding": {
     "title": "Onboarding",
     "initialSetup": "Configuração Inicial",

@@ -6,30 +6,32 @@ import { Badge } from "@/components/ui/badge";
 import { DashboardMetrics } from "@/lib/hooks/useDashboard";
 import { Target, Clock, CheckCircle2, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getSLAStatus } from "@/lib/config/metricRanges";
+import { normalizeSLAValue } from "@/lib/hooks/useDashboard";
 
 interface SLAMetricsProps {
   metrics: DashboardMetrics | undefined;
 }
 
 export function SLAMetrics({ metrics }: SLAMetricsProps) {
-  const slaCumplido = metrics?.slaCumplido ?? metrics?.slaCompliance ?? 0;
-  const slaValue = typeof slaCumplido === 'number' ? slaCumplido : parseFloat(String(slaCumplido)) || 0;
-  
+  // VALIDACIÓN C2.1: Manejo robusto de null/undefined
   const ticketsAbiertos = metrics?.ticketsAbiertos ?? metrics?.openTickets ?? 0;
   const ticketsResueltos = metrics?.ticketsResueltos ?? metrics?.solvedTickets ?? 0;
+  
+  // Obtener valor raw de SLA
+  const rawSlaCumplido = metrics?.slaCumplido ?? metrics?.slaCompliance ?? null;
+  
+  // Normalizar: detectar valores por defecto (100 cuando no hay tickets)
+  const slaValue = normalizeSLAValue(rawSlaCumplido, ticketsAbiertos, ticketsResueltos);
   const totalTickets = ticketsAbiertos + ticketsResueltos;
   const tasaResolucion = totalTickets > 0 ? (ticketsResueltos / totalTickets) * 100 : 0;
   
-  const avancePromedio = metrics?.avancePromedio ?? 0;
-  const avanceValue = typeof avancePromedio === 'number' ? avancePromedio : parseFloat(String(avancePromedio)) || 0;
+  const avancePromedio = metrics?.avancePromedio ?? null;
+  const avanceValue = avancePromedio != null && typeof avancePromedio === 'number'
+    ? avancePromedio
+    : (avancePromedio != null ? parseFloat(String(avancePromedio)) : null);
 
-  const getSLAStatus = (value: number) => {
-    if (value >= 95) return { label: "Excelente", color: "text-green-500", bgColor: "bg-green-500/10" };
-    if (value >= 85) return { label: "Bueno", color: "text-blue-500", bgColor: "bg-blue-500/10" };
-    if (value >= 70) return { label: "Regular", color: "text-orange-500", bgColor: "bg-orange-500/10" };
-    return { label: "Mejorar", color: "text-red-500", bgColor: "bg-red-500/10" };
-  };
-
+  // VALIDACIÓN C2.1: Usar configuración centralizada de rangos
   const slaStatus = getSLAStatus(slaValue);
 
   return (
@@ -49,7 +51,9 @@ export function SLAMetrics({ metrics }: SLAMetricsProps) {
               <span className="text-sm font-medium">SLA Cumplido</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold tabular-nums">{slaValue.toFixed(1)}%</span>
+              <span className="text-2xl font-bold tabular-nums">
+                {slaStatus.status === "sin_datos" ? "N/A" : `${slaValue.toFixed(1)}%`}
+              </span>
               <Badge 
                 variant="outline" 
                 className={cn("text-xs", slaStatus.color, slaStatus.bgColor)}
@@ -58,9 +62,11 @@ export function SLAMetrics({ metrics }: SLAMetricsProps) {
               </Badge>
             </div>
           </div>
-          <Progress value={slaValue} className="h-2" />
+          <Progress value={slaValue ?? 0} className="h-2" />
           <p className="text-xs text-muted-foreground">
-            Objetivo: ≥95% | Actual: {slaValue.toFixed(1)}%
+            {slaStatus.status === "sin_datos" 
+              ? "No se ha realizado análisis de tiempos de respuesta" 
+              : `Objetivo: ≥95% | Actual: ${slaValue?.toFixed(1) ?? 0}%`}
           </p>
         </div>
 
@@ -86,11 +92,15 @@ export function SLAMetrics({ metrics }: SLAMetricsProps) {
               <Clock className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium">Avance Promedio</span>
             </div>
-            <span className="text-2xl font-bold tabular-nums">{avanceValue.toFixed(1)}%</span>
+            <span className="text-2xl font-bold tabular-nums">
+              {avanceValue != null ? `${avanceValue.toFixed(1)}%` : "N/A"}
+            </span>
           </div>
-          <Progress value={avanceValue} className="h-2" />
+          <Progress value={avanceValue ?? 0} className="h-2" />
           <p className="text-xs text-muted-foreground">
-            Progreso promedio de todos los proyectos activos
+            {avanceValue != null 
+              ? "Progreso promedio de todos los proyectos activos"
+              : "No hay datos de avance disponibles"}
           </p>
         </div>
 

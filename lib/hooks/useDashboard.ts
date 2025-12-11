@@ -6,16 +6,16 @@ export interface DashboardMetrics {
   openTickets: number;
   inProgressTickets: number;
   solvedTickets: number;
-  avgResponse: string | number;
+  avgResponse: string | number | null;
   activeServices: number;
-  slaCompliance?: number;
+  slaCompliance?: number | null;
   // Métricas del backend
   serviciosActivos?: number;
   proximaRenovacion?: string | null;
-  avancePromedio?: number;
+  avancePromedio?: number | null;
   ticketsAbiertos?: number;
   ticketsResueltos?: number;
-  slaCumplido?: number;
+  slaCumplido?: number | null;
 }
 
 export interface ActivityItem {
@@ -26,26 +26,92 @@ export interface ActivityItem {
   date: string;
 }
 
+/**
+ * Normaliza un valor numérico a un rango [min, max]
+ * Útil para porcentajes y métricas que deben estar en rangos específicos
+ * Preserva null/undefined para indicar ausencia de datos
+ */
+const clamp = (value: number | null | undefined, min: number, max: number): number | null => {
+  if (value == null || isNaN(value)) return null;
+  return Math.min(Math.max(value, min), max);
+};
+
+/**
+ * Normaliza un porcentaje a [0, 100]
+ * Preserva null/undefined para indicar ausencia de datos
+ */
+const normalizePercentage = (value: number | null | undefined): number | null => {
+  return clamp(value, 0, 100);
+};
+
+/**
+ * Detecta si el valor de SLA es un valor real o un valor por defecto del backend
+ * Cuando no hay tickets para analizar o los tickets no se han procesado aún,
+ * el backend puede devolver 100 como valor por defecto.
+ * Esta función detecta esos casos y los trata como ausencia de datos
+ */
+export function normalizeSLAValue(
+  slaValue: number | null | undefined,
+  ticketsAbiertos: number = 0,
+  ticketsResueltos: number = 0
+): number | null {
+  // Si es null/undefined, retornar null
+  if (slaValue == null) return null;
+  
+  const totalTickets = ticketsAbiertos + ticketsResueltos;
+  
+  // Caso 1: No hay tickets para analizar y el SLA es 100 → valor por defecto
+  if (totalTickets === 0 && slaValue === 100) {
+    return null; // Tratar como ausencia de datos
+  }
+  
+  // Caso 2: Hay tickets abiertos pero NO hay tickets resueltos y el SLA es exactamente 100%
+  // Esto indica que los tickets existen pero no se han procesado/analizado aún.
+  // No se puede calcular un SLA real si no hay tickets resueltos para analizar.
+  if (ticketsAbiertos > 0 && ticketsResueltos === 0 && slaValue === 100) {
+    return null; // Tratar como ausencia de datos (no se ha realizado análisis)
+  }
+  
+  // Si hay tickets resueltos, entonces sí se ha realizado análisis y el valor puede ser real
+  // Incluso si es 100%, podría ser un valor real si todos los tickets cumplieron SLA
+  
+  // Si llegamos aquí, el valor parece ser real
+  return slaValue;
+}
+
 export function useDashboard() {
   const mapMetrics = (raw: any): DashboardMetrics => {
     // El backend expone nombres en español según API_DOCUMENTATION.md
     // Estructura: { success: true, data: { serviciosActivos, proximaRenovacion, avancePromedio, ticketsAbiertos, ticketsResueltos, slaCumplido } }
     const source = raw?.data ?? raw ?? {};
+    
+    // Normalizar porcentajes a [0, 100] según validaciones C2.1
+    const avancePromedio = normalizePercentage(source.avancePromedio);
+    const slaCumplido = normalizePercentage(source.slaCumplido);
+    
+    // Loggear casos raros para debugging (sin romper la UI)
+    if (source.avancePromedio != null && (source.avancePromedio < 0 || source.avancePromedio > 100)) {
+      console.warn("⚠️ avancePromedio fuera de rango [0, 100]:", source.avancePromedio);
+    }
+    if (source.slaCumplido != null && (source.slaCumplido < 0 || source.slaCumplido > 100)) {
+      console.warn("⚠️ slaCumplido fuera de rango [0, 100]:", source.slaCumplido);
+    }
+    
     return {
-      // Métricas del backend (nombres en español)
+      // Métricas del backend (nombres en español) - VALIDACIÓN C2.1
       serviciosActivos: source.serviciosActivos ?? 0,
       proximaRenovacion: source.proximaRenovacion ?? null,
-      avancePromedio: source.avancePromedio ?? 0,
+      avancePromedio,
       ticketsAbiertos: source.ticketsAbiertos ?? 0,
       ticketsResueltos: source.ticketsResueltos ?? 0,
-      slaCumplido: source.slaCumplido ?? 0,
+      slaCumplido,
       // Compatibilidad con nombres en inglés
       openTickets: source.ticketsAbiertos ?? source.openTickets ?? 0,
       inProgressTickets: source.ticketsEnProgreso ?? source.inProgressTickets ?? 0,
       solvedTickets: source.ticketsResueltos ?? source.solvedTickets ?? 0,
-      avgResponse: source.slaCumplido ?? source.avgResponse ?? 0,
+      avgResponse: slaCumplido,
       activeServices: source.serviciosActivos ?? source.activeServices ?? 0,
-      slaCompliance: source.slaCumplido ?? undefined,
+      slaCompliance: slaCumplido,
     };
   };
 

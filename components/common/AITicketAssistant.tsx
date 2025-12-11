@@ -121,16 +121,20 @@ export default function AITicketAssistant({
 
       const payload = await response.json().catch(() => null);
 
+      // VALIDACIÓN C2.4: Manejo de errores específicos
       if (response.status === 429) {
         throw new Error("Límite de uso alcanzado. Intenta en un minuto.");
       }
 
+      // Si IA no está disponible (503)
+      if (response.status === 503) {
+        throw new Error("El asistente de IA no está disponible temporalmente. Intenta de nuevo más tarde.");
+      }
+
       if (!response.ok || !payload) {
-        throw new Error(
-          payload?.error ||
-            payload?.message ||
-            `Error del asistente (${response.status}).`
-        );
+        // Mensajes amigables sin textos técnicos (VALIDACIÓN C2.4)
+        const friendlyMessage = payload?.error || payload?.message || "No pudimos generar la predicción ahora, intenta de nuevo más tarde.";
+        throw new Error(friendlyMessage);
       }
 
       const data: AssistantResponse = payload.data || payload;
@@ -172,14 +176,15 @@ export default function AITicketAssistant({
         }
       }
     } catch (err) {
+      // VALIDACIÓN C2.4: Mensajes de error amigables, sin romper la pantalla
       const msg =
         err instanceof Error
           ? err.message
-          : "No se pudo obtener respuesta del asistente.";
+          : "No pudimos generar la predicción ahora, intenta de nuevo más tarde.";
       setError(msg);
       addMessage({
         role: "assistant",
-        content: "No pude responder ahora. Intenta de nuevo en un momento.",
+        content: msg, // Usar el mensaje amigable
       });
     } finally {
       setLoading(false);

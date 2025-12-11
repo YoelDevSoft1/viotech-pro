@@ -18,15 +18,38 @@ import { ResourceSelector } from "@/components/resources/ResourceSelector";
 import { toast } from "sonner";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
-// Esquema de validación - se actualizará dinámicamente con traducciones
+// Esquema de validación - VALIDACIÓN C2.2: Campos con rangos y enums
+// Se actualizará dinámicamente con traducciones
 const getTicketSchema = (t: (key: string) => string) => z.object({
-  titulo: z.string().min(3, t("validation.titleRequired")),
-  descripcion: z.string().optional(),
-  prioridad: z.string(),
-  impacto: z.string(),
-  urgencia: z.string(),
-  categoria: z.string(),
-  tipo: z.string(),
+  // Asunto: longitud mínima 5, máxima 200 chars (VALIDACIÓN C2.2)
+  titulo: z
+    .string()
+    .min(5, t("validation.titleMin") || "El asunto debe tener al menos 5 caracteres")
+    .max(200, t("validation.titleMax") || "El asunto no puede exceder 200 caracteres"),
+  
+  // Descripción: tamaño razonable (opcional pero si existe, máximo 5000 chars)
+  descripcion: z
+    .string()
+    .max(5000, t("validation.descriptionMax") || "La descripción no puede exceder 5000 caracteres")
+    .optional(),
+  
+  // Prioridad: enum según VALIDACIÓN C2.2 (low|medium|high|critical)
+  prioridad: z.enum(["baja", "media", "alta", "critica", "low", "medium", "high", "critical"], {
+    errorMap: () => ({ message: t("validation.priorityInvalid") || "Prioridad inválida" }),
+  }),
+  
+  // Impacto: enum
+  impacto: z.enum(["bajo", "medio", "alto", "critico", "low", "medium", "high", "critical"]).optional(),
+  
+  // Urgencia: enum
+  urgencia: z.enum(["baja", "media", "alta", "critica", "low", "medium", "high", "critical"]).optional(),
+  
+  // Categoría: solo valores permitidos
+  categoria: z.string().min(1, t("validation.categoryRequired") || "Categoría requerida"),
+  
+  // Tipo: solo valores permitidos
+  tipo: z.string().min(1, t("validation.typeRequired") || "Tipo requerido"),
+  
   organizationId: z.string().optional(),
   projectId: z.string().optional(),
   asignadoA: z.string().optional(),
@@ -95,7 +118,33 @@ export function CreateTicketDialog({ open, onOpenChange, onSuccess }: Props) {
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
-      toast.error(error.message || tTickets("error.createFailed"));
+      // VALIDACIÓN C2.2: Manejo de errores 400 y 500 con mensajes claros
+      const status = error?.response?.status || error?.status;
+      let errorMessage = tTickets("error.createFailed");
+      
+      if (status === 400) {
+        // Error de validación del backend
+        const backendError = error?.response?.data?.error || error?.response?.data?.message || error?.message;
+        if (backendError) {
+          errorMessage = backendError.includes("asunto") || backendError.includes("titulo")
+            ? "El asunto debe tener entre 5 y 200 caracteres"
+            : backendError.includes("prioridad")
+            ? "La prioridad seleccionada no es válida"
+            : backendError.includes("descripción") || backendError.includes("descripcion")
+            ? "La descripción no puede exceder 10,000 caracteres"
+            : backendError;
+        } else {
+          errorMessage = "Faltan campos requeridos o el formato no es válido";
+        }
+      } else if (status === 500) {
+        // Error del servidor - mensaje genérico sin stacktrace
+        errorMessage = "Error del servidor. Por favor, intenta de nuevo más tarde.";
+        console.error("Error 500 al crear ticket:", error);
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

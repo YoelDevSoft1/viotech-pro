@@ -72,10 +72,12 @@ class AnalyticsService {
       return true;
     } catch (error: any) {
       // Silenciar errores de autenticación y otros errores para no interrumpir la UX
-      // Los errores marcados como 'silent' o 'UNAUTHENTICATED_PUBLIC_ENDPOINT' no se loguean
+      // Los errores marcados como 'silent' o mensajes específicos no se loguean
       const isSilentError = error?.silent || 
                            error?.message === 'UNAUTHENTICATED_PUBLIC_ENDPOINT' ||
-                           error?.message === 'UNAUTHENTICATED_ANALYTICS';
+                           error?.message === 'UNAUTHENTICATED_ANALYTICS' ||
+                           error?.message === 'CONNECTION_ERROR_SILENT' ||
+                           error?.message === 'ENDPOINT_NOT_IMPLEMENTED';
       
       // Solo loguear en desarrollo si no es un error silencioso esperado
       if (process.env.NODE_ENV === 'development' && !isSilentError) {

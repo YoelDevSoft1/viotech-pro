@@ -272,11 +272,48 @@
       "critical": "Crítica"
     },
     "newTicket": "Nuevo Ticket",
+    "admin": {
+      "title": "Gestión Avanzada de Tickets",
+      "description": "Panel de administración completo con métricas, filtros avanzados y acciones masivas.",
+      "advancedFilters": "Filtros Avanzados y Búsqueda",
+      "searchPlaceholder": "Buscar por título, ID, descripción, usuario, categoría...",
+      "selectedTickets": "{count} ticket(s) seleccionado(s)",
+      "changeStatus": "Cambiar estado",
+      "changePriority": "Cambiar prioridad",
+      "noTicketsFiltered": "No se encontraron tickets que coincidan con los filtros.",
+      "ticketsCount": "Tickets ({count})",
+      "showing": "Mostrando {from} - {to} de {total} tickets",
+      "table": "Tabla",
+      "kanban": "Kanban",
+      "pageInfo": "Página {current} de {total}",
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "ticketDetail": "Detalle del Ticket",
+      "generalInfo": "Información General",
+      "metadata": "Metadatos"
+    },
+    "export": "Exportar",
+    "refresh": "Actualizar",
+    "stats": {
+      "total": "Total de Tickets",
+      "inSystem": "En el sistema",
+      "open": "Abiertos",
+      "ofTotal": "del total",
+      "critical": "Críticos",
+      "criticalPriority": "Prioridad crítica",
+      "resolutionRate": "Tasa de Resolución",
+      "resolved": "resueltos"
+    },
     "success": {
-      "created": "Ticket creado correctamente"
+      "created": "Ticket creado correctamente",
+      "updated": "Ticket actualizado",
+      "bulkUpdated": "{count} tickets actualizados",
+      "exported": "Tickets exportados"
     },
     "error": {
-      "createFailed": "Error al crear ticket"
+      "createFailed": "Error al crear ticket",
+      "updateFailed": "Error al actualizar ticket",
+      "bulkUpdateFailed": "Error al actualizar tickets"
     },
     "form": {
       "title": "Título",
@@ -861,7 +898,8 @@
       "categories": "Categorías",
       "tags": "Tags",
       "price": "Precio",
-      "minRating": "Rating mínimo"
+      "minRating": "Rating mínimo",
+      "andMore": "y más"
     },
     "marketplace": {
       "detail": {
@@ -1251,13 +1289,6 @@
       "notificationsSaveFailed": "Error al guardar las preferencias",
       "mfaDisableFailed": "Error al deshabilitar MFA"
     }
-  },
-  "notifications": {
-    "title": "Notificaciones",
-    "unread": "Sin leer",
-    "markAllRead": "Marcar todas como leídas",
-    "deleteAllRead": "Eliminar leídas",
-    "noNotifications": "No hay notificaciones"
   },
   "onboarding": {
     "title": "Onboarding",
