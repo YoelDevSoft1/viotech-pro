@@ -13,37 +13,14 @@ import { AnalyticsProvider } from "@/components/common/AnalyticsProvider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   // Inicializamos el cliente de React Query una sola vez por sesión
+  // Nota: Los errores silenciosos se manejan directamente en los hooks y servicios
+  // (useHealthScore, healthScoreService, etc.) para evitar mostrar errores esperados en consola
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
         staleTime: 60 * 1000, // 1 minuto de caché
         retry: 1,
         refetchOnWindowFocus: false,
-      },
-    },
-    // Logger global que ignora errores silenciosos
-    logger: {
-      log: (...args) => {
-        // No loguear si el último argumento es un error silencioso
-        const lastArg = args[args.length - 1];
-        if (lastArg && typeof lastArg === 'object' && (lastArg.silent || lastArg.isInsufficientActivity || lastArg.__suppressConsole)) {
-          return; // No loguear errores silenciosos
-        }
-        console.log(...args);
-      },
-      warn: (...args) => {
-        const lastArg = args[args.length - 1];
-        if (lastArg && typeof lastArg === 'object' && (lastArg.silent || lastArg.isInsufficientActivity || lastArg.__suppressConsole)) {
-          return; // No loguear errores silenciosos
-        }
-        console.warn(...args);
-      },
-      error: (...args) => {
-        const lastArg = args[args.length - 1];
-        if (lastArg && typeof lastArg === 'object' && (lastArg.silent || lastArg.isInsufficientActivity || lastArg.__suppressConsole)) {
-          return; // No loguear errores silenciosos
-        }
-        console.error(...args);
       },
     },
   }));
