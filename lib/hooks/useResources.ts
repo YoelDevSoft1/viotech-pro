@@ -388,31 +388,42 @@ export function useCurrentUser() {
     }
   };
 
-  const cachedUser = getCachedUser();
+  // Obtener caché solo en el cliente
+  const cachedUser = typeof window !== "undefined" ? getCachedUser() : undefined;
   
   return useQuery({
     queryKey: ["auth", "me"],
     queryFn: async () => {
       const { data } = await apiClient.get("/auth/me");
+      // Intentar múltiples estructuras de respuesta
       const raw = data?.data || data;
       const user = raw?.user || raw;
+      
+      // Parsear todos los campos posibles del usuario
       const userData = {
-        id: user?.id,
-        nombre: user?.nombre || user?.name,
-        email: user?.email,
-        avatar: user?.avatar,
-        rol: user?.rol || user?.role,
-        organizationId: user?.organizationId || user?.organization_id,
+        id: user?.id || user?.userId || user?.user_id,
+        nombre: user?.nombre || user?.name || user?.userName || user?.user_name || "",
+        email: user?.email || user?.userEmail || user?.user_email || "",
+        avatar: user?.avatar || user?.avatarUrl || user?.avatar_url || null,
+        rol: user?.rol || user?.role || user?.userRole || user?.user_role || "",
+        organizationId: user?.organizationId || user?.organization_id || user?.orgId || user?.org_id || null,
       };
-      // Guardar en cache
-      setCachedUser(userData);
+      
+      // Solo guardar en caché si tiene datos válidos (al menos id y email)
+      if (userData.id && userData.email) {
+        setCachedUser(userData);
+      }
+      
       return userData;
     },
     staleTime: 1000 * 60 * 5, // 5 minutos
     retry: false,
-    // Usar datos cacheados como initialData y placeholderData
-    initialData: cachedUser,
+    // Usar datos cacheados como placeholderData para mostrar datos inmediatamente
+    // Pero siempre hacer fetch del backend para obtener datos frescos
     placeholderData: cachedUser,
+    // Siempre refetch para obtener datos frescos del backend
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 }
 

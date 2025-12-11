@@ -30,9 +30,8 @@ export function SidebarUser() {
     setMounted(true);
   }, []);
   
-  // Calcular iniciales solo cuando esté montado y tengamos datos
-  // Esto evita diferencias entre servidor y cliente
-  const initials = mounted && user?.nombre
+  // Calcular iniciales solo cuando tengamos datos
+  const initials = user?.nombre
     ? user.nombre
         .split(" ")
         .map((n: string) => n[0])
@@ -41,9 +40,28 @@ export function SidebarUser() {
         .toUpperCase()
     : "U";
 
-  // Si no está montado o está cargando sin datos, mostrar skeleton sutil
-  // IMPORTANTE: Renderizar lo mismo en servidor y cliente hasta que esté montado
-  if (!mounted || (isLoading && !user)) {
+  // Si no está montado, mostrar skeleton sutil (solo para evitar hidratación)
+  if (!mounted) {
+    return (
+      <div className="p-3 border-t group-data-[collapsible=icon]:p-3">
+        <div className="w-full flex items-center gap-3 p-2 rounded-md group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:rounded-md">
+          <Avatar className="h-9 w-9 shrink-0 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10">
+            <AvatarFallback className="bg-muted text-muted-foreground text-xs font-semibold animate-pulse" suppressHydrationWarning>
+              U
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 text-left min-w-0 group-data-[collapsible=icon]:hidden">
+            <div className="h-4 w-24 bg-muted rounded animate-pulse mb-1" />
+            <div className="h-3 w-32 bg-muted rounded animate-pulse" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Si está cargando Y no hay datos (ni del caché ni del backend), mostrar skeleton
+  // Si hay datos (aunque esté cargando), mostrar los datos
+  if (isLoading && !user) {
     return (
       <div className="p-3 border-t group-data-[collapsible=icon]:p-3">
         <div className="w-full flex items-center gap-3 p-2 rounded-md group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:rounded-md">

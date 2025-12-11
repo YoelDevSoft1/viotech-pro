@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,8 +28,21 @@ export default function ProfilePage() {
   const { data: user, isLoading, refetch } = useCurrentUser();
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const tProfile = useTranslationsSafe("profile");
   const profileSchema = getProfileSchema(tProfile);
+
+  // Evitar errores de hidratación esperando a que el componente esté montado
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Forzar refetch de datos del usuario cuando el componente esté montado
+  useEffect(() => {
+    if (mounted) {
+      refetch();
+    }
+  }, [mounted, refetch]);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -66,10 +79,15 @@ export default function ProfilePage() {
     .slice(0, 2)
     .toUpperCase() || "U";
 
-  if (isLoading) {
+  // Renderizar skeleton consistente en servidor y cliente inicial
+  // Solo mostrar skeleton si no está montado O si está cargando sin datos
+  if (!mounted || (isLoading && !user)) {
     return (
       <div className="space-y-6">
-        <div className="h-8 bg-muted animate-pulse rounded" />
+        <div className="space-y-4">
+          <div className="h-8 bg-muted animate-pulse rounded" />
+          <div className="h-4 w-2/3 bg-muted animate-pulse rounded" />
+        </div>
         <div className="h-96 bg-muted animate-pulse rounded" />
       </div>
     );
