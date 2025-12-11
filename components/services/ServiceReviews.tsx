@@ -47,7 +47,7 @@ export function ServiceReviews({ serviceId, className }: ServiceReviewsProps) {
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'rating' | 'helpful'>('newest');
   const [filterRating, setFilterRating] = useState<number | undefined>();
 
-  const { data: reviewsData, isLoading } = useServiceReviews(serviceId, {
+  const { data: reviewsData, isLoading, error, isError } = useServiceReviews(serviceId, {
     sortBy,
     rating: filterRating,
     limit: 10,
@@ -123,6 +123,29 @@ export function ServiceReviews({ serviceId, className }: ServiceReviewsProps) {
           ))}
         </div>
       </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Card className={cn(className)}>
+        <CardContent className="py-12 text-center">
+          <AlertCircle className="h-12 w-12 mx-auto text-destructive mb-4" />
+          <h3 className="font-semibold mb-2">{t("errorLoading") || "Error al cargar reviews"}</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            {error instanceof Error 
+              ? error.message 
+              : t("errorMessage") || "No se pudieron cargar las reseñas. Por favor, intenta nuevamente."}
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.location.reload()}
+          >
+            {t("retry") || "Reintentar"}
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
 
