@@ -52,7 +52,7 @@ export function SLAMetrics({ metrics }: SLAMetricsProps) {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-2xl font-bold tabular-nums">
-                {slaStatus.status === "sin_datos" ? "N/A" : `${slaValue.toFixed(1)}%`}
+                {slaStatus.status === "sin_datos" || slaValue === null ? "N/A" : `${slaValue.toFixed(1)}%`}
               </span>
               <Badge 
                 variant="outline" 

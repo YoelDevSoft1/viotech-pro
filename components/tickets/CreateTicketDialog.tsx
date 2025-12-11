@@ -33,9 +33,9 @@ const getTicketSchema = (t: (key: string) => string) => z.object({
     .max(5000, t("validation.descriptionMax") || "La descripción no puede exceder 5000 caracteres")
     .optional(),
   
-  // Prioridad: enum según VALIDACIÓN C2.2 (low|medium|high|critical)
+  // Prioridad: enum según VALIDACIÓN C2.2 (low|medium|high|critical)    
   prioridad: z.enum(["baja", "media", "alta", "critica", "low", "medium", "high", "critical"], {
-    errorMap: () => ({ message: t("validation.priorityInvalid") || "Prioridad inválida" }),
+    message: t("validation.priorityInvalid") || "Prioridad inválida",
   }),
   
   // Impacto: enum
