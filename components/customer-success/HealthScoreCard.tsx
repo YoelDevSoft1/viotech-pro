@@ -131,15 +131,32 @@ export function HealthScoreCard({ organizationId, className }: HealthScoreCardPr
     );
   }
 
-  if (error || !healthScore) {
+  // Manejar errores que no sean 400/404 (errores reales del servidor)
+  const isRealError = error && 
+    !(error as any)?.response?.status === 400 && 
+    !(error as any)?.response?.status === 404;
+
+  if (isRealError) {
     return (
       <Card className={className}>
         <CardHeader>
           <CardTitle>Health Score</CardTitle>
           <CardDescription>
-            {error
-              ? "Error al cargar el health score"
-              : "Health score no disponible. Se calculará automáticamente cuando haya suficiente actividad."}
+            Error al cargar el health score. Por favor, intenta nuevamente más tarde.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  // Si no hay healthScore (null), mostrar mensaje informativo
+  if (!healthScore) {
+    return (
+      <Card className={className}>
+        <CardHeader>
+          <CardTitle>Health Score</CardTitle>
+          <CardDescription>
+            No hay suficiente actividad para calcular el Health Score. Se requiere al menos: 1 usuario activo, 1 proyecto activo o 3 tickets en los últimos 30 días, y 1 servicio activo.
           </CardDescription>
         </CardHeader>
       </Card>

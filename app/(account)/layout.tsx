@@ -16,7 +16,9 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset className="flex flex-col overflow-hidden">
-          <HeaderContent />
+          <div className="sticky top-0 z-50 bg-background">
+            <HeaderContent />
+          </div>
           <div className="flex flex-1 flex-col gap-6 p-6 overflow-y-auto">
             {children}
           </div>

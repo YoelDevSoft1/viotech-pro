@@ -1,0 +1,78 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "C:\\Users\\Yoel-PC\\Documents\\GitHub\\viotech-pro",
+        "C:\\Users\\Yoel-PC\\Documents\\GitHub\\viotech-pro\\docs",
+        "C:\\Users\\Yoel-PC\\Documents\\GitHub\\VioTech-main\\backend"
+      ]
+    },
+    "secure-terminal": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "tumf-mcp-shell-server"
+      ],
+      "env": {
+        "ALLOW_COMMANDS": "npm,node,tsc,next,docker,git,ls,cat,grep,find,psql,pwsh,powershell"
+      }
+    },
+    "github-remote": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "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"
+      }
+    },
+    "postgres-advanced": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "POSTGRES_CONNECTION_STRING=postgresql://admin:YOUR_PASSWORD@host.docker.internal:5432/tickets_db",
+        "ghcr.io/henkdz/postgresql-mcp-server:latest"
+      ]
+    },
+    "brave-search": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-brave-search"
+      ],
+      "env": {
+        "BRAVE_API_KEY": "BSAGDQWRi7quKtFH0MNo9kCJ6UN8V3K"
+      }
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
+    "memory": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ]
+    },
+    "shadcn": {
+      "command": "npx",
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
+    }
+  }
+}
+
+

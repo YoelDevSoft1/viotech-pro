@@ -532,7 +532,7 @@ export default function AdminTicketsPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="relative">
+            <div className="relative w-full sm:max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder={tTickets("admin.searchPlaceholder")}
@@ -541,12 +541,12 @@ export default function AdminTicketsPage() {
                 className="pl-9"
               />
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              <div className="space-y-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+              <div className="space-y-2 min-w-0">
                 <label className="text-sm font-medium">{tTickets("statusLabel")}</label>
                 <Select value={filters.estado || undefined} onValueChange={onFilterChange("estado")}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={tTickets("all")} />
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={tTickets("all")} className="truncate" />
                   </SelectTrigger>
                   <SelectContent>
                     {estadoOptions
@@ -559,11 +559,11 @@ export default function AdminTicketsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 min-w-0">
                 <label className="text-sm font-medium">{tTickets("priorityLabel")}</label>
                 <Select value={filters.prioridad || undefined} onValueChange={onFilterChange("prioridad")}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={tTickets("all")} />
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={tTickets("all")} className="truncate" />
                   </SelectTrigger>
                   <SelectContent>
                     {prioridadOptions
@@ -576,11 +576,11 @@ export default function AdminTicketsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 min-w-0">
                 <label className="text-sm font-medium">{tTickets("impact")}</label>
                 <Select value={filters.impacto || undefined} onValueChange={onFilterChange("impacto")}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={tTickets("all")} />
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={tTickets("all")} className="truncate" />
                   </SelectTrigger>
                   <SelectContent>
                     {impactoOptions
@@ -593,11 +593,11 @@ export default function AdminTicketsPage() {
                   </SelectContent>
           </Select>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 min-w-0">
                 <label className="text-sm font-medium">{tTickets("category")}</label>
                 <Select value={filters.categoria || undefined} onValueChange={onFilterChange("categoria")}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={tTickets("all")} />
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={tTickets("all")} className="truncate" />
                   </SelectTrigger>
                   <SelectContent>
                     {categoriaOptions
@@ -610,11 +610,11 @@ export default function AdminTicketsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 min-w-0">
                 <label className="text-sm font-medium">{tTickets("assignee")}</label>
                 <Select value={filters.asignadoA || undefined} onValueChange={onFilterChange("asignadoA")}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={tTickets("all")} />
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={tTickets("all")} className="truncate" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="unassigned">{tTickets("unassigned")}</SelectItem>
@@ -622,11 +622,11 @@ export default function AdminTicketsPage() {
                   </SelectContent>
           </Select>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 min-w-0">
                 <label className="text-sm font-medium">{tTickets("project")}</label>
                 <Select value={filters.projectId || undefined} onValueChange={onFilterChange("projectId")}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={tTickets("all")} />
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={tTickets("all")} className="truncate" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">{tTickets("noProject")}</SelectItem>

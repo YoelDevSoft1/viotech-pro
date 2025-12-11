@@ -78,10 +78,22 @@ class HealthScoreService {
       );
       return data.data.healthScore;
     } catch (error: any) {
-      // Si es 404, el health score no está calculado aún
-      if (error.response?.status === 404) {
+      // Si es 404 o 400, el health score no está calculado aún o no hay suficiente actividad
+      // 400 generalmente significa "No hay suficiente actividad para calcular el Health Score"
+      // 404 significa que el health score no existe
+      const status = error.response?.status;
+      const isInsufficientActivity = error.isInsufficientActivity || 
+        (status === 400 && (
+          error.message?.toLowerCase().includes('insuficiente actividad') ||
+          error.message?.toLowerCase().includes('no hay suficiente actividad')
+        ));
+      
+      if (status === 404 || status === 400 || isInsufficientActivity) {
+        // No loguear estos errores como errores críticos, son casos válidos
+        // Retornar null silenciosamente sin propagar el error
         return null;
       }
+      // Solo loguear errores inesperados (500, 401, 403, etc.)
       console.error("Error obteniendo health score:", error);
       throw error;
     }

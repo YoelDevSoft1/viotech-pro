@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import {
   Bot,
   Loader2,
@@ -11,7 +11,29 @@ import {
   AlertTriangle,
   PlusCircle,
   CheckCircle2,
+  User,
+  X,
+  Zap,
+  ChevronDown,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { cn } from "@/lib/utils";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
 type Message = { role: "user" | "assistant"; content: string };
@@ -55,6 +77,121 @@ const extractJsonFromText = (text: string) => {
   }
 };
 
+function MessageBubble({ message }: { message: Message }) {
+  const isUser = message.role === "user";
+
+  return (
+    <div className={cn("flex gap-3", isUser ? "flex-row-reverse" : "flex-row")}>
+      <div
+        className={cn(
+          "flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center",
+          isUser ? "bg-primary text-primary-foreground" : "bg-muted"
+        )}
+      >
+        {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+      </div>
+      <div
+        className={cn(
+          "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm",
+          isUser
+            ? "bg-primary text-primary-foreground"
+            : "bg-muted text-foreground"
+        )}
+      >
+        <p className="whitespace-pre-wrap break-words">{message.content}</p>
+      </div>
+    </div>
+  );
+}
+
+function SuggestionsPanel({
+  suggestions,
+  tAI,
+}: {
+  suggestions: any;
+  tAI: (key: string) => string;
+}) {
+  const [isOpen, setIsOpen] = useState(true);
+
+  if (!suggestions) return null;
+
+  const title = suggestions.title || suggestions.titulo;
+  const description = suggestions.description || suggestions.descripcion;
+  const priority = suggestions.priority || suggestions.prioridad;
+  const tags = suggestions.tags || suggestions.etiquetas || [];
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <div className="rounded-lg border bg-card">
+        <CollapsibleTrigger asChild>
+          <Button
+            variant="ghost"
+            className="w-full justify-between p-3 h-auto font-normal"
+          >
+            <span className="flex items-center gap-2 text-sm font-medium">
+              <Zap className="h-4 w-4 text-yellow-500" />
+              {tAI("suggestionsTitle")}
+            </span>
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 text-muted-foreground transition-transform",
+                isOpen && "rotate-180"
+              )}
+            />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <Separator />
+          <div className="p-3 space-y-3">
+            {title && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">{tAI("suggestedTitle")}</p>
+                <p className="text-sm font-medium">{title}</p>
+              </div>
+            )}
+            {description && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">{tAI("suggestedDescription")}</p>
+                <p className="text-sm text-muted-foreground">{description}</p>
+              </div>
+            )}
+            <div className="flex items-center gap-4 flex-wrap">
+              {priority && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">{tAI("suggestedPriority")}</p>
+                  <Badge
+                    variant={
+                      priority === "alta" || priority === "high"
+                        ? "destructive"
+                        : priority === "media" || priority === "medium"
+                        ? "default"
+                        : "secondary"
+                    }
+                  >
+                    {priority}
+                  </Badge>
+                </div>
+              )}
+              {tags.length > 0 && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">{tAI("suggestedTags")}</p>
+                  <div className="flex gap-1 flex-wrap">
+                    {tags.map((tag: string, i: number) => (
+                      <Badge key={i} variant="outline" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </CollapsibleContent>
+      </div>
+    </Collapsible>
+  );
+}
+
 export default function AITicketAssistant({
   authToken,
   targetUserId,
@@ -63,6 +200,8 @@ export default function AITicketAssistant({
 }: AssistantProps) {
   const apiBase = useMemo(() => getApiBase(), []);
   const tAI = useTranslationsSafe("aiAssistant");
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -79,6 +218,16 @@ export default function AITicketAssistant({
   const [provider, setProvider] = useState<string | null>(null);
   const [model, setModel] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<any | null>(null);
+
+  // Auto-scroll to bottom on new messages
+  useEffect(() => {
+    if (scrollRef.current) {
+      const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
+    }
+  }, [messages]);
 
   useEffect(() => {
     setError(null);
@@ -121,19 +270,17 @@ export default function AITicketAssistant({
 
       const payload = await response.json().catch(() => null);
 
-      // VALIDACIÓN C2.4: Manejo de errores específicos
       if (response.status === 429) {
-        throw new Error("Límite de uso alcanzado. Intenta en un minuto.");
+        throw new Error(tAI("errorRateLimit"));
       }
 
-      // Si IA no está disponible (503)
       if (response.status === 503) {
-        throw new Error("El asistente de IA no está disponible temporalmente. Intenta de nuevo más tarde.");
+        throw new Error(tAI("errorUnavailable"));
       }
 
       if (!response.ok || !payload) {
-        // Mensajes amigables sin textos técnicos (VALIDACIÓN C2.4)
-        const friendlyMessage = payload?.error || payload?.message || "No pudimos generar la predicción ahora, intenta de nuevo más tarde.";
+        const friendlyMessage =
+          payload?.error || payload?.message || tAI("errorGeneric");
         throw new Error(friendlyMessage);
       }
 
@@ -146,45 +293,24 @@ export default function AITicketAssistant({
 
       const assistantMessage: Message = {
         role: "assistant",
-        content: data.reply || "Listo.",
+        content: data.reply || tAI("done"),
       };
       const nextMessages = [...baseMessages, assistantMessage];
-      setMessages((prev) => [
-        ...prev.slice(-(MAX_MESSAGES - 2)),
-        assistantMessage,
-      ]);
-
-      if (data.suggestions) {
-        const pretty = JSON.stringify(data.suggestions, null, 2);
-        const sugMessage: Message = {
-          role: "assistant",
-          content: `Sugerencia estructurada:\n${pretty}`,
-        };
-        setMessages((prev) => [
-          ...prev.slice(-(MAX_MESSAGES - 2)),
-          assistantMessage,
-          sugMessage,
-        ]);
-        nextMessages.push(sugMessage);
-      }
+      setMessages((prev) => [...prev.slice(-(MAX_MESSAGES - 2)), assistantMessage]);
 
       if (willAutoCreate) {
         if (authToken) {
           await handleCreateTicket(nextMessages, mergedSuggestions);
         } else {
-          setCreateError("Inicia sesión para crear el ticket automáticamente.");
+          setCreateError(tAI("errorLoginRequired"));
         }
       }
     } catch (err) {
-      // VALIDACIÓN C2.4: Mensajes de error amigables, sin romper la pantalla
-      const msg =
-        err instanceof Error
-          ? err.message
-          : "No pudimos generar la predicción ahora, intenta de nuevo más tarde.";
+      const msg = err instanceof Error ? err.message : tAI("errorGeneric");
       setError(msg);
       addMessage({
         role: "assistant",
-        content: msg, // Usar el mensaje amigable
+        content: msg,
       });
     } finally {
       setLoading(false);
@@ -193,17 +319,20 @@ export default function AITicketAssistant({
 
   const handleCreateTicket = async (
     messagesOverride?: Message[],
-    suggestionsOverride?: any,
+    suggestionsOverride?: any
   ) => {
     setCreateError(null);
     setCreatedTicketId(null);
     if (!authToken) {
-      setCreateError("Inicia sesión para crear el ticket.");
+      setCreateError(tAI("errorLoginRequired"));
       return;
     }
     setCreating(true);
     try {
-      const sug = suggestionsOverride || suggestions || extractJsonFromText(messages[messages.length - 1]?.content || "");
+      const sug =
+        suggestionsOverride ||
+        suggestions ||
+        extractJsonFromText(messages[messages.length - 1]?.content || "");
       const draft =
         sug && typeof sug === "object"
           ? {
@@ -222,44 +351,48 @@ export default function AITicketAssistant({
         });
       }
 
-      const response = await fetch(`${apiBase}/ai/ticket-assistant/create-ticket`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({
-          messages: messagesToSend,
-          context: draft
-            ? {
-                suggestions: sug,
-                draft,
-                usuarioObjetivoId: isPrivileged && targetUserId ? targetUserId : undefined,
-                organizationId: organizationId || undefined,
-              }
-            : isPrivileged && targetUserId
+      const response = await fetch(
+        `${apiBase}/ai/ticket-assistant/create-ticket`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({
+            messages: messagesToSend,
+            context: draft
+              ? {
+                  suggestions: sug,
+                  draft,
+                  usuarioObjetivoId:
+                    isPrivileged && targetUserId ? targetUserId : undefined,
+                  organizationId: organizationId || undefined,
+                }
+              : isPrivileged && targetUserId
               ? {
                   usuarioObjetivoId: targetUserId,
                   organizationId: organizationId || undefined,
                 }
               : organizationId
-                ? { organizationId }
-                : undefined,
-        }),
-      });
+              ? { organizationId }
+              : undefined,
+          }),
+        }
+      );
       const payload = await response.json().catch(() => null);
 
       if (response.status === 429) {
-        throw new Error("Demasiadas solicitudes. Intenta en un minuto.");
+        throw new Error(tAI("errorRateLimit"));
       }
       if (response.status === 401 || response.status === 403) {
-        throw new Error("Sesión expirada. Inicia sesión nuevamente.");
+        throw new Error(tAI("errorSessionExpired"));
       }
       if (!response.ok || !payload) {
         throw new Error(
           payload?.error ||
             payload?.message ||
-            `No se pudo crear el ticket (${response.status}).`
+            `${tAI("errorCreateTicket")} (${response.status}).`
         );
       }
 
@@ -272,170 +405,204 @@ export default function AITicketAssistant({
       if (payload.data?.usedProvider) setProvider(payload.data.usedProvider);
       if (payload.data?.modelVersion) setModel(payload.data.modelVersion);
     } catch (err) {
-      const msg =
-        err instanceof Error
-          ? err.message
-          : "Error desconocido al crear el ticket.";
+      const msg = err instanceof Error ? err.message : tAI("errorUnknown");
       setCreateError(msg);
     } finally {
       setCreating(false);
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
+  const handleClear = () => {
+    setMessages([{ role: "assistant", content: tAI("welcomeMessage") }]);
+    setSuggestions(null);
+    setError(null);
+    setCreateError(null);
+    setCreatedTicketId(null);
+  };
+
   return (
-    <div className="rounded-3xl border border-border/70 bg-background/80 p-4 space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <div className="rounded-full bg-muted/60 p-2">
-            <Bot className="w-4 h-4 text-foreground" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-foreground">Asistente IA de Tickets</p>
-            <p className="text-xs text-muted-foreground">
-              Redacta, prioriza y sugiere estructura.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-          {provider && (
-            <span className="inline-flex items-center gap-1 rounded-full border px-2 py-1">
-              <Shield className="w-3 h-3" />
-              {provider} {model ? `· ${model}` : ""}
-            </span>
-          )}
-          {!provider && !loading && (
-            <span className="inline-flex items-center gap-1 rounded-full border px-2 py-1">
-              <ShieldOff className="w-3 h-3" />
-              Sin proveedor aún
-            </span>
-          )}
+    <div className="space-y-4">
+      {/* Provider Badge */}
+      <div className="flex items-center justify-between">
+        {isPrivileged && targetUserId && (
+          <Badge variant="outline" className="text-xs">
+            {tAI("creatingFor")}: {targetUserId.slice(0, 8)}...
+          </Badge>
+        )}
+        <div className="ml-auto">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge
+                  variant={provider ? "default" : "secondary"}
+                  className="flex items-center gap-1.5"
+                >
+                  {loading ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : provider ? (
+                    <Shield className="h-3 w-3" />
+                  ) : (
+                    <ShieldOff className="h-3 w-3" />
+                  )}
+                  {provider
+                    ? `${provider}${model ? ` · ${model}` : ""}`
+                    : tAI("noProvider")}
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{provider ? tAI("providerActive") : tAI("providerInactive")}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
 
-      {isPrivileged && targetUserId && (
-        <div className="text-xs text-muted-foreground">
-          Creando en nombre de usuario: <span className="font-medium">{targetUserId}</span>
-        </div>
-      )}
-
+      {/* Success Alert */}
       {showSuccess && createdTicketId && (
-        <div className="flex items-center justify-between gap-3 rounded-2xl border border-green-500/40 bg-green-500/10 px-3 py-2 text-xs text-green-700">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4" />
-            <span>Ticket creado: #{createdTicketId}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowSuccess(false)}
-            className="text-green-700 hover:text-green-900"
-            aria-label="Cerrar notificación"
-          >
-            ×
-          </button>
-        </div>
-      )}
-
-      <div className="h-48 overflow-y-auto space-y-3 pr-1">
-        {messages.map((m, idx) => (
-          <div
-            key={`${m.role}-${idx}-${m.content.slice(0, 12)}`}
-            className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
-                m.role === "user"
-                  ? "bg-foreground text-background"
-                  : "bg-muted text-foreground"
-              } whitespace-pre-wrap`}
+        <Alert className="bg-green-500/10 border-green-500/30">
+          <CheckCircle2 className="h-4 w-4 text-green-600" />
+          <AlertDescription className="flex items-center justify-between text-green-700">
+            <span>
+              {tAI("ticketCreatedSuccess")} #{createdTicketId.slice(0, 8)}
+            </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 text-green-700 hover:text-green-900"
+              onClick={() => setShowSuccess(false)}
             >
-              {m.content}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {suggestions && (
-        <div className="rounded-2xl border border-border/70 bg-muted/20 p-3 text-xs space-y-2">
-          <p className="font-medium text-foreground">Sugerencias del asistente</p>
-          <pre className="whitespace-pre-wrap text-muted-foreground">
-            {JSON.stringify(suggestions, null, 2)}
-          </pre>
-        </div>
+              <X className="h-4 w-4" />
+            </Button>
+          </AlertDescription>
+        </Alert>
       )}
 
-      <div className="space-y-2">
-        <textarea
-          className="w-full rounded-2xl border border-border bg-transparent px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/30"
-          rows={3}
+      {/* Messages Area */}
+      <ScrollArea className="h-[300px] rounded-lg border bg-muted/20 p-4" ref={scrollRef}>
+        <div className="space-y-4 pr-4">
+          {messages.map((m, idx) => (
+            <MessageBubble key={`${m.role}-${idx}-${m.content.slice(0, 12)}`} message={m} />
+          ))}
+          {loading && (
+            <div className="flex gap-3">
+              <div className="flex-shrink-0 h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+                <Bot className="h-4 w-4" />
+              </div>
+              <div className="bg-muted rounded-2xl px-4 py-2.5">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-sm text-muted-foreground">{tAI("thinking")}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </ScrollArea>
+
+      {/* Suggestions Panel */}
+      <SuggestionsPanel suggestions={suggestions} tAI={tAI} />
+
+      {/* Input Area */}
+      <div className="space-y-3">
+        <Textarea
           placeholder={tAI("inputPlaceholder")}
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
           disabled={loading}
+          className="min-h-[80px] resize-none"
         />
+
+        {/* Error Messages */}
         {error && (
-          <div className="flex items-center gap-2 text-xs text-amber-700">
-            <AlertTriangle className="w-4 h-4" />
-            {error}
-          </div>
+          <Alert variant="destructive" className="py-2">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription className="text-sm">{error}</AlertDescription>
+          </Alert>
         )}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={loading || !input.trim()}
-            className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-xs font-medium text-background hover:scale-[1.02] transition-transform disabled:opacity-60"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                {tAI("thinking")}
-              </>
-            ) : (
-              <>
-                {tAI("send")}
-                <Send className="w-4 h-4" />
-              </>
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={() => setMessages((prev) => prev.slice(0, 1))}
-            className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:text-foreground"
-          >
-            <RefreshCcw className="w-4 h-4" />
-            {tAI("clear")}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleCreateTicket(undefined, suggestions)}
-            disabled={creating || loading}
-            className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-foreground hover:bg-muted/40 disabled:opacity-60"
-          >
-            {creating ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                {tAI("creating")}
-              </>
-            ) : (
-              <>
-                <PlusCircle className="w-4 h-4" />
-                {tAI("createTicket")}
-              </>
-            )}
-          </button>
-        </div>
 
         {createError && (
-          <div className="flex items-center gap-2 text-xs text-amber-700">
-            <AlertTriangle className="w-4 h-4" />
-            {createError}
-          </div>
+          <Alert variant="destructive" className="py-2">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription className="text-sm">{createError}</AlertDescription>
+          </Alert>
         )}
-        {createdTicketId && (
-          <div className="flex items-center gap-2 text-xs text-green-700">
-            <CheckCircle2 className="w-4 h-4" />
-            {tAI("ticketCreated", { id: createdTicketId })}
+
+        {/* Action Buttons */}
+        <div className="flex flex-wrap items-center gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button onClick={handleSubmit} disabled={loading || !input.trim()}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      {tAI("thinking")}
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4 mr-2" />
+                      {tAI("send")}
+                    </>
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{tAI("sendTooltip")}</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" onClick={handleClear} disabled={loading}>
+                  <RefreshCcw className="h-4 w-4 mr-2" />
+                  {tAI("clear")}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{tAI("clearTooltip")}</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="secondary"
+                  onClick={() => handleCreateTicket(undefined, suggestions)}
+                  disabled={creating || loading || !suggestions}
+                >
+                  {creating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      {tAI("creating")}
+                    </>
+                  ) : (
+                    <>
+                      <PlusCircle className="h-4 w-4 mr-2" />
+                      {tAI("createTicket")}
+                    </>
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{suggestions ? tAI("createTicketTooltip") : tAI("createTicketDisabledTooltip")}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+
+        {/* Created Ticket Confirmation */}
+        {createdTicketId && !showSuccess && (
+          <div className="flex items-center gap-2 text-sm text-green-600">
+            <CheckCircle2 className="h-4 w-4" />
+            {tAI("ticketCreated", { id: createdTicketId.slice(0, 8) })}
           </div>
         )}
       </div>

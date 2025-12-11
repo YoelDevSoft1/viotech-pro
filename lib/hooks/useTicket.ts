@@ -49,6 +49,35 @@ export function useTicket(ticketId?: string) {
     onSuccess: () => {
       if (ticketId) {
         queryClient.invalidateQueries({ queryKey: ["ticket", ticketId] });
+        queryClient.invalidateQueries({ queryKey: ["tickets"] });
+      }
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async (payload: Partial<Ticket>) => {
+      if (!ticketId) throw new Error("Ticket id requerido");
+      const { data } = await apiClient.put(`/tickets/${ticketId}`, payload);
+      return data;
+    },
+    onSuccess: () => {
+      if (ticketId) {
+        queryClient.invalidateQueries({ queryKey: ["ticket", ticketId] });
+        queryClient.invalidateQueries({ queryKey: ["tickets"] });
+      }
+    },
+  });
+
+  const assignMutation = useMutation({
+    mutationFn: async (agentId: string | null) => {
+      if (!ticketId) throw new Error("Ticket id requerido");
+      const { data } = await apiClient.put(`/tickets/${ticketId}`, { asignadoA: agentId });
+      return data;
+    },
+    onSuccess: () => {
+      if (ticketId) {
+        queryClient.invalidateQueries({ queryKey: ["ticket", ticketId] });
+        queryClient.invalidateQueries({ queryKey: ["tickets"] });
       }
     },
   });
@@ -61,5 +90,9 @@ export function useTicket(ticketId?: string) {
     refresh: ticketQuery.refetch,
     addComment: commentMutation.mutateAsync,
     isCommenting: commentMutation.isPending,
+    updateTicket: updateMutation.mutateAsync,
+    isUpdating: updateMutation.isPending,
+    assignTicket: assignMutation.mutateAsync,
+    isAssigning: assignMutation.isPending,
   };
 }

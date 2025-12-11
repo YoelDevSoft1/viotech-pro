@@ -301,15 +301,33 @@ apiClient.interceptors.response.use(
       errorMessage = error.message;
     }
 
-    // No loguear errores silenciosos (marcados con error.silent = true)
-    if ((error as any)?.silent) {
-      return Promise.reject(error);
-    }
-
     // Logging de errores de API según severidad
     const status = error.response?.status;
     const endpoint = originalRequest?.url || 'unknown';
     const method = originalRequest?.method?.toUpperCase() || 'UNKNOWN';
+
+    // Detectar errores de "insuficiente actividad" para health score ANTES de procesar
+    // Estos son casos válidos, no errores reales
+    const isHealthScoreInsufficientActivity = 
+      endpoint?.includes('/health') && 
+      status === 400 && 
+      (errorMessage?.toLowerCase().includes('insuficiente actividad') || 
+       errorMessage?.toLowerCase().includes('no hay suficiente actividad'));
+    
+    if (isHealthScoreInsufficientActivity) {
+      // Marcar como silent para que no se loguee ni se muestre en consola
+      (error as any).silent = true;
+      (error as any).isInsufficientActivity = true;
+    }
+
+    // No loguear errores silenciosos (marcados con error.silent = true)
+    if ((error as any)?.silent) {
+      const silentError = new Error(errorMessage);
+      (silentError as any).silent = true;
+      (silentError as any).isInsufficientActivity = (error as any).isInsufficientActivity || false;
+      (silentError as any).response = error.response;
+      return Promise.reject(silentError);
+    }
 
     if (!status || status >= 500) {
       // Errores del servidor - críticos
@@ -325,17 +343,21 @@ apiClient.interceptors.response.use(
       );
     } else if (status >= 400 && status < 500 && status !== 401 && status !== 404) {
       // Errores del cliente (excepto 401 y 404 ya manejados)
-      logger.warn(
-        `API Client Error: ${method} ${endpoint} - ${status}`,
-        {
-          endpoint,
-          method,
-          status,
-          apiError: true,
-        }
-      );
+      // No loguear errores 400 relacionados con "insuficiente actividad" para health score
+      // ya que son casos válidos, no errores reales (ya fueron marcados como silent arriba)
+      if (!isHealthScoreInsufficientActivity) {
+        logger.warn(
+          `API Client Error: ${method} ${endpoint} - ${status}`,
+          {
+            endpoint,
+            method,
+            status,
+            apiError: true,
+          }
+        );
+      }
     }
-      
+    
     return Promise.reject(new Error(errorMessage));
   }
 );

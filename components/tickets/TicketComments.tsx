@@ -139,18 +139,28 @@ export function TicketComments({
 
   return (
     <Card className={cn(className)}>
-      <CardHeader>
+      <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <MessageSquare className="h-5 w-5 text-primary" />
               Comentarios y Adjuntos
             </CardTitle>
-            <CardDescription>
-              {formattedComments.length} comentario(s) • {formattedAttachments.length} adjunto(s)
+            <CardDescription className="mt-1">
+              {formattedComments.length > 0 || formattedAttachments.length > 0 ? (
+                <>
+                  {formattedComments.length} comentario{formattedComments.length !== 1 ? 's' : ''} • {formattedAttachments.length} adjunto{formattedAttachments.length !== 1 ? 's' : ''}
+                </>
+              ) : (
+                "Agrega comentarios o adjunta archivos para mantener la comunicación"
+              )}
             </CardDescription>
           </div>
-          <Badge variant="outline">{formattedComments.length + formattedAttachments.length}</Badge>
+          {(formattedComments.length > 0 || formattedAttachments.length > 0) && (
+            <Badge variant="secondary" className="text-sm">
+              {formattedComments.length + formattedAttachments.length}
+            </Badge>
+          )}
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -262,40 +272,59 @@ export function TicketComments({
 
         <Separator />
 
-        {/* New Comment Form */}
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-2">
-            <Label htmlFor="comment-textarea" className="text-sm font-medium">
-              Nuevo comentario
-            </Label>
-            <Textarea
-              id="comment-textarea"
-              rows={4}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder={tTickets("commentPlaceholder")}
-              disabled={submitting}
-              className="resize-none"
-            />
-            <p className="text-xs text-muted-foreground">
-              {message.length} caracteres
-            </p>
-          </div>
+        {/* New Comment Form - Destacado */}
+        <div className="rounded-lg border-2 border-dashed border-primary/20 bg-primary/5 p-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <div className="space-y-2">
+              <Label htmlFor="comment-textarea" className="text-sm font-semibold flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                Agregar comentario
+              </Label>
+              <Textarea
+                id="comment-textarea"
+                rows={4}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder={tTickets("commentPlaceholder") || "Escribe tu comentario aquí... Puedes adjuntar archivos si es necesario."}
+                disabled={submitting}
+                className="resize-none bg-background"
+              />
+              <p className="text-xs text-muted-foreground">
+                {message.length} caracteres
+              </p>
+            </div>
 
-          {/* File Attachments */}
+          {/* File Attachments - Mejorado */}
           <div className="space-y-2">
-            <Label htmlFor="file-input" className="text-sm font-medium">
+            <Label htmlFor="file-input" className="text-sm font-semibold flex items-center gap-2">
+              <Paperclip className="h-4 w-4" />
               Adjuntar archivos
             </Label>
-            <Input
-              id="file-input"
-              ref={fileInputRef}
-              type="file"
-              multiple
-              onChange={handleFileSelect}
-              disabled={submitting}
-              className="cursor-pointer"
-            />
+            <div className="flex items-center gap-2">
+              <Input
+                id="file-input"
+                ref={fileInputRef}
+                type="file"
+                multiple
+                onChange={handleFileSelect}
+                disabled={submitting}
+                className="cursor-pointer flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={submitting}
+                className="shrink-0"
+              >
+                <Paperclip className="h-4 w-4 mr-2" />
+                Seleccionar
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Puedes adjuntar múltiples archivos (imágenes, documentos, etc.)
+            </p>
             {files.length > 0 && (
               <div className="space-y-2">
                 <p className="text-xs text-muted-foreground">{files.length} archivo(s) seleccionado(s)</p>
@@ -335,26 +364,28 @@ export function TicketComments({
             )}
           </div>
 
-          <div className="flex items-center justify-end gap-2">
+          <div className="flex items-center justify-end gap-2 pt-2">
             <Button
               type="submit"
               disabled={submitting || (!message.trim() && files.length === 0)}
-              className="gap-2"
+              className="gap-2 min-w-[120px]"
+              size="lg"
             >
               {submitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  {tTickets("sending")}
+                  {tTickets("sending") || "Enviando..."}
                 </>
               ) : (
                 <>
                   <Send className="h-4 w-4" />
-                  {tTickets("addComment")}
+                  {tTickets("addComment") || "Enviar comentario"}
                 </>
               )}
             </Button>
           </div>
         </form>
+        </div>
       </CardContent>
     </Card>
   );

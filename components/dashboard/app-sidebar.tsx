@@ -23,7 +23,8 @@ import {
   UserCog,
   BarChart3,
   Handshake,
-  Activity
+  Activity,
+  ShoppingCart
 } from "lucide-react";
 import {
   Sidebar,
@@ -101,8 +102,13 @@ export function AppSidebar() {
     },
     {
       title: t("sidebar.myServices"),
-      href: "/services",
+      href: "/client/services",
       icon: Package,
+    },
+    {
+      title: t("sidebar.catalog"),
+      href: "/client/services/catalog",
+      icon: ShoppingCart,
     },
     {
       title: t("sidebar.artificialIntelligence"),
@@ -348,7 +354,7 @@ export function AppSidebar() {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip={t("sidebar.technicalSupport")}>
-                    <Link href="/contact" className="flex items-center gap-2.5 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0">
+                    <Link href="/client/support" className="flex items-center gap-2.5 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0">
                       <LifeBuoy className="size-4 shrink-0" />
                       <span className="group-data-[collapsible=icon]:hidden flex-1 text-left">{t("sidebar.technicalSupport")}</span>
                     </Link>

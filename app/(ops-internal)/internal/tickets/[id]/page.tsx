@@ -1,247 +1,278 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { use } from "react";
 import Link from "next/link";
-import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, AlertCircle } from "lucide-react";
-import { buildApiUrl } from "@/lib/api";
-import { getAccessToken, isTokenExpired, refreshAccessToken, logout } from "@/lib/auth";
+import { ArrowLeft, User, Clock, CheckCircle2, XCircle, AlertCircle, Paperclip, Send } from "lucide-react";
+import { useTicket } from "@/lib/hooks/useTicket";
+import { TicketComments } from "@/components/tickets/TicketComments";
+import { StatusBadge, PriorityBadge } from "@/components/tickets/TicketBadges";
+import { ResourceSelector } from "@/components/resources/ResourceSelector";
+import { useOrg } from "@/lib/hooks/useOrg";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { LoadingState, ErrorState } from "@/components/ui/state";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
+import { useI18n } from "@/lib/hooks/useI18n";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
-type Ticket = {
-  id: string;
-  titulo: string;
-  descripcion?: string | null;
-  estado: string;
-  prioridad: string;
-  slaObjetivo?: string | null;
-  etiquetas?: any;
-  createdAt: string;
-  usuario?: { nombre?: string; email?: string };
-  comentarios?: any[];
-};
+export default function InternalTicketDetail({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
+  const ticketId = resolvedParams.id;
 
-export default function InternalTicketDetail({ params }: { params: { id: string } }) {
-  // useParams evita el warning de Next sobre params async en clientes
-  const routeParams = useParams();
-  const ticketId = Array.isArray(routeParams?.id)
-    ? routeParams?.id[0]
-    : typeof routeParams?.id === "string"
-      ? routeParams.id
-      : typeof (params as any)?.id === "string"
-        ? (params as any).id
-        : "";
-  const router = useRouter();
-  const [ticket, setTicket] = useState<Ticket | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [comment, setComment] = useState("");
-  const [commentLoading, setCommentLoading] = useState(false);
+  const { orgId } = useOrg();
+  const { 
+    ticket, 
+    isLoading, 
+    isError, 
+    error, 
+    refresh, 
+    addComment, 
+    isCommenting,
+    updateTicket,
+    isUpdating,
+    assignTicket,
+    isAssigning
+  } = useTicket(ticketId);
+
   const tTickets = useTranslationsSafe("tickets");
-  const tCommon = useTranslationsSafe("common");
+  const { formatDate } = useI18n();
 
-  const fetchTicket = useCallback(async () => {
-    if (!ticketId) return;
-    setLoading(true);
-    setError(null);
-    let token = getAccessToken();
-    if (!token) {
-      router.replace(`/login?from=/internal/tickets/${ticketId}`);
-      return;
-    }
-    if (isTokenExpired(token)) {
-      const refreshed = await refreshAccessToken();
-      if (refreshed) token = refreshed;
-      else {
-        await logout();
-        router.replace(`/login?from=/internal/tickets/${ticketId}&reason=expired`);
-        return;
-      }
-    }
-
+  const handleStatusChange = async (newStatus: string) => {
     try {
-      const res = await fetch(buildApiUrl(`/tickets/${ticketId}`), {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: "no-store",
-      });
-      const payload = await res.json().catch(() => null);
-      if (!res.ok || !payload) {
-        throw new Error(payload?.error || payload?.message || tTickets("error.loadFailed"));
-      }
-      const t = payload.data?.ticket || payload.data || payload;
-      setTicket({
-        id: String(t.id),
-        titulo: t.titulo || tTickets("noTitle"),
-        descripcion: t.descripcion || "",
-        estado: t.estado || "abierto",
-        prioridad: t.prioridad || "media",
-        slaObjetivo: t.slaObjetivo || null,
-        etiquetas: t.etiquetas,
-        createdAt: t.createdAt || t.created_at || new Date().toISOString(),
-        usuario: t.usuario || null,
-        comentarios: t.comentarios || [],
-      });
+      await updateTicket({ estado: newStatus });
+      toast.success(tTickets("success.statusUpdated") || "Estado actualizado");
     } catch (err) {
-      const msg = err instanceof Error ? err.message : tTickets("error.loadFailed");
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  }, [ticketId, router]);
-
-  const handleComment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!comment.trim()) return;
-    setCommentLoading(true);
-    let token = getAccessToken();
-    if (!token) {
-      router.replace(`/login?from=/internal/tickets/${ticketId}`);
-      return;
-    }
-    if (isTokenExpired(token)) {
-      const refreshed = await refreshAccessToken();
-      if (refreshed) token = refreshed;
-      else {
-        await logout();
-        router.replace(`/login?from=/internal/tickets/${ticketId}&reason=expired`);
-        return;
-      }
-    }
-    try {
-      const res = await fetch(buildApiUrl(`/tickets/${ticketId}/comment`), {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ contenido: comment.trim() }),
-      });
-      const payload = await res.json().catch(() => null);
-      if (!res.ok || !payload) {
-        throw new Error(payload?.error || payload?.message || tTickets("error.commentFailed"));
-      }
-      setComment("");
-      await fetchTicket();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : tTickets("error.commentFailed"));
-    } finally {
-      setCommentLoading(false);
+      toast.error(err instanceof Error ? err.message : tTickets("error.updateFailed") || "Error al actualizar");
     }
   };
 
-  useEffect(() => {
-    fetchTicket();
-  }, [fetchTicket]);
+  const handlePriorityChange = async (newPriority: string) => {
+    try {
+      await updateTicket({ prioridad: newPriority });
+      toast.success(tTickets("success.priorityUpdated") || "Prioridad actualizada");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : tTickets("error.updateFailed") || "Error al actualizar");
+    }
+  };
+
+  const handleAssignAgent = async (agentId: string | null) => {
+    try {
+      await assignTicket(agentId);
+      toast.success(
+        agentId 
+          ? (tTickets("success.assigned") || "Ticket asignado")
+          : (tTickets("success.unassigned") || "Asignación removida")
+      );
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : tTickets("error.assignFailed") || "Error al asignar");
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <LoadingState title={tTickets("loading")} />
+      </div>
+    );
+  }
+
+  if (isError || !ticket) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <ErrorState
+          title={tTickets("errorTitle") || "Error"}
+          message={error || tTickets("errorMessage") || "No se pudo cargar el ticket"}
+        >
+          <Button onClick={() => refresh()} variant="outline" className="mt-2">
+            {tTickets("retry") || "Reintentar"}
+          </Button>
+        </ErrorState>
+      </div>
+    );
+  }
 
   return (
-    <main className="min-h-screen bg-background px-6 py-10 md:py-12">
-      <div className="max-w-5xl mx-auto space-y-6">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/internal/tickets"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {tTickets("goBackToTickets")}
+    <div className="space-y-6">
+      {/* Header con navegación */}
+      <div className="flex items-center gap-3">
+        <Button variant="ghost" size="sm" asChild>
+          <Link href="/internal/tickets" className="gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            {tTickets("goBackToTickets") || "Volver a tickets"}
           </Link>
-        </div>
+        </Button>
+      </div>
 
-        {error && (
-          <div className="flex items-center gap-2 rounded-2xl border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-sm text-amber-700">
-            <AlertCircle className="w-4 h-4" />
-            {error}
+      {/* Información principal del ticket */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge variant="outline" className="font-mono text-xs">
+                  #{ticket.id.slice(0, 8)}
+                </Badge>
+                <StatusBadge status={ticket.estado} />
+                <PriorityBadge priority={ticket.prioridad} />
+              </div>
+              <CardTitle className="text-2xl">{ticket.titulo}</CardTitle>
+              <CardDescription className="mt-2">
+                {ticket.usuario?.nombre || ticket.usuario?.email ? (
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    <span>
+                      {ticket.usuario.nombre || tTickets("noName")} 
+                      {ticket.usuario.email && ` (${ticket.usuario.email})`}
+                    </span>
+                  </div>
+                ) : (
+                  tTickets("noUser") || "Usuario no disponible"
+                )}
+              </CardDescription>
+            </div>
           </div>
-        )}
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Descripción */}
+          <div className="space-y-2">
+            <Label className="text-sm font-semibold">{tTickets("description") || "Descripción"}</Label>
+            <div className="p-4 bg-muted/30 rounded-lg text-sm whitespace-pre-wrap">
+              {ticket.descripcion || tTickets("noDescription") || "Sin descripción"}
+            </div>
+          </div>
 
-        {loading ? (
-          <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
-            {tTickets("loading")}
-          </div>
-        ) : ticket ? (
-          <div className="rounded-3xl border border-border/70 bg-background/80 p-6 space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                  Ticket #{ticket.id.slice(0, 6)}
-                </p>
-                <h1 className="text-2xl font-semibold text-foreground">{ticket.titulo}</h1>
-                {ticket.usuario?.email && (
+          {/* Grid de información y acciones */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Panel izquierdo: Información */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">{tTickets("statusLabel") || "Estado"}</Label>
+                <Select
+                  value={ticket.estado}
+                  onValueChange={handleStatusChange}
+                  disabled={isUpdating}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="abierto">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 text-blue-500" />
+                        {tTickets("status.open") || "Abierto"}
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="en_progreso">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-yellow-500" />
+                        {tTickets("status.inProgress") || "En Progreso"}
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="resuelto">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        {tTickets("status.resolved") || "Resuelto"}
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="cerrado">
+                      <div className="flex items-center gap-2">
+                        <XCircle className="h-4 w-4 text-gray-500" />
+                        {tTickets("status.closed") || "Cerrado"}
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">{tTickets("priorityLabel") || "Prioridad"}</Label>
+                <Select
+                  value={ticket.prioridad}
+                  onValueChange={handlePriorityChange}
+                  disabled={isUpdating}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="baja">{tTickets("priority.low") || "Baja"}</SelectItem>
+                    <SelectItem value="media">{tTickets("priority.medium") || "Media"}</SelectItem>
+                    <SelectItem value="alta">{tTickets("priority.high") || "Alta"}</SelectItem>
+                    <SelectItem value="critica">{tTickets("priority.critical") || "Crítica"}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Asignación de agente */}
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">
+                  {tTickets("assignee") || "Asignar a"}
+                </Label>
+                <ResourceSelector
+                  value={ticket.asignadoA || undefined}
+                  onValueChange={handleAssignAgent}
+                  organizationId={ticket.organizationId || orgId}
+                  disabled={isAssigning}
+                  showWorkload={true}
+                />
+                {ticket.asignadoA && (
                   <p className="text-xs text-muted-foreground">
-                    {tTickets("user")}: {ticket.usuario.nombre || tTickets("noName")} ({ticket.usuario.email})
+                    {tTickets("currentlyAssigned") || "Actualmente asignado"}
                   </p>
                 )}
               </div>
-              <div className="text-xs space-y-1 text-muted-foreground">
-                <span className="inline-flex rounded-full border border-border px-2 py-1 capitalize">
-                  {ticket.estado}
-                </span>
-                <div>{tTickets("priorityLabel")}: {ticket.prioridad}</div>
-              </div>
             </div>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-              {ticket.descripcion || tTickets("noDescription")}
-            </p>
-            {ticket.slaObjetivo && (
-              <p className="text-xs text-muted-foreground">
-                {tTickets("slaTarget")}: {new Date(ticket.slaObjetivo).toLocaleString("es-CO")}
-              </p>
-            )}
-            {Array.isArray(ticket.comentarios) && ticket.comentarios.length > 0 && (
+
+            {/* Panel derecho: Metadata */}
+            <div className="space-y-4">
               <div className="space-y-2">
-                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                  {tTickets("comments")}
-                </p>
-                <div className="space-y-2">
-                  {ticket.comentarios.map((c: any) => (
-                    <div
-                      key={c.id || c.createdAt}
-                      className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2 text-sm"
-                    >
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>{c.autor?.nombre || c.autor?.email || tTickets("user")}</span>
-                        <span>
-                          {new Date(c.createdAt || c.created_at || "").toLocaleString("es-CO", {
-                            day: "2-digit",
-                            month: "short",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                      </div>
-                      <p className="text-foreground">{c.contenido}</p>
+                <Label className="text-sm font-semibold">{tTickets("metadata") || "Información"}</Label>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between items-center p-2 bg-muted/30 rounded">
+                    <span className="text-muted-foreground">{tTickets("created") || "Creado"}</span>
+                    <span>{formatDate(ticket.createdAt, "PPpp")}</span>
+                  </div>
+                  {ticket.updatedAt && (
+                    <div className="flex justify-between items-center p-2 bg-muted/30 rounded">
+                      <span className="text-muted-foreground">{tTickets("updated") || "Actualizado"}</span>
+                      <span>{formatDate(ticket.updatedAt, "PPpp")}</span>
                     </div>
-                  ))}
+                  )}
+                  {ticket.slaObjetivo && (
+                    <div className="flex justify-between items-center p-2 bg-muted/30 rounded">
+                      <span className="text-muted-foreground">{tTickets("slaTarget") || "SLA Objetivo"}</span>
+                      <span>{formatDate(ticket.slaObjetivo, "PPpp")}</span>
+                    </div>
+                  )}
+                  {ticket.categoria && (
+                    <div className="flex justify-between items-center p-2 bg-muted/30 rounded">
+                      <span className="text-muted-foreground">{tTickets("category") || "Categoría"}</span>
+                      <Badge variant="outline" className="capitalize">{ticket.categoria}</Badge>
+                    </div>
+                  )}
                 </div>
               </div>
-            )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-            <form className="space-y-2 pt-2" onSubmit={handleComment}>
-              <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                {tTickets("newComment")}
-              </label>
-              <textarea
-                className="w-full rounded-2xl border border-border bg-transparent px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/30"
-                rows={3}
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder={tTickets("commentPlaceholder")}
-                disabled={commentLoading}
-              />
-              <button
-                type="submit"
-                className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-xs font-medium text-background hover:scale-[1.02] transition-transform disabled:opacity-60"
-                disabled={commentLoading || !comment.trim()}
-              >
-                {commentLoading ? tTickets("sending") : tTickets("addComment")}
-              </button>
-            </form>
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
-            {tTickets("notFound")}
-          </div>
-        )}
-      </div>
-    </main>
+      {/* Comentarios y Adjuntos */}
+      <TicketComments
+        ticketId={ticket.id}
+        comments={ticket.comentarios || []}
+        attachments={ticket.attachments || []}
+        onAddComment={async (payload) => {
+          await addComment(payload);
+        }}
+        onRefresh={() => refresh()}
+        isSubmitting={isCommenting}
+      />
+    </div>
   );
 }

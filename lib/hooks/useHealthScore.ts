@@ -31,6 +31,21 @@ export function useHealthScore(organizationId: string | undefined) {
     },
     enabled: !!organizationId,
     staleTime: 5 * 60 * 1000, // 5 minutos
+    // No tratar null como error - es un estado válido cuando no hay suficiente actividad
+    retry: (failureCount, error: any) => {
+      // No reintentar si es un 400 o 404 (no hay datos suficientes)
+      // o si es un error de "insuficiente actividad" (marcado como silent)
+      if (
+        error?.response?.status === 400 || 
+        error?.response?.status === 404 ||
+        error?.isInsufficientActivity ||
+        error?.silent
+      ) {
+        return false;
+      }
+      // Reintentar otros errores hasta 2 veces
+      return failureCount < 2;
+    },
   });
 }
 

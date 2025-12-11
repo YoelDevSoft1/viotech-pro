@@ -1,258 +1,540 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search, Plus, MessageSquare } from "lucide-react";
-import { useTickets } from "@/lib/hooks/useTickets"; // Tu hook existente
+import Link from "next/link";
+import {
+  Search,
+  Plus,
+  MessageSquare,
+  Paperclip,
+  RefreshCw,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  Inbox,
+  X,
+  Ticket,
+  ArrowLeft,
+} from "lucide-react";
+import { useTickets } from "@/lib/hooks/useTickets";
+import { useTicket } from "@/lib/hooks/useTicket";
 import { CreateTicketDialog } from "@/components/tickets/CreateTicketDialog";
+import { TicketComments } from "@/components/tickets/TicketComments";
 import { StatusBadge, PriorityBadge } from "@/components/tickets/TicketBadges";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
-// Tipos auxiliares para los filtros (puedes moverlos a types)
 type Filters = {
   estado: string;
   prioridad: string;
 };
 
+function TicketListSkeleton() {
+  return (
+    <div className="space-y-2">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div key={i} className="p-4 rounded-xl border bg-card">
+          <div className="flex justify-between mb-2">
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-3 w-20" />
+          </div>
+          <Skeleton className="h-4 w-3/4 mb-3" />
+          <div className="flex justify-between">
+            <div className="flex gap-2">
+              <Skeleton className="h-5 w-16 rounded-full" />
+              <Skeleton className="h-5 w-14 rounded-full" />
+            </div>
+            <Skeleton className="h-4 w-8" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TicketDetailSkeleton() {
+  return (
+    <div className="space-y-6 p-6">
+      <div className="space-y-3">
+        <Skeleton className="h-7 w-3/4" />
+        <div className="flex gap-2">
+          <Skeleton className="h-5 w-20 rounded-full" />
+          <Skeleton className="h-5 w-16 rounded-full" />
+          <Skeleton className="h-4 w-32" />
+        </div>
+      </div>
+      <Skeleton className="h-24 w-full rounded-lg" />
+      <div className="grid grid-cols-3 gap-4">
+        <Skeleton className="h-16 rounded-lg" />
+        <Skeleton className="h-16 rounded-lg" />
+        <Skeleton className="h-16 rounded-lg" />
+      </div>
+      <Separator />
+      <Skeleton className="h-32 w-full" />
+    </div>
+  );
+}
+
+function EmptyTicketsList() {
+  return (
+    <div className="flex flex-col items-center justify-center py-12 text-center">
+      <div className="rounded-full bg-muted p-4 mb-4">
+        <Inbox className="h-8 w-8 text-muted-foreground" />
+      </div>
+      <h3 className="text-lg font-medium text-foreground mb-1">No se encontraron tickets</h3>
+      <p className="text-sm text-muted-foreground max-w-sm">
+        No hay tickets que coincidan con los filtros seleccionados
+      </p>
+    </div>
+  );
+}
+
+function EmptyTicketDetail() {
+  return (
+    <div className="flex flex-col items-center justify-center h-full p-10 text-center">
+      <div className="rounded-full bg-muted p-4 mb-4">
+        <Ticket className="h-10 w-10 text-muted-foreground/50" />
+      </div>
+      <h3 className="text-lg font-medium text-muted-foreground mb-1">
+        Selecciona un ticket
+      </h3>
+      <p className="text-sm text-muted-foreground max-w-sm">
+        Haz clic en un ticket de la lista para ver sus detalles y comentarios
+      </p>
+    </div>
+  );
+}
+
 export function TicketsPanel() {
-  // Estados locales
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<Filters>({ estado: "todos", prioridad: "todas" });
   const [page, setPage] = useState(1);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  // Hook de datos (React Query)
-  const { 
-    tickets, 
-    loading, 
-    error, 
-    pagination, 
-    refresh 
+  const {
+    tickets,
+    loading,
+    error,
+    pagination,
+    refresh,
   } = useTickets({
     page,
     limit: 10,
-    // Convertimos 'todos' a undefined para que la API no filtre
     estado: filters.estado === "todos" ? undefined : filters.estado,
     prioridad: filters.prioridad === "todas" ? undefined : filters.prioridad,
   });
 
-  // Filtrado en cliente para la búsqueda de texto (si la API no lo soporta nativamente en 'q')
-  // O idealmente pasar 'search' al hook useTickets si tu API soporta ?search=...
   const filteredTickets = useMemo(() => {
     if (!search) return tickets;
     const lower = search.toLowerCase();
-    return tickets.filter(t => 
-        t.titulo.toLowerCase().includes(lower) || 
-        t.id.toLowerCase().includes(lower)
+    return tickets.filter(t =>
+      t.titulo.toLowerCase().includes(lower) ||
+      t.id.toLowerCase().includes(lower)
     );
   }, [tickets, search]);
 
-  const selectedTicket = useMemo(() => 
-    tickets.find(t => t.id === selectedTicketId) || tickets[0] || null
-  , [tickets, selectedTicketId]);
+  const {
+    ticket: selectedTicketFull,
+    isLoading: isLoadingTicketDetail,
+    addComment,
+    isCommenting,
+    refresh: refreshTicketDetail,
+  } = useTicket(selectedTicketId || undefined);
 
-  if (loading && !tickets.length) {
-    return (
-        <div className="space-y-4 p-4">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-32 w-full" />
-            <Skeleton className="h-32 w-full" />
-        </div>
-    );
-  }
+  const selectedTicket = useMemo(() =>
+    tickets.find(t => t.id === selectedTicketId) || null
+    , [tickets, selectedTicketId]);
 
-  if (error) {
-    return <div className="p-8 text-center text-red-500">Error cargando tickets: {error}</div>;
-  }
+  const clearFilters = () => {
+    setSearch("");
+    setFilters({ estado: "todos", prioridad: "todas" });
+  };
+
+  const hasActiveFilters = search || filters.estado !== "todos" || filters.prioridad !== "todas";
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)] bg-background">
-      
-      {/* --- Toolbar Superior --- */}
-      <div className="flex flex-col gap-4 pb-4 border-b border-border">
-        <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-                <MessageSquare className="w-5 h-5" /> Gestión de Tickets
-            </h2>
+    <Card className="border-border/70">
+      <CardHeader className="pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              Gestión de Tickets
+            </CardTitle>
+            <CardDescription>
+              {pagination.total || 0} tickets en total
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => refresh()}
+                    disabled={loading}
+                  >
+                    <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Actualizar tickets</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <Button onClick={() => setIsCreateModalOpen(true)} size="sm">
-                <Plus className="w-4 h-4 mr-2" /> Nuevo Ticket
+              <Plus className="h-4 w-4 mr-2" />
+              Nuevo Ticket
             </Button>
+          </div>
         </div>
+      </CardHeader>
 
+      <Separator />
+
+      {/* Toolbar de filtros */}
+      <div className="p-4 space-y-4 border-b">
         <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input 
-                    placeholder="Buscar ticket..." 
-                    className="pl-9" 
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                />
-            </div>
-            <Select 
-                value={filters.estado} 
-                onValueChange={(v) => setFilters(p => ({...p, estado: v}))}
-            >
-                <SelectTrigger className="w-[140px]"><SelectValue placeholder="Estado" /></SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="todos">Todos</SelectItem>
-                    <SelectItem value="abierto">Abierto</SelectItem>
-                    <SelectItem value="en_progreso">En Progreso</SelectItem>
-                    <SelectItem value="resuelto">Resuelto</SelectItem>
-                </SelectContent>
-            </Select>
-            <Select 
-                value={filters.prioridad} 
-                onValueChange={(v) => setFilters(p => ({...p, prioridad: v}))}
-            >
-                <SelectTrigger className="w-[140px]"><SelectValue placeholder="Prioridad" /></SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="todas">Todas</SelectItem>
-                    <SelectItem value="alta">Alta</SelectItem>
-                    <SelectItem value="media">Media</SelectItem>
-                    <SelectItem value="baja">Baja</SelectItem>
-                </SelectContent>
-            </Select>
-        </div>
-      </div>
-
-      {/* --- Master-Detail Layout --- */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0 overflow-hidden pt-4">
-        
-        {/* Lista de Tickets (Izquierda) */}
-        <div className={`lg:col-span-4 flex flex-col min-h-0 ${selectedTicket ? 'hidden lg:flex' : 'flex'}`}>
-            <div className="flex-1 overflow-y-auto pr-2 space-y-2">
-                {filteredTickets.length === 0 ? (
-                    <div className="text-center py-10 text-muted-foreground text-sm">No se encontraron tickets.</div>
-                ) : (
-                    filteredTickets.map(ticket => (
-                        <div 
-                            key={ticket.id}
-                            onClick={() => setSelectedTicketId(ticket.id)}
-                            className={`
-                                cursor-pointer p-4 rounded-xl border transition-all
-                                ${selectedTicket?.id === ticket.id 
-                                    ? "bg-muted border-primary/30 shadow-sm" 
-                                    : "bg-card border-border hover:bg-muted/50"}
-                            `}
-                        >
-                            <div className="flex justify-between mb-1">
-                                <span className="text-[10px] font-mono text-muted-foreground">#{ticket.id.slice(0,6)}</span>
-                                <span className="text-[10px] text-muted-foreground">
-                                    {new Date(ticket.createdAt).toLocaleDateString()}
-                                </span>
-                            </div>
-                            <h4 className="font-medium text-sm mb-2 line-clamp-2">{ticket.titulo}</h4>
-                            <div className="flex gap-2">
-                                <StatusBadge status={ticket.estado} />
-                                <PriorityBadge priority={ticket.prioridad} />
-                            </div>
-                        </div>
-                    ))
-                )}
-            </div>
-            
-            {/* Paginación simple */}
-            <div className="pt-2 flex justify-between items-center text-xs text-muted-foreground">
-                <span>Página {page} de {pagination.totalPages || 1}</span>
-                <div className="flex gap-1">
-                    <Button variant="outline" size="sm" className="h-7 px-2" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Ant</Button>
-                    <Button variant="outline" size="sm" className="h-7 px-2" disabled={page >= pagination.totalPages} onClick={() => setPage(p => p + 1)}>Sig</Button>
-                </div>
-            </div>
-        </div>
-
-        {/* Detalle del Ticket (Derecha) */}
-        <div className={`lg:col-span-8 flex flex-col bg-card border rounded-xl overflow-hidden ${!selectedTicket ? 'hidden lg:flex items-center justify-center bg-muted/10' : 'flex'}`}>
-            {selectedTicket ? (
-                <div className="h-full flex flex-col">
-                    {/* Header del Detalle */}
-                    <div className="p-6 border-b bg-muted/10 flex justify-between items-start">
-                        <div>
-                            <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="lg:hidden mb-2 -ml-2 h-6 text-xs"
-                                onClick={() => setSelectedTicketId(null)}
-                            >
-                                ← Volver
-                            </Button>
-                            <h2 className="text-xl font-bold">{selectedTicket.titulo}</h2>
-                            <div className="flex gap-2 mt-2">
-                                <StatusBadge status={selectedTicket.estado} />
-                                <span className="text-xs text-muted-foreground self-center">
-                                    Creado el {new Date(selectedTicket.createdAt).toLocaleString()}
-                                </span>
-                            </div>
-                        </div>
-                        {/* Aquí podrías poner botones de acción (Editar, Cerrar Ticket) */}
-                    </div>
-
-                    {/* Contenido Scrollable */}
-                    <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                        <div className="space-y-2">
-                            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Descripción</h3>
-                            <div className="p-4 bg-muted/30 rounded-lg text-sm whitespace-pre-wrap">
-                                {selectedTicket.descripcion || "Sin descripción."}
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                            <div className="p-3 border rounded-lg">
-                                <div className="text-xs text-muted-foreground">Categoría</div>
-                                <div className="font-medium capitalize">{selectedTicket.categoria || "General"}</div>
-                            </div>
-                            <div className="p-3 border rounded-lg">
-                                <div className="text-xs text-muted-foreground">Impacto</div>
-                                <div className="font-medium capitalize">{selectedTicket.impacto || "-"}</div>
-                            </div>
-                            <div className="p-3 border rounded-lg">
-                                <div className="text-xs text-muted-foreground">Asignado a</div>
-                                <div className="font-medium">{selectedTicket.asignadoA || "Sin asignar"}</div>
-                            </div>
-                        </div>
-
-                        {/* Aquí podrías importar un componente <TicketComments ticketId={selectedTicket.id} /> */}
-                        {/* Por brevedad, dejo el placeholder de comentarios */}
-                        <div className="pt-6 border-t">
-                            <h3 className="text-sm font-semibold text-muted-foreground mb-4">Actividad y Comentarios</h3>
-                            {selectedTicket.comentarios?.length ? (
-                                <div className="space-y-4">
-                                    {selectedTicket.comentarios.map((c: any) => (
-                                        <div key={c.id} className="bg-muted/50 p-3 rounded-lg text-sm">
-                                            <div className="flex justify-between mb-1 text-xs text-muted-foreground">
-                                                <span className="font-bold text-foreground">{c.autor?.nombre || "Usuario"}</span>
-                                                <span>{new Date(c.createdAt).toLocaleString()}</span>
-                                            </div>
-                                            <p>{c.contenido}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-sm text-muted-foreground italic">No hay comentarios aún.</p>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            ) : (
-                <div className="text-center p-10">
-                    <MessageSquare className="w-16 h-16 text-muted-foreground/20 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-muted-foreground">Selecciona un ticket para ver los detalles</h3>
-                </div>
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por título o ID..."
+              className="pl-9"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            {search && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                onClick={() => setSearch("")}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             )}
+          </div>
+          <Select
+            value={filters.estado}
+            onValueChange={(v) => setFilters(p => ({ ...p, estado: v }))}
+          >
+            <SelectTrigger className="w-full sm:w-[150px]">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Estado" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos los estados</SelectItem>
+              <SelectItem value="abierto">Abierto</SelectItem>
+              <SelectItem value="en_progreso">En Progreso</SelectItem>
+              <SelectItem value="resuelto">Resuelto</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
+            value={filters.prioridad}
+            onValueChange={(v) => setFilters(p => ({ ...p, prioridad: v }))}
+          >
+            <SelectTrigger className="w-full sm:w-[150px]">
+              <SelectValue placeholder="Prioridad" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todas">Todas las prioridades</SelectItem>
+              <SelectItem value="alta">Alta</SelectItem>
+              <SelectItem value="media">Media</SelectItem>
+              <SelectItem value="baja">Baja</SelectItem>
+            </SelectContent>
+          </Select>
+          {hasActiveFilters && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="sm" onClick={clearFilters}>
+                    <X className="h-4 w-4 mr-1" />
+                    Limpiar
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Limpiar todos los filtros</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </div>
-
       </div>
+
+      <CardContent className="p-0">
+        {loading && !tickets.length ? (
+          <div className="p-4">
+            <TicketListSkeleton />
+          </div>
+        ) : error ? (
+          <div className="p-4">
+            <Alert variant="destructive">
+              <AlertDescription className="flex items-center justify-between">
+                <span>Error cargando tickets: {error}</span>
+                <Button variant="outline" size="sm" onClick={() => refresh()}>
+                  Reintentar
+                </Button>
+              </AlertDescription>
+            </Alert>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[500px]">
+            {/* Lista de Tickets */}
+            <div className={cn(
+              "lg:col-span-4 border-r flex flex-col",
+              selectedTicket ? "hidden lg:flex" : "flex"
+            )}>
+              <ScrollArea className="flex-1">
+                <div className="p-4 space-y-2">
+                  {filteredTickets.length === 0 ? (
+                    <EmptyTicketsList />
+                  ) : (
+                    filteredTickets.map(ticket => (
+                      <div
+                        key={ticket.id}
+                        onClick={() => setSelectedTicketId(ticket.id)}
+                        className={cn(
+                          "cursor-pointer p-4 rounded-xl border transition-all",
+                          selectedTicket?.id === ticket.id
+                            ? "bg-primary/5 border-primary/30 shadow-sm"
+                            : "bg-card border-border hover:bg-muted/50 hover:border-border/80"
+                        )}
+                      >
+                        <div className="flex justify-between mb-1.5">
+                          <span className="text-[10px] font-mono text-muted-foreground">
+                            #{ticket.id.slice(0, 8)}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground">
+                            {new Date(ticket.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <h4 className="font-medium text-sm mb-2 line-clamp-2">{ticket.titulo}</h4>
+                        <div className="flex items-center justify-between">
+                          <div className="flex gap-1.5">
+                            <StatusBadge status={ticket.estado} />
+                            <PriorityBadge priority={ticket.prioridad} />
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            {(ticket.comentarios?.length || 0) > 0 && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center gap-1">
+                                      <MessageSquare className="h-3 w-3" />
+                                      <span>{ticket.comentarios?.length || 0}</span>
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>{ticket.comentarios?.length} comentarios</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+                            {(ticket.attachments?.length || 0) > 0 && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center gap-1">
+                                      <Paperclip className="h-3 w-3" />
+                                      <span>{ticket.attachments?.length || 0}</span>
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>{ticket.attachments?.length} adjuntos</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </ScrollArea>
+
+              {/* Paginación */}
+              {pagination.totalPages > 1 && (
+                <div className="p-3 border-t flex justify-between items-center text-xs text-muted-foreground bg-muted/30">
+                  <span>
+                    Página {page} de {pagination.totalPages}
+                  </span>
+                  <div className="flex gap-1">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-7 w-7"
+                            disabled={page <= 1}
+                            onClick={() => setPage(p => p - 1)}
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Página anterior</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-7 w-7"
+                            disabled={page >= pagination.totalPages}
+                            onClick={() => setPage(p => p + 1)}
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Página siguiente</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Detalle del Ticket */}
+            <div className={cn(
+              "lg:col-span-8 flex flex-col bg-muted/10",
+              !selectedTicket ? "hidden lg:flex" : "flex"
+            )}>
+              {selectedTicket ? (
+                <div className="h-full flex flex-col">
+                  {/* Header del Detalle */}
+                  <div className="p-6 border-b bg-card">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="lg:hidden mb-3 -ml-2 gap-1"
+                          onClick={() => setSelectedTicketId(null)}
+                        >
+                          <ArrowLeft className="h-4 w-4" />
+                          Volver a la lista
+                        </Button>
+                        <h2 className="text-xl font-bold leading-tight">{selectedTicket.titulo}</h2>
+                        <div className="flex items-center gap-3 mt-2 flex-wrap">
+                          <StatusBadge status={selectedTicket.estado} />
+                          <PriorityBadge priority={selectedTicket.prioridad} />
+                          <span className="text-xs text-muted-foreground">
+                            Creado el {new Date(selectedTicket.createdAt).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="outline" size="sm" asChild>
+                              <Link href={`/client/tickets/${selectedTicket.id}`}>
+                                <ExternalLink className="h-4 w-4 mr-2" />
+                                Ver completo
+                              </Link>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Abrir página completa del ticket</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  </div>
+
+                  {/* Contenido Scrollable */}
+                  <ScrollArea className="flex-1">
+                    <div className="p-6 space-y-6">
+                      {/* Descripción */}
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                          Descripción
+                        </h3>
+                        <div className="p-4 bg-muted/30 rounded-lg border text-sm whitespace-pre-wrap">
+                          {selectedTicket.descripcion || "Sin descripción."}
+                        </div>
+                      </div>
+
+                      {/* Metadata */}
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <Card className="border-border/50">
+                          <CardContent className="p-3">
+                            <div className="text-xs text-muted-foreground mb-1">Categoría</div>
+                            <div className="font-medium capitalize">{selectedTicket.categoria || "General"}</div>
+                          </CardContent>
+                        </Card>
+                        <Card className="border-border/50">
+                          <CardContent className="p-3">
+                            <div className="text-xs text-muted-foreground mb-1">Impacto</div>
+                            <div className="font-medium capitalize">{selectedTicket.impacto || "-"}</div>
+                          </CardContent>
+                        </Card>
+                        <Card className="border-border/50">
+                          <CardContent className="p-3">
+                            <div className="text-xs text-muted-foreground mb-1">Asignado a</div>
+                            <div className="font-medium">{selectedTicket.asignadoA || "Sin asignar"}</div>
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      {/* Comentarios y Adjuntos */}
+                      <Separator />
+                      {isLoadingTicketDetail ? (
+                        <TicketDetailSkeleton />
+                      ) : (
+                        <TicketComments
+                          ticketId={selectedTicket.id}
+                          comments={selectedTicketFull?.comentarios || selectedTicket.comentarios || []}
+                          attachments={selectedTicketFull?.attachments || selectedTicket.attachments || []}
+                          onAddComment={async (payload) => {
+                            await addComment(payload);
+                            refresh();
+                          }}
+                          onRefresh={() => {
+                            refreshTicketDetail();
+                            refresh();
+                          }}
+                          isSubmitting={isCommenting}
+                        />
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
+              ) : (
+                <EmptyTicketDetail />
+              )}
+            </div>
+          </div>
+        )}
+      </CardContent>
 
       {/* Modal de Creación */}
-      <CreateTicketDialog 
-        open={isCreateModalOpen} 
+      <CreateTicketDialog
+        open={isCreateModalOpen}
         onOpenChange={setIsCreateModalOpen}
-        onSuccess={() => refresh()} // Refresca la lista al crear
+        onSuccess={() => refresh()}
       />
-    </div>
+    </Card>
   );
 }

@@ -5,10 +5,10 @@
 
 "use client";
 
-import { useState, useCallback } from "react";
+import { useMemo, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Search, SlidersHorizontal } from "lucide-react";
+import { ArrowLeft, Search, SlidersHorizontal, RefreshCcw, ShoppingCart, Sparkles, X } from "lucide-react";
 
 import { PageShell } from "@/components/ui/shell";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,12 @@ import { useServiceCatalog, useServiceCategories, useServiceTags } from "@/lib/h
 import { ServiceGrid } from "@/components/services/ServiceGrid";
 import { ServiceFilters } from "@/components/services/ServiceFilters";
 import type { ServicePlanExtended, ServiceCatalogFilters } from "@/lib/types/services";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export function CatalogPageClient() {
   const router = useRouter();
@@ -38,7 +44,7 @@ export function CatalogPageClient() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   // Queries
-  const { data: catalogData, isLoading, isError, error } = useServiceCatalog(filters);
+  const { data: catalogData, isLoading, isError, error, refetch } = useServiceCatalog(filters);
   const { data: categories = [] } = useServiceCategories();
   const { data: tags = [] } = useServiceTags();
 
@@ -91,28 +97,66 @@ export function CatalogPageClient() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const totalResults = useMemo(
+    () => catalogData?.pagination.total || catalogData?.services?.length || 0,
+    [catalogData]
+  );
+
   return (
-    <PageShell>
-      <div className="flex flex-col gap-8 max-w-7xl mx-auto">
+    <PageShell className="max-w-none mx-0 space-y-8">
+      <div className="flex flex-col gap-8">
         {/* Header */}
-        <div className="text-center space-y-4 py-8">
-          <div className="flex items-center justify-between mb-4">
-            <Link
-              href="/services"
-              className="inline-flex items-center text-sm text-muted-foreground hover:text-primary"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" /> {t("backToServices")}
-            </Link>
-            <Link href="/services/catalog/compare">
-              <Button variant="outline" size="sm">
-                {t("compare")}
-              </Button>
-            </Link>
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/client/services" className="gap-2">
+                <ArrowLeft className="w-4 h-4" /> {t("backToServices")}
+              </Link>
+            </Button>
           </div>
-          <h1 className="text-4xl font-extrabold tracking-tight">{t("title")}</h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            {t("description")}
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+                <ShoppingCart className="h-8 w-8 text-primary" />
+                {t("title")}
+              </h1>
+              <p className="text-muted-foreground mt-1">{t("description")}</p>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap justify-end">
+              {totalResults > 0 && (
+                <div className="text-xs text-muted-foreground px-3 py-1 rounded-full border bg-muted/50">
+                  {t("resultsCount", { count: totalResults })}
+                </div>
+              )}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" onClick={() => refetch()}>
+                      <RefreshCcw className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t("refresh")}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link href="/client/services/catalog/compare">
+                      <Button variant="outline" size="sm">
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        {t("compare")}
+                      </Button>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t("compare")}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </div>
         </div>
 
         {/* Búsqueda y Ordenamiento */}
@@ -125,6 +169,16 @@ export function CatalogPageClient() {
               onChange={(e) => handleSearch(e.target.value)}
               className="pl-10"
             />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                onClick={() => handleSearch("")}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
           </div>
           <Select value={filters.sortBy} onValueChange={handleSortChange}>
             <SelectTrigger className="w-full sm:w-[200px]">
@@ -219,7 +273,7 @@ export function CatalogPageClient() {
           plan={selectedPlan}
           onSuccess={() => {
             setIsCheckoutOpen(false);
-            router.push("/services?payment=success");
+            router.push("/client/services?payment=success");
           }}
           onError={() => setIsCheckoutOpen(false)}
         />

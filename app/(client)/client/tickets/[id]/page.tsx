@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AlertCircle, ArrowLeft, BadgeCheck, Clock3, Flame, Tags } from "lucide-react";
@@ -16,9 +16,12 @@ import { TicketComments } from "@/components/tickets/TicketComments";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 import { useI18n } from "@/lib/hooks/useI18n";
 
-export default function ClientTicketDetail({ params }: { params: { id: string } }) {
+export default function ClientTicketDetail({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
-  const { ticket, isLoading, isError, error, refresh, addComment, isCommenting } = useTicket(params.id);
+  const resolvedParams = use(params);
+  const ticketId = resolvedParams.id;
+  
+  const { ticket, isLoading, isError, error, refresh, addComment, isCommenting } = useTicket(ticketId);
   const tClientTicket = useTranslationsSafe("client.tickets.ticketDetail");
   const { formatDate } = useI18n();
 
@@ -26,9 +29,9 @@ export default function ClientTicketDetail({ params }: { params: { id: string } 
   useEffect(() => {
     const token = getAccessToken();
     if (!token) {
-      router.replace(`/login?from=/client/tickets/${params.id}`);
+      router.replace(`/login?from=/client/tickets/${ticketId}`);
     }
-  }, [router, params.id]);
+  }, [router, ticketId]);
 
   if (isLoading) {
     return (

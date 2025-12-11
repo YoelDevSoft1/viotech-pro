@@ -20,7 +20,10 @@ export function HeaderContent() {
   const isAdminRoute = pathname?.startsWith("/admin");
 
   return (
-    <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4" data-tour="header">
+    <header 
+      className="flex h-16 shrink-0 items-center gap-2 border-b px-4 shadow-sm" 
+      data-tour="header"
+    >
       {showTriggerInHeader && <SidebarTrigger className="-ml-1" />}
       
       <div className="flex flex-1 items-center justify-end gap-1">
