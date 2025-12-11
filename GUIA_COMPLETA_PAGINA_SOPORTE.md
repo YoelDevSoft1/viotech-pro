@@ -46,6 +46,13 @@ https://viotech-main.onrender.com/api
 
 ### GET /api/support/agents
 
+**Query Parameters:**
+- `includeInactive` (boolean, default: `true`) - Incluir agentes inactivos
+- `status` (string, optional) - Filtrar por estado: `online`, `offline`, `away`, `busy`
+- `role` (string, optional) - Filtrar por rol: `agent`, `supervisor`, `admin`
+
+**Nota:** El estado se sincroniza automáticamente basado en sesiones activas antes de retornar.
+
 **Respuesta:**
 ```json
 {
@@ -57,9 +64,11 @@ https://viotech-main.onrender.com/api
         "id": "uuid",
         "name": "Juan Pérez",
         "role": "agent",
-        "status": "online",
+        "status": "online",  // ← Sincronizado automáticamente
         "avatarUrl": "https://...",
-        "skills": ["tickets", "billing"]
+        "skills": ["tickets", "billing"],
+        "isActive": true,     // ← Nuevo campo
+        "lastSeenAt": "2025-12-11T22:00:00Z"  // ← Nuevo campo
       }
     ]
   }
@@ -165,15 +174,26 @@ async function apiRequest<T>(
 
 // Agentes
 export const supportApi = {
-  // Obtener agentes
-  getAgents: async (filters?: { status?: string; role?: string }) => {
+  // Obtener agentes (incluye activos e inactivos por defecto)
+  // El estado se sincroniza automáticamente basado en sesiones activas
+  getAgents: async (filters?: { 
+    status?: string; 
+    role?: string; 
+    includeInactive?: boolean;
+  }) => {
     const params = new URLSearchParams();
     if (filters?.status) params.append('status', filters.status);
     if (filters?.role) params.append('role', filters.role);
+    // Por defecto incluir todos (activos e inactivos)
+    if (filters?.includeInactive !== undefined) {
+      params.append('includeInactive', filters.includeInactive.toString());
+    } else {
+      params.append('includeInactive', 'true'); // Default: incluir todos
+    }
     
     const query = params.toString();
     const data = await apiRequest<{ agents: Agent[] }>(
-      `/support/agents${query ? `?${query}` : ''}`
+      `/support/agents?${query}`
     );
     return data.agents || [];
   },
@@ -302,6 +322,8 @@ export interface Agent {
   status: 'online' | 'offline' | 'away' | 'busy';
   avatarUrl: string | null;
   skills: string[];
+  isActive: boolean;  // ← Nuevo campo
+  lastSeenAt: string | null;  // ← Nuevo campo
 }
 
 export interface Chat {
@@ -354,7 +376,11 @@ Crea hooks para manejar el estado y la lógica:
 import { useState, useEffect, useMemo } from 'react';
 import { supportApi, Agent } from '@/lib/api/support';
 
-export function useSupportAgents(filters?: { status?: string; role?: string }) {
+export function useSupportAgents(filters?: { 
+  status?: string; 
+  role?: string; 
+  includeInactive?: boolean;
+}) {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -364,7 +390,13 @@ export function useSupportAgents(filters?: { status?: string; role?: string }) {
       try {
         setLoading(true);
         setError(null);
-        const agentsData = await supportApi.getAgents(filters);
+        // Por defecto incluir todos los agentes (activos e inactivos)
+        const agentsData = await supportApi.getAgents({
+          ...filters,
+          includeInactive: filters?.includeInactive !== undefined 
+            ? filters.includeInactive 
+            : true, // Default: incluir todos
+        });
         setAgents(agentsData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error al obtener agentes');
@@ -375,7 +407,7 @@ export function useSupportAgents(filters?: { status?: string; role?: string }) {
     };
 
     fetchAgents();
-  }, [filters?.status, filters?.role]);
+  }, [filters?.status, filters?.role, filters?.includeInactive]);
 
   const onlineAgents = useMemo(() => {
     return agents.filter(agent => agent.status === 'online');
@@ -389,17 +421,37 @@ export function useSupportAgents(filters?: { status?: string; role?: string }) {
     return agents.filter(agent => agent.status === 'away');
   }, [agents]);
 
+  const busyAgents = useMemo(() => {
+    return agents.filter(agent => agent.status === 'busy');
+  }, [agents]);
+
+  const activeAgents = useMemo(() => {
+    return agents.filter(agent => agent.isActive === true);
+  }, [agents]);
+
+  const inactiveAgents = useMemo(() => {
+    return agents.filter(agent => agent.isActive === false);
+  }, [agents]);
+
   return {
     agents,
     onlineAgents,
     offlineAgents,
     awayAgents,
+    busyAgents,
+    activeAgents,
+    inactiveAgents,
     loading,
     error,
     refetch: () => {
       const fetchAgents = async () => {
         try {
-          const agentsData = await supportApi.getAgents(filters);
+          const agentsData = await supportApi.getAgents({
+            ...filters,
+            includeInactive: filters?.includeInactive !== undefined 
+              ? filters.includeInactive 
+              : true,
+          });
           setAgents(agentsData);
         } catch (err) {
           setError(err instanceof Error ? err.message : 'Error al obtener agentes');

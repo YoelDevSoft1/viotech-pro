@@ -208,6 +208,14 @@ export default function ClientSupportPage() {
               <EmptyChatState
                 onStartChat={() => {
                   setSidebarTab("agents");
+                  // Si hay agentes disponibles, seleccionar el primero online o el primero disponible
+                  if (Array.isArray(agents) && agents.length > 0) {
+                    const onlineAgent = agents.find((a) => a.status === "online");
+                    const firstAgent = onlineAgent || agents[0];
+                    if (firstAgent) {
+                      handleAgentSelect(firstAgent.id);
+                    }
+                  }
                 }}
               />
             )}
