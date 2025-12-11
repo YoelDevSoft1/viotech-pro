@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { apiClient } from "@/lib/apiClient";
+import { getAccessToken } from "@/lib/auth";
 
 export type ChatMessage = {
   id: string;
@@ -13,19 +14,22 @@ export type ChatMessage = {
 
 type ChatStatus = "connecting" | "connected" | "error";
 
-const buildWsUrl = (path: string) => {
+const buildWsUrl = (path: string, token?: string | null) => {
   if (typeof window === "undefined") return null;
   const base =
     process.env.NEXT_PUBLIC_WS_URL ||
     `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}`;
-  return `${base}${path}`;
+  const qs = token ? `?token=${encodeURIComponent(token)}` : "";
+  return `${base}${path}${qs}`;
 };
 
 export function useSupportChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [status, setStatus] = useState<ChatStatus>("connecting");
   const [sending, setSending] = useState(false);
+  const [isFallback, setIsFallback] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
+  const wsFailedRef = useRef<boolean>(false);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
   const lastTimestamp = useMemo(
     () => messages[messages.length - 1]?.createdAt ?? null,
@@ -51,14 +55,32 @@ export function useSupportChat() {
 
   // WebSocket connection
   useEffect(() => {
-    const url = buildWsUrl("/ws/support");
+    if (wsFailedRef.current) {
+      setStatus("error");
+      return;
+    }
+    const token = getAccessToken();
+    const url = buildWsUrl("/ws/support", token);
     if (!url) return;
-    const ws = new WebSocket(url);
+    let ws: WebSocket | null = null;
+    try {
+      ws = new WebSocket(url);
+    } catch (err) {
+      wsFailedRef.current = true;
+      setStatus("error");
+      return;
+    }
     wsRef.current = ws;
 
     ws.onopen = () => setStatus("connected");
-    ws.onerror = () => setStatus("error");
-    ws.onclose = () => setStatus("error");
+    ws.onerror = () => {
+      wsFailedRef.current = true;
+      setStatus("error");
+    };
+    ws.onclose = () => {
+      wsFailedRef.current = true;
+      setStatus("error");
+    };
     ws.onmessage = (evt) => {
       try {
         const payload = JSON.parse(evt.data);
@@ -71,7 +93,7 @@ export function useSupportChat() {
     };
 
     return () => {
-      ws.close();
+      ws?.close();
     };
   }, []);
 
@@ -79,6 +101,21 @@ export function useSupportChat() {
   useEffect(() => {
     if (status !== "error") return;
     if (pollRef.current) return;
+
+    const fetchUpdates = () =>
+      apiClient
+        .get("/support/chat/updates", { params: lastTimestamp ? { since: lastTimestamp } : {} })
+        .then((res) => res?.data?.data || res?.data || [])
+        .then((list: ChatMessage[]) => {
+          if (!Array.isArray(list) || list.length === 0) return;
+          setMessages((prev) => [...prev, ...list]);
+        })
+        .catch(() => {});
+
+    // activar fallback y marcar estado conectado
+    setIsFallback(true);
+    setStatus("connected");
+    fetchUpdates();
 
     pollRef.current = setInterval(() => {
       apiClient
@@ -121,11 +158,16 @@ export function useSupportChat() {
   };
 
   const retryConnection = () => {
+    wsFailedRef.current = false;
+    setIsFallback(false);
     setStatus("connecting");
     if (wsRef.current) {
       wsRef.current.close();
     }
-    pollRef.current && clearInterval(pollRef.current);
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
   };
 
   return {

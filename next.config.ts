@@ -57,7 +57,7 @@ const nextConfig: NextConfig = {
               "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com https://www.gstatic.com https://checkout.wompi.co https://cdn.wompi.co",
               "font-src 'self' https://fonts.gstatic.com data: https://checkout.wompi.co https://cdn.wompi.co",
               "img-src 'self' data: https: https://checkout.wompi.co https://cdn.wompi.co",
-              "connect-src 'self' https://www.google-analytics.com https://www.google.com https://viotech-main.onrender.com https://checkout.wompi.co https://cdn.wompi.co https://production.wompi.co https://translate.googleapis.com https://*.supabase.co https://supabase.co https://*.sentry.io https://o4507467686985728.ingest.us.sentry.io",
+              "connect-src 'self' https://www.google-analytics.com https://www.google.com https://viotech-main.onrender.com wss://viotech-main.onrender.com https://checkout.wompi.co https://cdn.wompi.co https://production.wompi.co https://translate.googleapis.com https://*.supabase.co wss://*.supabase.co https://supabase.co https://*.sentry.io https://o4507467686985728.ingest.us.sentry.io",
               "frame-src 'self' https://www.googletagmanager.com https://checkout.wompi.co https://cdn.wompi.co https://translate.google.com",
               "object-src 'none'",
               "base-uri 'self'",

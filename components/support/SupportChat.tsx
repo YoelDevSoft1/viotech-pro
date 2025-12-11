@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { Loader2, Send, Wifi, WifiOff } from "lucide-react";
 
 export function SupportChat() {
-  const { messages, status, sending, sendMessage, retryConnection } = useSupportChat();
+  const { messages, status, isFallback, sending, sendMessage, retryConnection } = useSupportChat();
   const [input, setInput] = useState("");
   const t = useTranslationsSafe("support");
   const endRef = useRef<HTMLDivElement>(null);
@@ -53,7 +53,7 @@ export function SupportChat() {
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 h-[520px]">
-        {status === "error" && (
+        {status === "error" && !isFallback && (
           <Alert variant="destructive">
             <AlertDescription className="flex items-center justify-between">
               <span>{t("chatError", { defaultValue: "No se pudo conectar al chat en vivo." })}</span>
