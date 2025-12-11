@@ -67,7 +67,7 @@ export function HomePageClient() {
           <Badge variant="secondary" className="mb-4 px-4 py-1 text-sm rounded-full">
             {t("newVersion")}
           </Badge>
-          <h1 className="text-4xl font-extrabold tracking-tight sm:text-6xl md:text-7xl bg-clip-text text-transparent bg-gradient-to-r from-foreground to-muted-foreground">
+          <h1 className="text-4xl font-extrabold tracking-tight sm:text-6xl md:text-7xl bg-clip-text text-transparent bg-gradient-to-r from-foreground to-muted-foreground leading-normal pb-1">
             {t("heroTitle")} <br className="hidden md:block" />
             {t("heroTitleLine2")}
           </h1>

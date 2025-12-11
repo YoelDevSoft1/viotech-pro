@@ -1,26 +1,66 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   LifeBuoy,
-  Phone,
+  MessageSquare,
   Sparkles,
   Ticket,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 import { getAccessToken } from "@/lib/auth";
-import { SupportChat } from "@/components/support/SupportChat";
+import { SupportSidebar } from "@/components/support/SupportSidebar";
+import { ChatWindow } from "@/components/support/ChatWindow";
+import { useSupportThreads } from "@/lib/hooks/useSupportThreads";
+import { useSupportAgents } from "@/lib/hooks/useSupportAgents";
+import { cn } from "@/lib/utils";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export default function ClientSupportPage() {
   const router = useRouter();
   const t = useTranslationsSafe("support");
+  const [chatId, setChatId] = useState<string | null>(null);
+  const [sidebarTab, setSidebarTab] = useState<"agents" | "chats">("chats");
+  const { threads, createThread, isLoading: isLoadingThreads, isError: isErrorThreads } = useSupportThreads();
+  const { agents, isLoading: isLoadingAgents, isError: isErrorAgents } = useSupportAgents();
+  const activeThread = threads.find((th) => th.id === chatId);
 
+  const onlineAgents = useMemo(
+    () => agents.filter((a) => a.status === "online").length,
+    [agents]
+  );
+  const activeChats = useMemo(
+    () => threads.filter((c) => !c.hidden).length,
+    [threads]
+  );
+  const unreadTotal = useMemo(
+    () => threads.reduce((acc, th) => acc + (th.unreadCount || 0), 0),
+    [threads]
+  );
+
+  // Auto-select first chat
+  useEffect(() => {
+    if (!chatId && threads.length > 0) {
+      setChatId(threads[0].id);
+    }
+  }, [threads, chatId]);
+
+  // Auth check
   useEffect(() => {
     const token = getAccessToken();
     if (!token) {
@@ -28,104 +68,177 @@ export default function ClientSupportPage() {
     }
   }, [router]);
 
+  const handleAgentSelect = (agentId: string) => {
+    createThread.mutate(
+      { agentId },
+      {
+        onSuccess: (data: any) => {
+          const newId = data?.id || data?.chatId;
+          if (newId) {
+            setChatId(newId);
+            setSidebarTab("chats");
+          }
+        },
+      }
+    );
+  };
+
+  const handleChatSelect = (id: string) => {
+    setChatId(id);
+  };
+
+  // Sidebar content (reused in desktop and mobile)
+  const sidebarContent = (
+    <SupportSidebar
+      threads={threads}
+      agents={agents}
+      selectedChatId={chatId}
+      activeTab={sidebarTab}
+      onTabChange={setSidebarTab}
+      onAgentSelect={handleAgentSelect}
+      onChatSelect={handleChatSelect}
+      isCreatingThread={createThread.isPending}
+    />
+  );
+
+  // Mostrar alerta discreta si hay errores del servidor (500)
+  const hasServerError = (isErrorAgents || isErrorThreads) && 
+    (!isLoadingAgents && !isLoadingThreads);
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/dashboard" className="gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              {t("backToDashboard", { defaultValue: "Volver al dashboard" })}
-            </Link>
-          </Button>
-        </div>
+    <TooltipProvider>
+      <div className="flex flex-col h-[calc(100vh-6rem)] max-h-[900px]">
+        {/* Alerta de error del servidor (discreta) */}
+        {hasServerError && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {t("serverError", { 
+                defaultValue: "El servicio de soporte no está disponible temporalmente. Por favor, intenta más tarde o contacta por tickets." 
+              })}
+            </AlertDescription>
+          </Alert>
+        )}
 
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-              <LifeBuoy className="h-8 w-8 text-primary" />
-              {t("title", { defaultValue: "Soporte técnico" })}
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              {t("description", { defaultValue: "Crea y gestiona tickets, o chatea con soporte en tiempo real." })}
-            </p>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap justify-end">
-            <Button asChild>
-              <Link href="/client/tickets">
-                <Ticket className="h-4 w-4 mr-2" />
-                {t("viewTickets", { defaultValue: "Ver mis tickets" })}
-              </Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link href="/client/tickets">
-                <Sparkles className="h-4 w-4 mr-2" />
-                {t("newTicket", { defaultValue: "Crear ticket" })}
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </div>
+        {/* Compact Header */}
+        <header className="flex items-center justify-between gap-4 pb-4">
+          <div className="flex items-center gap-3">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" asChild>
+                  <Link href="/dashboard">
+                    <ArrowLeft className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {t("backToDashboard", { defaultValue: "Volver al dashboard" })}
+              </TooltipContent>
+            </Tooltip>
 
-      <Separator />
-
-      {/* Chat en vivo estilo messenger */}
-      <SupportChat />
-
-      {/* Accesos rápidos */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="h-full">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Ticket className="h-5 w-5" />
-              {t("tickets", { defaultValue: "Tickets" })}
-            </CardTitle>
-            <CardDescription>
-              {t("ticketsDesc", { defaultValue: "Abre, gestiona y sigue tus solicitudes de soporte." })}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              {t("ticketsInfo", { defaultValue: "Usa filtros por estado/prioridad para encontrar tus casos rápidamente." })}
-            </p>
-            <div className="flex gap-2">
-              <Button asChild className="flex-1">
-                <Link href="/client/tickets">
-                  {t("goToTickets", { defaultValue: "Ir a tickets" })}
-                </Link>
-              </Button>
-              <Button variant="outline" asChild className="flex-1">
-                <Link href="/client/tickets">
-                  {t("createTicket", { defaultValue: "Crear ticket" })}
-                </Link>
-              </Button>
+            <div className="flex items-center gap-2">
+              <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                <LifeBuoy className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-lg font-semibold leading-tight">
+                  {t("title", { defaultValue: "Soporte" })}
+                </h1>
+                <p className="text-xs text-muted-foreground">
+                  {t("liveChat", { defaultValue: "Chat en vivo" })}
+                </p>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        <Card className="h-full">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Phone className="h-5 w-5" />
-              {t("contact", { defaultValue: "Contacto prioritario" })}
-            </CardTitle>
-            <CardDescription>
-              {t("contactDesc", { defaultValue: "Escala casos críticos con nuestro equipo." })}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              {t("contactInfo", { defaultValue: "Si no puedes usar el chat, abre un ticket y marca alta prioridad." })}
-            </p>
-            <Button variant="outline" asChild>
-              <Link href="/client/tickets">
-                {t("openPriorityTicket", { defaultValue: "Abrir ticket prioritario" })}
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+          <div className="flex items-center gap-2">
+            {/* Stats badges - hidden on mobile */}
+            <div className="hidden sm:flex items-center gap-2">
+              <Badge variant="secondary" className="gap-1.5">
+                <span
+                  className={cn(
+                    "h-2 w-2 rounded-full",
+                    onlineAgents > 0 ? "bg-green-500" : "bg-muted-foreground"
+                  )}
+                />
+                {onlineAgents}{" "}
+                {t("agentsOnline", { defaultValue: "en línea" })}
+              </Badge>
+              {unreadTotal > 0 && (
+                <Badge variant="default" className="gap-1.5">
+                  <MessageSquare className="h-3 w-3" />
+                  {unreadTotal} {t("unread", { defaultValue: "sin leer" })}
+                </Badge>
+              )}
+            </div>
+
+            <Separator orientation="vertical" className="h-6 hidden sm:block" />
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/client/tickets">
+                    <Ticket className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">
+                      {t("tickets", { defaultValue: "Tickets" })}
+                    </span>
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {t("viewTickets", { defaultValue: "Ver mis tickets" })}
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </header>
+
+        {/* Main Chat Layout - Messenger style */}
+        <div className="flex-1 grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-4">
+          <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+            {sidebarContent}
+          </div>
+          <div className="rounded-xl border bg-card shadow-sm overflow-hidden flex">
+            {chatId ? (
+              <ChatWindow
+                chatId={chatId}
+                agentName={activeThread?.agentName}
+                agentStatus={activeThread?.agentStatus}
+              />
+            ) : (
+              <EmptyChatState
+                onStartChat={() => {
+                  setSidebarTab("agents");
+                }}
+              />
+            )}
+          </div>
+        </div>
       </div>
+    </TooltipProvider>
+  );
+}
+
+function EmptyChatState({ onStartChat }: { onStartChat: () => void }) {
+  const t = useTranslationsSafe("support");
+
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+      <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+        <MessageSquare className="h-10 w-10 text-primary" />
+      </div>
+      <h2 className="text-xl font-semibold mb-2">
+        {t("noActiveChat", { defaultValue: "Sin conversación activa" })}
+      </h2>
+      <p className="text-muted-foreground max-w-sm mb-6">
+        {t("selectOrStartChat", {
+          defaultValue:
+            "Selecciona una conversación existente o inicia una nueva con un agente de soporte.",
+        })}
+      </p>
+      <Button onClick={onStartChat} className="gap-2">
+        <Users className="h-4 w-4" />
+        {t("startNewChat", { defaultValue: "Iniciar nueva conversación" })}
+      </Button>
     </div>
   );
 }

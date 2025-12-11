@@ -10,9 +10,11 @@ export type ChatMessage = {
   from: "client" | "agent" | "system";
   body: string;
   createdAt: string;
+  status?: "sending" | "sent" | "delivered" | "read";
+  attachments?: { name: string; url: string; type?: string }[];
 };
 
-type ChatStatus = "connecting" | "connected" | "error";
+export type ChatStatus = "connecting" | "connected" | "error";
 
 const buildWsUrl = (path: string, token?: string | null) => {
   if (typeof window === "undefined") return null;
@@ -23,7 +25,7 @@ const buildWsUrl = (path: string, token?: string | null) => {
   return `${base}${path}${qs}`;
 };
 
-export function useSupportChat() {
+export function useSupportChat(chatId?: string | null) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [status, setStatus] = useState<ChatStatus>("connecting");
   const [sending, setSending] = useState(false);
@@ -36,22 +38,44 @@ export function useSupportChat() {
     [messages]
   );
 
+  const chatIdRef = useRef<string | undefined>(chatId || undefined);
+
+  useEffect(() => {
+    chatIdRef.current = chatId || undefined;
+    // reset messages when chat changes
+    setMessages([]);
+    setStatus("connecting");
+    wsFailedRef.current = false;
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  }, [chatId]);
+
+  const setChatMessages = (list: ChatMessage[]) => {
+    setMessages((prev) => {
+      // Si es otro chat, reiniciar
+      if (chatIdRef.current === undefined) return list;
+      return list;
+    });
+  };
+
   // Load initial history
   useEffect(() => {
     let mounted = true;
     apiClient
-      .get("/support/chat/history", { params: { limit: 100 } })
+      .get("/support/chat/history", { params: { limit: 100, chatId: chatIdRef.current } })
       .then((res) => res?.data?.data || res?.data || [])
       .then((list: ChatMessage[]) => {
         if (mounted && Array.isArray(list)) {
-          setMessages(list);
+          setChatMessages(list);
         }
       })
       .catch(() => {});
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [chatId]);
 
   // WebSocket connection
   useEffect(() => {
@@ -85,7 +109,16 @@ export function useSupportChat() {
       try {
         const payload = JSON.parse(evt.data);
         if (payload?.type === "chat_message" && payload.data) {
-          setMessages((prev) => [...prev, payload.data as ChatMessage]);
+          const incoming = payload.data as ChatMessage & { chatId?: string };
+          if (!incoming.chatId || incoming.chatId === chatIdRef.current) {
+            setMessages((prev) => [...prev, incoming]);
+          }
+        }
+        if (payload?.type === "message_status" && payload.data) {
+          const { messageId, status: mStatus } = payload.data as { messageId: string; status: ChatMessage["status"] };
+          setMessages((prev) =>
+            prev.map((m) => (m.id === messageId ? { ...m, status: mStatus } : m))
+          );
         }
       } catch {
         // ignore malformed messages
@@ -95,7 +128,7 @@ export function useSupportChat() {
     return () => {
       ws?.close();
     };
-  }, []);
+  }, [chatId]);
 
   // Polling fallback when WS fails
   useEffect(() => {
@@ -104,7 +137,12 @@ export function useSupportChat() {
 
     const fetchUpdates = () =>
       apiClient
-        .get("/support/chat/updates", { params: lastTimestamp ? { since: lastTimestamp } : {} })
+        .get("/support/chat/updates", {
+          params: {
+            chatId: chatIdRef.current,
+            ...(lastTimestamp ? { since: lastTimestamp } : {}),
+          },
+        })
         .then((res) => res?.data?.data || res?.data || [])
         .then((list: ChatMessage[]) => {
           if (!Array.isArray(list) || list.length === 0) return;
@@ -117,16 +155,7 @@ export function useSupportChat() {
     setStatus("connected");
     fetchUpdates();
 
-    pollRef.current = setInterval(() => {
-      apiClient
-        .get("/support/chat/updates", { params: lastTimestamp ? { since: lastTimestamp } : {} })
-        .then((res) => res?.data?.data || res?.data || [])
-        .then((list: ChatMessage[]) => {
-          if (!Array.isArray(list) || list.length === 0) return;
-          setMessages((prev) => [...prev, ...list]);
-        })
-        .catch(() => {});
-    }, 4000);
+    pollRef.current = setInterval(fetchUpdates, 4000);
 
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
@@ -143,11 +172,22 @@ export function useSupportChat() {
       from: "client",
       body: trimmed,
       createdAt: new Date().toISOString(),
+      status: "sending",
     };
     setMessages((prev) => [...prev, optimistic]);
     setSending(true);
     try {
-      await apiClient.post("/support/chat/send", { message: trimmed, tempId });
+      const { data } = await apiClient.post("/support/chat/send", {
+        message: trimmed,
+        tempId,
+        chatId: chatIdRef.current,
+      });
+      const persisted = data?.data || data;
+      if (persisted?.id) {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === tempId ? { ...m, id: persisted.id, status: "sent" } : m))
+        );
+      }
     } catch (err) {
       // remove optimistic on failure
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
