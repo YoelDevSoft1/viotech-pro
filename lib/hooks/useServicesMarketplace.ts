@@ -115,6 +115,8 @@ export function useServiceReviews(
     },
     enabled: !!serviceId,
     staleTime: 1000 * 60 * 5, // 5 minutos
+    retry: 2, // Reintentar 2 veces en caso de error
+    retryDelay: 1000, // Esperar 1 segundo entre reintentos
   });
 }
 
