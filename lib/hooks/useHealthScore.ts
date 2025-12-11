@@ -72,14 +72,6 @@ export function useHealthScore(organizationId: string | undefined) {
       // Reintentar otros errores hasta 2 veces
       return failureCount < 2;
     },
-    // No mostrar errores silenciosos en la consola
-    onError: (error: any) => {
-      // Solo loguear errores que no sean silenciosos
-      if (!error?.silent && !error?.isInsufficientActivity && !error?.__suppressConsole) {
-        console.error("Error obteniendo health score:", error);
-      }
-      // Si es un error silencioso, no hacer nada (no mostrar en consola)
-    },
   });
 }
 

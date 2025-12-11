@@ -104,7 +104,9 @@ function isValidHealthScore(
 
 export function HealthScoreCard({ organizationId, className }: HealthScoreCardProps) {
   const t = useTranslationsSafe();
-  const { data: healthScore, isLoading, error } = useHealthScore(organizationId);
+  const { data: healthScoreData, isLoading, error } = useHealthScore(organizationId);
+  // Type assertion: asegurar que TypeScript entienda el tipo correcto
+  const healthScore = healthScoreData as HealthScore | null | undefined;
   // Obtener métricas de tickets para detectar valores por defecto
   const { metrics: dashboardMetrics } = useDashboard();
   const ticketsAbiertos = dashboardMetrics?.ticketsAbiertos ?? dashboardMetrics?.openTickets ?? 0;
@@ -164,9 +166,10 @@ export function HealthScoreCard({ organizationId, className }: HealthScoreCardPr
     );
   }
 
+  // TypeScript type guard: después del check anterior, healthScore es definitivamente HealthScore
   // Validar si el Health Score es válido antes de mostrarlo
-  // TypeScript ya sabe que healthScore no es null aquí (por el check anterior)
-  const isValid = healthScore ? isValidHealthScore(healthScore, serviciosActivos, ticketsAbiertos, ticketsResueltos) : false;
+  const validHealthScore: HealthScore = healthScore as HealthScore;
+  const isValid = isValidHealthScore(validHealthScore, serviciosActivos, ticketsAbiertos, ticketsResueltos);
   
   if (!isValid) {
     return (
@@ -242,14 +245,14 @@ export function HealthScoreCard({ organizationId, className }: HealthScoreCardPr
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             Health Score
-            {getRiskIcon(healthScore.risk_level)}
+            {getRiskIcon(validHealthScore.risk_level)}
           </CardTitle>
-          <Badge className={cn("text-sm font-medium", getRiskColor(healthScore.risk_level))}>
-            {getRiskLabel(healthScore.risk_level)}
+          <Badge className={cn("text-sm font-medium", getRiskColor(validHealthScore.risk_level))}>
+            {getRiskLabel(validHealthScore.risk_level)}
           </Badge>
         </div>
         <CardDescription>
-          {healthScore.notes || "Score de salud de la organización basado en múltiples factores"}
+          {validHealthScore.notes || "Score de salud de la organización basado en múltiples factores"}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -258,15 +261,15 @@ export function HealthScoreCard({ organizationId, className }: HealthScoreCardPr
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium">Score General</span>
             <div className="flex items-center gap-2">
-              <span className={cn("text-2xl font-bold", getRiskColor(healthScore.risk_level).split(" ")[0])}>
-                {healthScore.score.toFixed(1)}
+              <span className={cn("text-2xl font-bold", getRiskColor(validHealthScore.risk_level).split(" ")[0])}>
+                {validHealthScore.score.toFixed(1)}
               </span>
             </div>
           </div>
-          <Progress value={healthScore.score} className="h-3" />
+          <Progress value={validHealthScore.score} className="h-3" />
           <p className="text-xs text-muted-foreground mt-1">
             Calculado el:{" "}
-            {format(new Date(healthScore.calculated_at), "dd 'de' MMMM 'de' yyyy 'a las' HH:mm", {
+            {format(new Date(validHealthScore.calculated_at), "dd 'de' MMMM 'de' yyyy 'a las' HH:mm", {
               locale: es,
             })}
           </p>
@@ -278,32 +281,32 @@ export function HealthScoreCard({ organizationId, className }: HealthScoreCardPr
           <div className="grid grid-cols-2 gap-3">
             <FactorItem
               label="Usuarios Activos"
-              value={healthScore.factors.activeUsers}
+              value={validHealthScore.factors.activeUsers}
               color="bg-blue-500"
             />
             <FactorItem
               label="Proyectos Activos"
-              value={healthScore.factors.activeProjects}
+              value={validHealthScore.factors.activeProjects}
               color="bg-purple-500"
             />
             <FactorItem
               label="Tiempo Respuesta"
-              value={normalizeHealthFactor("Tiempo Respuesta", healthScore.factors.ticketResponseTime, ticketsAbiertos, ticketsResueltos)}
+              value={normalizeHealthFactor("Tiempo Respuesta", validHealthScore.factors.ticketResponseTime, ticketsAbiertos, ticketsResueltos)}
               color="bg-indigo-500"
             />
             <FactorItem
               label="Tasa Resolución"
-              value={normalizeHealthFactor("Tasa Resolución", healthScore.factors.ticketResolutionRate, ticketsAbiertos, ticketsResueltos)}
+              value={normalizeHealthFactor("Tasa Resolución", validHealthScore.factors.ticketResolutionRate, ticketsAbiertos, ticketsResueltos)}
               color="bg-green-500"
             />
             <FactorItem
               label="Estado Pagos"
-              value={healthScore.factors.paymentStatus}
+              value={validHealthScore.factors.paymentStatus}
               color="bg-emerald-500"
             />
             <FactorItem
               label="Engagement"
-              value={healthScore.factors.engagement}
+              value={validHealthScore.factors.engagement}
               color="bg-pink-500"
             />
           </div>
