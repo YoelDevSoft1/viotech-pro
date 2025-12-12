@@ -142,13 +142,13 @@ export function ChatWindow({
     } catch (error) {
       setInput(messageText);
       setAttachments(currentAttachments);
-      toast.error(t("sendError", { defaultValue: "Error al enviar mensaje" }));
+      toast.error(t("sendError"));
     }
   };
 
   const handleFileUpload = async (file: File, isImage: boolean) => {
     if (!chatId) {
-      toast.error(t("selectChatFirst", { defaultValue: "Selecciona un chat primero" }));
+      toast.error(t("selectChatFirst"));
       return;
     }
 
@@ -163,9 +163,9 @@ export function ChatWindow({
           type: attachment.fileType,
         },
       ]);
-      toast.success(t("fileUploaded", { defaultValue: "Archivo subido correctamente" }));
+      toast.success(t("fileUploaded"));
     } catch (error) {
-      toast.error(t("uploadError", { defaultValue: "Error al subir archivo" }));
+      toast.error(t("uploadError"));
     } finally {
       setUploading(false);
     }
@@ -176,13 +176,13 @@ export function ChatWindow({
     if (!file) return;
 
     if (isImage && !file.type.startsWith("image/")) {
-      toast.error(t("invalidImage", { defaultValue: "Por favor selecciona una imagen" }));
+      toast.error(t("invalidImage"));
       return;
     }
 
     // Limitar tamaño (10MB)
     if (file.size > 10 * 1024 * 1024) {
-      toast.error(t("fileTooLarge", { defaultValue: "El archivo es demasiado grande (máx. 10MB)" }));
+      toast.error(t("fileTooLarge"));
       return;
     }
 
@@ -226,7 +226,7 @@ export function ChatWindow({
       setSearchResults(chatResults);
       setCurrentSearchIndex(chatResults.length > 0 ? 0 : -1);
     } catch (error) {
-      toast.error(t("searchError", { defaultValue: "Error al buscar mensajes" }));
+      toast.error(t("searchError"));
       setSearchResults([]);
       setCurrentSearchIndex(-1);
     } finally {
@@ -353,7 +353,7 @@ export function ChatWindow({
 
           <div className="min-w-0">
             <h2 className="font-semibold text-sm truncate">
-              {agentName || t("selectChat", { defaultValue: "Selecciona un chat" })}
+              {agentName || t("selectChat")}
             </h2>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <ConnectionStatus status={status} isFallback={isFallback} t={t} />
@@ -362,10 +362,10 @@ export function ChatWindow({
                   <span className="text-muted-foreground/50">·</span>
                   <span>
                     {agentStatus === "online"
-                      ? t("statusOnline", { defaultValue: "En línea" })
+                      ? t("statusOnline")
                       : agentStatus === "away"
-                      ? t("statusAway", { defaultValue: "Ausente" })
-                      : t("statusOffline", { defaultValue: "Desconectado" })}
+                      ? t("statusAway")
+                      : t("statusOffline")}
                   </span>
                 </>
               )}
@@ -393,7 +393,7 @@ export function ChatWindow({
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              {t("searchMessages", { defaultValue: "Buscar mensajes" })} (Ctrl+F)
+              {t("searchMessages")} (Ctrl+F)
             </TooltipContent>
           </Tooltip>
 
@@ -403,7 +403,7 @@ export function ChatWindow({
                 <Phone className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{t("call", { defaultValue: "Llamar" })}</TooltipContent>
+            <TooltipContent>{t("call")}</TooltipContent>
           </Tooltip>
 
           <Tooltip>
@@ -413,7 +413,7 @@ export function ChatWindow({
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              {t("videoCall", { defaultValue: "Videollamada" })}
+              {t("videoCall")}
             </TooltipContent>
           </Tooltip>
 
@@ -435,15 +435,15 @@ export function ChatWindow({
                 }}
               >
                 <Search className="h-4 w-4 mr-2" />
-                {t("searchMessages", { defaultValue: "Buscar mensajes" })}
+                {t("searchMessages")}
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Info className="h-4 w-4 mr-2" />
-                {t("chatInfo", { defaultValue: "Info del chat" })}
+                {t("chatInfo")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={retryConnection}>
                 <RefreshCw className="h-4 w-4 mr-2" />
-                {t("reconnect", { defaultValue: "Reconectar" })}
+                {t("reconnect")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -458,7 +458,7 @@ export function ChatWindow({
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 ref={searchInputRef}
-                placeholder={t("searchPlaceholder", { defaultValue: "Buscar en mensajes..." })}
+                placeholder={t("searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => handleSearchInputChange(e.target.value)}
                 onKeyDown={(e) => {
@@ -509,7 +509,7 @@ export function ChatWindow({
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {t("previousResult", { defaultValue: "Anterior" })} (Shift+Enter)
+                    {t("previousResult")} (Shift+Enter)
                   </TooltipContent>
                 </Tooltip>
                 <Tooltip>
@@ -524,7 +524,7 @@ export function ChatWindow({
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {t("nextResult", { defaultValue: "Siguiente" })} (Enter)
+                    {t("nextResult")} (Enter)
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -535,7 +535,7 @@ export function ChatWindow({
           </div>
           {searchQuery && !searching && searchResults.length === 0 && (
             <p className="text-xs text-muted-foreground mt-2">
-              {t("noResults", { defaultValue: "No se encontraron mensajes" })}
+              {t("noResults")}
             </p>
           )}
         </div>
@@ -545,9 +545,9 @@ export function ChatWindow({
       {status === "error" && !isFallback && (
         <Alert variant="destructive" className="m-4 mb-0">
           <AlertDescription className="flex items-center justify-between">
-            <span>{t("chatError", { defaultValue: "No se pudo conectar al chat en vivo." })}</span>
+            <span>{t("chatError")}</span>
             <Button variant="outline" size="sm" onClick={retryConnection}>
-              {t("retryConnection", { defaultValue: "Reintentar" })}
+              {t("retryConnection")}
             </Button>
           </AlertDescription>
         </Alert>
@@ -633,12 +633,10 @@ export function ChatWindow({
               <Send className="h-8 w-8 text-primary" />
             </div>
             <p className="font-medium mb-1">
-              {t("startConversation", { defaultValue: "Inicia la conversación" })}
+              {t("startConversation")}
             </p>
             <p className="text-sm text-muted-foreground max-w-xs">
-              {t("startConversationDesc", {
-                defaultValue: "Envía un mensaje para comenzar a chatear con el agente de soporte.",
-              })}
+              {t("startConversationDesc")}
             </p>
           </div>
         )}
@@ -680,7 +678,7 @@ export function ChatWindow({
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                {t("attachFile", { defaultValue: "Adjuntar archivo" })}
+                {t("attachFile")}
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -700,7 +698,7 @@ export function ChatWindow({
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                {t("attachImage", { defaultValue: "Adjuntar imagen" })}
+                {t("attachImage")}
               </TooltipContent>
             </Tooltip>
           </div>
@@ -729,7 +727,7 @@ export function ChatWindow({
           <div className="flex-1 relative">
             <Textarea
               ref={textareaRef}
-              placeholder={t("inputPlaceholder", { defaultValue: "Escribe tu mensaje..." })}
+              placeholder={t("inputPlaceholder")}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -748,7 +746,7 @@ export function ChatWindow({
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                {t("emoji", { defaultValue: "Emoji" })}
+                {t("emoji")}
               </TooltipContent>
             </Tooltip>
           </div>
@@ -770,7 +768,7 @@ export function ChatWindow({
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              {t("send", { defaultValue: "Enviar" })} (Enter)
+              {t("send")} (Enter)
             </TooltipContent>
           </Tooltip>
         </div>
@@ -928,7 +926,7 @@ function ConnectionStatus({
     return (
       <span className="flex items-center gap-1 text-yellow-600">
         <WifiOff className="h-3 w-3" />
-        {t("fallbackMode", { defaultValue: "Modo respaldo" })}
+        {t("fallbackMode")}
       </span>
     );
   }
@@ -938,21 +936,21 @@ function ConnectionStatus({
       return (
         <span className="flex items-center gap-1">
           <Loader2 className="h-3 w-3 animate-spin" />
-          {t("statusConnecting", { defaultValue: "Conectando..." })}
+          {t("statusConnecting")}
         </span>
       );
     case "connected":
       return (
         <span className="flex items-center gap-1 text-green-600">
           <Wifi className="h-3 w-3" />
-          {t("connected", { defaultValue: "Conectado" })}
+          {t("connected")}
         </span>
       );
     case "error":
       return (
         <span className="flex items-center gap-1 text-destructive">
           <WifiOff className="h-3 w-3" />
-          {t("disconnected", { defaultValue: "Desconectado" })}
+          {t("disconnected")}
         </span>
       );
   }
@@ -968,10 +966,10 @@ function formatDateHeader(
   yesterday.setDate(yesterday.getDate() - 1);
 
   if (date.toDateString() === today.toDateString()) {
-    return t("today", { defaultValue: "Hoy" });
+    return t("today");
   }
   if (date.toDateString() === yesterday.toDateString()) {
-    return t("yesterday", { defaultValue: "Ayer" });
+    return t("yesterday");
   }
   return date.toLocaleDateString();
 }

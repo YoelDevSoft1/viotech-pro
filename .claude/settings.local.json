@@ -5,7 +5,8 @@
       "Bash(curl:*)",
       "Bash(timeout 15 curl:*)",
       "Bash(npx tsc:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(cat:*)"
     ]
   }
 }

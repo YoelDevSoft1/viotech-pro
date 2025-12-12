@@ -117,13 +117,13 @@ export function SupportSidebar({
         <div className="flex items-center justify-between">
           <h2 className="font-semibold text-sm flex items-center gap-2">
             <Headphones className="h-4 w-4 text-primary" />
-            {t("supportCenter", { defaultValue: "Centro de soporte" })}
+            {t("supportCenter")}
           </h2>
         </div>
         <div className="relative">
           <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder={t("search", { defaultValue: "Buscar..." })}
+            placeholder={t("search")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9 h-9 bg-muted/50"
@@ -143,7 +143,7 @@ export function SupportSidebar({
             className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent py-3 gap-2"
           >
             <MessageCircle className="h-4 w-4" />
-            {t("chats", { defaultValue: "Chats" })}
+            {t("chats")}
             {unreadCount > 0 && (
               <Badge variant="default" className="h-5 px-1.5 text-[10px]">
                 {unreadCount}
@@ -155,7 +155,7 @@ export function SupportSidebar({
             className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent py-3 gap-2"
           >
             <Users className="h-4 w-4" />
-            {t("agents", { defaultValue: "Agentes" })}
+            {t("agents")}
             {onlineCount > 0 && (
               <Badge
                 variant="secondary"
@@ -174,10 +174,8 @@ export function SupportSidebar({
               {filteredThreads.length === 0 ? (
                 <EmptyState
                   icon={<MessageCircle className="h-8 w-8" />}
-                  title={t("noChats", { defaultValue: "Sin conversaciones" })}
-                  description={t("noChatsDesc", {
-                    defaultValue: "Inicia una conversación con un agente",
-                  })}
+                  title={t("noChats")}
+                  description={t("noChatsDesc")}
                   action={
                     <Button
                       variant="outline"
@@ -186,7 +184,7 @@ export function SupportSidebar({
                       className="gap-2"
                     >
                       <Plus className="h-4 w-4" />
-                      {t("newChat", { defaultValue: "Nuevo chat" })}
+                      {t("newChat")}
                     </Button>
                   }
                 />
@@ -213,18 +211,14 @@ export function SupportSidebar({
               {!Array.isArray(agents) || agents.length === 0 ? (
                 <EmptyState
                   icon={<Users className="h-8 w-8" />}
-                  title={t("noAgents", { defaultValue: "Sin agentes" })}
-                  description={t("noAgentsDesc", {
-                    defaultValue: "No hay agentes disponibles en este momento",
-                  })}
+                  title={t("noAgents")}
+                  description={t("noAgentsDesc")}
                 />
               ) : sortedAgents.length === 0 ? (
                 <EmptyState
                   icon={<Search className="h-8 w-8" />}
-                  title={t("noAgentsFound", { defaultValue: "No se encontraron agentes" })}
-                  description={t("noAgentsFoundDesc", {
-                    defaultValue: "Intenta con otro término de búsqueda",
-                  })}
+                  title={t("noAgentsFound")}
+                  description={t("noAgentsFoundDesc")}
                 />
               ) : (
                 sortedAgents.map((agent) => (
@@ -314,7 +308,7 @@ function ChatItem({
         </div>
         <div className="flex items-center justify-between gap-2 mt-0.5">
           <p className="text-xs text-muted-foreground truncate">
-            {chat.lastMessage?.body || t("noMessages", { defaultValue: "Sin mensajes" })}
+            {chat.lastMessage?.body || t("noMessages")}
           </p>
           {(chat.unreadCount ?? 0) > 0 && (
             <Badge
@@ -404,15 +398,15 @@ function AgentItem({
         <div className="flex items-center gap-2">
           <span className="font-medium text-sm truncate">{agent.name}</span>
           {agent.isActive && (
-            <span className="h-1.5 w-1.5 rounded-full bg-green-500 flex-shrink-0" title={t("activeSession", { defaultValue: "Sesi\u00f3n activa" })} />
+            <span className="h-1.5 w-1.5 rounded-full bg-green-500 flex-shrink-0" title={t("activeSession")} />
           )}
         </div>
         <span className="text-xs text-muted-foreground truncate block">
-          {agent.role || t("agent", { defaultValue: "Agente de soporte" })}
+          {agent.role || t("agent")}
         </span>
         {!isOnline && lastSeenText && (
           <span className="text-[10px] text-muted-foreground/70 truncate block">
-            {t("lastSeen", { defaultValue: "Visto" })} {lastSeenText}
+            {t("lastSeen")} {lastSeenText}
           </span>
         )}
       </div>
@@ -428,7 +422,7 @@ function AgentItem({
               </div>
             </TooltipTrigger>
             <TooltipContent>
-              {t("startChat", { defaultValue: "Iniciar chat" })}
+              {t("startChat")}
             </TooltipContent>
           </Tooltip>
         )}

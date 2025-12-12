@@ -40,6 +40,10 @@ export default function ClientSupportPage() {
   const { agents, isLoading: isLoadingAgents, isError: isErrorAgents } = useSupportAgents();
   const activeThread = threads.find((th) => th.id === chatId);
 
+  const totalAgents = useMemo(
+    () => (Array.isArray(agents) ? agents.length : 0),
+    [agents]
+  );
   const onlineAgents = useMemo(
     () => (Array.isArray(agents) ? agents.filter((a) => a.status === "online").length : 0),
     [agents]
@@ -113,9 +117,7 @@ export default function ClientSupportPage() {
           <Alert variant="destructive" className="mb-4">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              {t("serverError", { 
-                defaultValue: "El servicio de soporte no está disponible temporalmente. Por favor, intenta más tarde o contacta por tickets." 
-              })}
+              {t("serverError")}
             </AlertDescription>
           </Alert>
         )}
@@ -132,7 +134,7 @@ export default function ClientSupportPage() {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                {t("backToDashboard", { defaultValue: "Volver al dashboard" })}
+                {t("backToDashboard")}
               </TooltipContent>
             </Tooltip>
 
@@ -142,10 +144,10 @@ export default function ClientSupportPage() {
               </div>
               <div>
                 <h1 className="text-lg font-semibold leading-tight">
-                  {t("title", { defaultValue: "Soporte" })}
+                  {t("title")}
                 </h1>
                 <p className="text-xs text-muted-foreground">
-                  {t("liveChat", { defaultValue: "Chat en vivo" })}
+                  {t("liveChat")}
                 </p>
               </div>
             </div>
@@ -154,20 +156,38 @@ export default function ClientSupportPage() {
           <div className="flex items-center gap-2">
             {/* Stats badges - hidden on mobile */}
             <div className="hidden sm:flex items-center gap-2">
-              <Badge variant="secondary" className="gap-1.5">
-                <span
-                  className={cn(
-                    "h-2 w-2 rounded-full",
-                    onlineAgents > 0 ? "bg-green-500" : "bg-muted-foreground"
-                  )}
-                />
-                {onlineAgents}{" "}
-                {t("agentsOnline", { defaultValue: "en línea" })}
-              </Badge>
+              {isLoadingAgents ? (
+                <Badge variant="secondary" className="gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-muted-foreground animate-pulse" />
+                  {t("loading")}
+                </Badge>
+              ) : totalAgents === 0 ? (
+                <Badge variant="outline" className="gap-1.5 text-muted-foreground">
+                  <Users className="h-3 w-3" />
+                  {t("noAgentsAvailable")}
+                </Badge>
+              ) : onlineAgents > 0 ? (
+                <Badge variant="secondary" className="gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-green-500" />
+                  {onlineAgents} {t("agentsOnline")}
+                </Badge>
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge variant="outline" className="gap-1.5 text-muted-foreground cursor-help">
+                      <span className="h-2 w-2 rounded-full bg-muted-foreground" />
+                      {totalAgents} {t("agentsOffline")}
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {t("allAgentsOffline")}
+                  </TooltipContent>
+                </Tooltip>
+              )}
               {unreadTotal > 0 && (
                 <Badge variant="default" className="gap-1.5">
                   <MessageSquare className="h-3 w-3" />
-                  {unreadTotal} {t("unread", { defaultValue: "sin leer" })}
+                  {unreadTotal} {t("unread")}
                 </Badge>
               )}
             </div>
@@ -180,13 +200,13 @@ export default function ClientSupportPage() {
                   <Link href="/client/tickets">
                     <Ticket className="h-4 w-4 sm:mr-2" />
                     <span className="hidden sm:inline">
-                      {t("tickets", { defaultValue: "Tickets" })}
+                      {t("tickets")}
                     </span>
                   </Link>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                {t("viewTickets", { defaultValue: "Ver mis tickets" })}
+                {t("viewTickets")}
               </TooltipContent>
             </Tooltip>
           </div>
@@ -235,17 +255,14 @@ function EmptyChatState({ onStartChat }: { onStartChat: () => void }) {
         <MessageSquare className="h-10 w-10 text-primary" />
       </div>
       <h2 className="text-xl font-semibold mb-2">
-        {t("noActiveChat", { defaultValue: "Sin conversación activa" })}
+        {t("noActiveChat")}
       </h2>
       <p className="text-muted-foreground max-w-sm mb-6">
-        {t("selectOrStartChat", {
-          defaultValue:
-            "Selecciona una conversación existente o inicia una nueva con un agente de soporte.",
-        })}
+        {t("selectOrStartChat")}
       </p>
       <Button onClick={onStartChat} className="gap-2">
         <Users className="h-4 w-4" />
-        {t("startNewChat", { defaultValue: "Iniciar nueva conversación" })}
+        {t("startNewChat")}
       </Button>
     </div>
   );

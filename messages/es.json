@@ -2033,7 +2033,20 @@
     "attachFile": "Adjuntar archivo",
     "attachImage": "Adjuntar imagen",
     "emoji": "Emoji",
-    "loading": "Cargando..."
+    "loading": "Cargando...",
+    "noAgentsAvailable": "Sin agentes",
+    "agentsOffline": "agentes",
+    "allAgentsOffline": "Todos los agentes están desconectados",
+    "noAgentsFound": "No se encontraron agentes",
+    "noAgentsFoundDesc": "Intenta con otro término de búsqueda",
+    "lastSeen": "Visto",
+    "activeSession": "Sesión activa",
+    "sendError": "Error al enviar mensaje",
+    "selectChatFirst": "Selecciona un chat primero",
+    "fileUploaded": "Archivo subido correctamente",
+    "uploadError": "Error al subir archivo",
+    "invalidImage": "Por favor selecciona una imagen",
+    "fileTooLarge": "El archivo es demasiado grande (máx. 10MB)"
   },
   "ui": {
     "quickCreate": "Quick Create",
