@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { Users, Calendar, TrendingUp, Award, Clock } from "lucide-react";
+import { Users, Calendar, TrendingUp } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ResourceCalendar } from "@/components/resources/ResourceCalendar";
 import { ResourceWorkload } from "@/components/resources/ResourceWorkload";
+import { ResourcesList } from "@/components/resources/ResourcesList";
 import { useOrg } from "@/lib/hooks/useOrg";
 import { useTranslationsSafe } from "@/lib/hooks/useTranslationsSafe";
 
@@ -29,8 +29,12 @@ export default function ResourcesPage() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="calendar" className="space-y-6">
+        <Tabs defaultValue="directory" className="space-y-6">
           <TabsList>
+            <TabsTrigger value="directory">
+              <Users className="h-4 w-4 mr-2" />
+              {tResources("resources")}
+            </TabsTrigger>
             <TabsTrigger value="calendar">
               <Calendar className="h-4 w-4 mr-2" />
               {tResources("calendar")}
@@ -40,6 +44,10 @@ export default function ResourcesPage() {
               {tResources("workload")}
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="directory" className="space-y-6">
+            <ResourcesList organizationId={orgId || undefined} />
+          </TabsContent>
 
           <TabsContent value="calendar" className="space-y-6">
             <ResourceCalendar organizationId={orgId || undefined} />

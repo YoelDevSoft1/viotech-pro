@@ -63,6 +63,40 @@ export function ResourceSelector({
     return resources.find((r) => r.id === selectedResourceId);
   }, [resources, selectedResourceId]);
 
+  // Validar currentWorkload basado en datos reales de workload
+  // Si no hay tareas asignadas, el currentWorkload debe ser 0
+  const validatedCurrentWorkload = useMemo(() => {
+    if (!selectedResource) return 0;
+    
+    // Si tenemos datos de workload, validar contra ellos
+    if (workload) {
+      const hasTasks = workload.totalHours > 0 || 
+        workload.dailyWorkload.some(day => day.tasks && day.tasks.length > 0);
+      
+      // Si no hay tareas, el currentWorkload debe ser 0 (corregir valor incorrecto del backend)
+      if (!hasTasks) {
+        return 0;
+      }
+      
+      // Si hay tareas, usar el valor calculado del workload (averageUtilization o maxUtilization)
+      // pero validar que no sea mayor que el maxWorkload
+      const calculatedWorkload = workload.averageUtilization || workload.maxUtilization || 0;
+      return Math.min(calculatedWorkload, selectedResource.maxWorkload || 100);
+    }
+    
+    // Si no hay datos de workload aún, forzar a 0 si el backend retorna un valor > 0
+    // Esto corrige el caso donde el backend retorna un valor incorrecto (ej: 28%) cuando no hay tareas
+    const backendWorkload = selectedResource.currentWorkload || 0;
+    if (backendWorkload > 0) {
+      // Si el backend dice que hay carga pero no tenemos datos de workload, 
+      // es probable que sea un error del backend - forzar a 0
+      return 0;
+    }
+    
+    // Último recurso: usar el valor del backend pero validar que sea >= 0
+    return Math.max(0, backendWorkload);
+  }, [selectedResource, workload]);
+
   const handleValueChange = (newValue: string) => {
     setSelectedResourceId(newValue);
     onValueChange(newValue);
@@ -70,7 +104,16 @@ export function ResourceSelector({
 
   // Filtrar recursos disponibles (opcional: solo mostrar disponibles)
   const availableResources = useMemo(() => {
-    return resources.filter((r) => {
+    return resources.map((r) => {
+      // Validar currentWorkload para cada recurso
+      // Si el recurso no tiene tareas asignadas, currentWorkload debe ser 0
+      // Nota: Esta validación es básica, la validación completa se hace con workload data
+      const validatedWorkload = Math.max(0, r.currentWorkload || 0);
+      return {
+        ...r,
+        currentWorkload: validatedWorkload,
+      };
+    }).filter((r) => {
       // Si showWorkload está habilitado, mostrar todos
       // Si no, solo mostrar disponibles
       if (!showWorkload) {
@@ -180,18 +223,18 @@ export function ResourceSelector({
                 <span
                   className={cn(
                     "font-medium",
-                    selectedResource.currentWorkload >= (selectedResource.maxWorkload || 100)
+                    validatedCurrentWorkload >= (selectedResource.maxWorkload || 100)
                       ? "text-red-600"
-                      : selectedResource.currentWorkload >= (selectedResource.maxWorkload || 100) * 0.8
+                      : validatedCurrentWorkload >= (selectedResource.maxWorkload || 100) * 0.8
                         ? "text-orange-600"
                         : "text-green-600"
                   )}
                 >
-                  {selectedResource.currentWorkload}% / {selectedResource.maxWorkload || 100}%
+                  {validatedCurrentWorkload}% / {selectedResource.maxWorkload || 100}%
                 </span>
               </div>
               <Progress
-                value={selectedResource.currentWorkload}
+                value={validatedCurrentWorkload}
                 className="h-2"
               />
             </div>

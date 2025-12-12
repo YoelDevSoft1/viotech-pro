@@ -49,8 +49,18 @@ export function useResources(filters?: ResourceFilters) {
         },
         skills: r.skills || [],
         certifications: r.certifications || [],
-        currentWorkload: r.currentWorkload || r.current_workload || 0,
-        maxWorkload: r.maxWorkload || r.max_workload || 100,
+        // Validar que currentWorkload sea un número válido y no negativo
+        // Si es null, undefined, o no es un número, usar 0
+        currentWorkload: typeof r.currentWorkload === 'number' && r.currentWorkload >= 0 
+          ? r.currentWorkload 
+          : typeof r.current_workload === 'number' && r.current_workload >= 0
+          ? r.current_workload
+          : 0,
+        maxWorkload: typeof r.maxWorkload === 'number' && r.maxWorkload > 0
+          ? r.maxWorkload
+          : typeof r.max_workload === 'number' && r.max_workload > 0
+          ? r.max_workload
+          : 100,
         createdAt: r.createdAt || r.created_at,
         updatedAt: r.updatedAt || r.updated_at,
       })) as Resource[];
@@ -86,8 +96,18 @@ export function useResource(resourceId: string) {
         },
         skills: raw.skills || [],
         certifications: raw.certifications || [],
-        currentWorkload: raw.currentWorkload || raw.current_workload || 0,
-        maxWorkload: raw.maxWorkload || raw.max_workload || 100,
+        // Validar que currentWorkload sea un número válido y no negativo
+        // Si es null, undefined, o no es un número, usar 0
+        currentWorkload: typeof raw.currentWorkload === 'number' && raw.currentWorkload >= 0 
+          ? raw.currentWorkload 
+          : typeof raw.current_workload === 'number' && raw.current_workload >= 0
+          ? raw.current_workload
+          : 0,
+        maxWorkload: typeof raw.maxWorkload === 'number' && raw.maxWorkload > 0
+          ? raw.maxWorkload
+          : typeof raw.max_workload === 'number' && raw.max_workload > 0
+          ? raw.max_workload
+          : 100,
         createdAt: raw.createdAt || raw.created_at,
         updatedAt: raw.updatedAt || raw.updated_at,
       } as Resource;

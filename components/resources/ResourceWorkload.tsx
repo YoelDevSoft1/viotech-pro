@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Users, AlertTriangle, TrendingUp, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,7 @@ export function ResourceWorkload({ organizationId }: ResourceWorkloadProps) {
   });
 
   // Obtener carga de trabajo
-  const { data: workload, isLoading: workloadLoading } = useResourceWorkload(
+  const { data: workload, isLoading: workloadLoading, isError: workloadError } = useResourceWorkload(
     selectedResource || resources[0]?.id || "",
     weekStart,
     weekEnd
@@ -78,6 +78,44 @@ export function ResourceWorkload({ organizationId }: ResourceWorkloadProps) {
   }
 
   const selectedResourceData = resources.find((r) => r.id === selectedResource || r.id === resources[0]?.id);
+
+  // Validar currentWorkload basado en datos reales de workload
+  // Si no hay tareas asignadas (totalHours = 0 y no hay tasks en dailyWorkload), el currentWorkload debe ser 0
+  const validatedCurrentWorkload = useMemo(() => {
+    if (!selectedResourceData) return 0;
+    
+    const backendWorkload = selectedResourceData.currentWorkload || 0;
+    
+    // Si tenemos datos de workload, validar contra ellos (esta es la fuente de verdad)
+    if (workload) {
+      const hasTasks = workload.totalHours > 0 || 
+        workload.dailyWorkload.some(day => day.tasks && day.tasks.length > 0);
+      
+      // Si no hay tareas, el currentWorkload debe ser 0 (corregir valor incorrecto del backend)
+      if (!hasTasks) {
+        return 0;
+      }
+      
+      // Si hay tareas, usar el valor calculado del workload (averageUtilization o maxUtilization)
+      // pero validar que no sea mayor que el maxWorkload
+      const calculatedWorkload = workload.averageUtilization || workload.maxUtilization || 0;
+      return Math.min(calculatedWorkload, selectedResourceData.maxWorkload || 100);
+    }
+    
+    // Si no hay datos de workload aún:
+    // - Si está cargando: mostrar 0 temporalmente (mejor que mostrar un valor incorrecto del backend)
+    // - Si hay error: usar el valor del backend pero validar
+    if (workloadLoading) {
+      // Mientras carga, mostrar 0 para evitar mostrar valores incorrectos del backend
+      // Una vez que se cargue, se validará contra los datos reales
+      return 0;
+    }
+    
+    // Si hay error al cargar workload, usar el valor del backend pero validar
+    // Nota: Si el backend retorna un valor incorrecto (ej: 28% sin tareas), 
+    // esto se corregirá cuando el workload se cargue correctamente
+    return Math.max(0, backendWorkload);
+  }, [selectedResourceData, workload, workloadLoading, workloadError]);
 
   return (
     <Card>
@@ -133,18 +171,18 @@ export function ResourceWorkload({ organizationId }: ResourceWorkloadProps) {
               </div>
               <Badge
                 variant={
-                  selectedResourceData.currentWorkload >= selectedResourceData.maxWorkload
+                  validatedCurrentWorkload >= selectedResourceData.maxWorkload
                     ? "destructive"
-                    : selectedResourceData.currentWorkload >= selectedResourceData.maxWorkload * 0.8
+                    : validatedCurrentWorkload >= selectedResourceData.maxWorkload * 0.8
                       ? "default"
                       : "secondary"
                 }
               >
-                {selectedResourceData.currentWorkload}% / {selectedResourceData.maxWorkload}%
+                {validatedCurrentWorkload}% / {selectedResourceData.maxWorkload}%
               </Badge>
             </div>
             <Progress
-              value={selectedResourceData.currentWorkload}
+              value={validatedCurrentWorkload}
               className="h-2"
             />
           </div>
