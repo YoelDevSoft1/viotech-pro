@@ -328,7 +328,7 @@ export function ChatWindow({
     .slice(0, 2);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full w-full min-w-0">
       {/* Chat Header */}
       <header className="flex items-center justify-between gap-3 p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex items-center gap-3 min-w-0">

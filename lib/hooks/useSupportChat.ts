@@ -134,17 +134,63 @@ export function useSupportChat(chatId?: string | null) {
     ws.onmessage = (evt) => {
       try {
         const payload = JSON.parse(evt.data);
-        if (payload?.type === "chat_message" && payload.data) {
-          const incoming = payload.data as ChatMessage & { chatId?: string };
-          if (!incoming.chatId || incoming.chatId === chatIdRef.current) {
-            setMessages((prev) => [...prev, incoming]);
+
+        // Evento de conexión establecida
+        if (payload?.type === "chat_status") {
+          console.log("[WS] Chat status:", payload.status, payload.message);
+          return;
+        }
+
+        // Nuevo mensaje recibido
+        if (payload?.type === "chat_message" && payload.payload) {
+          const { chatId: msgChatId, message } = payload.payload as {
+            chatId: string;
+            message: {
+              id: string;
+              senderId: string;
+              senderType: "user" | "agent";
+              body: string;
+              status: string;
+              createdAt: string;
+            };
+          };
+
+          // Solo agregar si es para este chat
+          if (!msgChatId || msgChatId === chatIdRef.current) {
+            const incoming: ChatMessage = {
+              id: message.id,
+              tempId: message.id,
+              from: message.senderType === "user" ? "client" : "agent",
+              body: message.body,
+              createdAt: message.createdAt,
+              status: message.status as ChatMessage["status"],
+            };
+
+            // Evitar duplicados
+            setMessages((prev) => {
+              const exists = prev.some((m) => m.id === incoming.id);
+              if (exists) return prev;
+              return [...prev, incoming];
+            });
           }
         }
+
+        // Actualización de estado de mensaje
         if (payload?.type === "message_status" && payload.data) {
           const { messageId, status: mStatus } = payload.data as { messageId: string; status: ChatMessage["status"] };
           setMessages((prev) =>
             prev.map((m) => (m.id === messageId ? { ...m, status: mStatus } : m))
           );
+        }
+
+        // Actualización de presencia de agente (puede ser útil para actualizar UI)
+        if (payload?.type === "presence_update" && payload.payload) {
+          const { agentId, status: agentStatus } = payload.payload as {
+            agentId: string;
+            status: "online" | "offline" | "away" | "busy";
+          };
+          console.log("[WS] Agent presence update:", agentId, agentStatus);
+          // Aquí podrías emitir un evento para actualizar el estado del agente en la UI
         }
       } catch {
         // ignore malformed messages

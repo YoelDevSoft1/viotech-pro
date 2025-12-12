@@ -104,8 +104,6 @@ export default function ClientSupportPage() {
   // Mostrar alerta discreta si hay errores del servidor (500)
   const hasServerError = (isErrorAgents || isErrorThreads) && 
     (!isLoadingAgents && !isLoadingThreads);
-  
-
 
   return (
     <TooltipProvider>
@@ -195,11 +193,11 @@ export default function ClientSupportPage() {
         </header>
 
         {/* Main Chat Layout - Messenger style */}
-        <div className="flex-1 grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-4">
-          <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+        <div className="flex-1 grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-4 min-w-0">
+          <div className="rounded-xl border bg-card shadow-sm overflow-hidden min-w-0">
             {sidebarContent}
           </div>
-          <div className="rounded-xl border bg-card shadow-sm overflow-hidden flex">
+          <div className="rounded-xl border bg-card shadow-sm overflow-hidden flex min-w-0 w-full">
             {chatId ? (
               <ChatWindow
                 chatId={chatId}

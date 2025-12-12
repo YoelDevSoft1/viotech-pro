@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Tooltip,
   TooltipContent,
@@ -35,6 +35,10 @@ type Agent = {
   name: string;
   role?: string;
   status?: "online" | "offline" | "away" | "busy";
+  avatarUrl?: string | null;
+  skills?: string[];
+  isActive?: boolean;
+  lastSeenAt?: string | null;
 };
 
 const localeMap: Record<string, Locale> = { es, en: enUS, pt: ptBR } as any;
@@ -229,6 +233,7 @@ export function SupportSidebar({
                     agent={agent}
                     onClick={() => onAgentSelect(agent.id)}
                     isCreating={isCreatingThread}
+                    locale={localeObj}
                     t={t}
                   />
                 ))
@@ -314,11 +319,13 @@ function AgentItem({
   agent,
   onClick,
   isCreating,
+  locale,
   t,
 }: {
   agent: Agent;
   onClick: () => void;
   isCreating?: boolean;
+  locale: Locale;
   t: (key: string, opts?: any) => string;
 }) {
   const initials = agent.name
@@ -330,6 +337,15 @@ function AgentItem({
 
   const isOnline = agent.status === "online";
   const isAway = agent.status === "away";
+  const isBusy = agent.status === "busy";
+
+  // Formatear "última vez visto"
+  const lastSeenText = agent.lastSeenAt
+    ? formatDistanceToNow(new Date(agent.lastSeenAt), {
+        addSuffix: true,
+        locale,
+      })
+    : null;
 
   return (
     <button
@@ -344,6 +360,9 @@ function AgentItem({
     >
       <div className="relative flex-shrink-0">
         <Avatar className="h-10 w-10">
+          {agent.avatarUrl && (
+            <AvatarImage src={agent.avatarUrl} alt={agent.name} />
+          )}
           <AvatarFallback
             className={cn(
               "text-xs font-medium transition-colors",
@@ -351,6 +370,8 @@ function AgentItem({
                 ? "bg-green-100 text-green-700"
                 : isAway
                 ? "bg-yellow-100 text-yellow-700"
+                : isBusy
+                ? "bg-red-100 text-red-700"
                 : "bg-muted text-muted-foreground"
             )}
           >
@@ -361,10 +382,20 @@ function AgentItem({
       </div>
 
       <div className="flex-1 min-w-0">
-        <span className="font-medium text-sm truncate block">{agent.name}</span>
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-sm truncate">{agent.name}</span>
+          {agent.isActive && (
+            <span className="h-1.5 w-1.5 rounded-full bg-green-500 flex-shrink-0" title={t("activeSession", { defaultValue: "Sesi\u00f3n activa" })} />
+          )}
+        </div>
         <span className="text-xs text-muted-foreground truncate block">
           {agent.role || t("agent", { defaultValue: "Agente de soporte" })}
         </span>
+        {!isOnline && lastSeenText && (
+          <span className="text-[10px] text-muted-foreground/70 truncate block">
+            {t("lastSeen", { defaultValue: "Visto" })} {lastSeenText}
+          </span>
+        )}
       </div>
 
       <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
