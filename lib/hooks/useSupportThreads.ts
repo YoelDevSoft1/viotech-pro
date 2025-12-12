@@ -44,9 +44,11 @@ export function useSupportThreads(includeHidden = false) {
     queryFn: async () => {
       try {
         const chats = await supportApi.getChats(includeHidden);
+        console.log("[useSupportThreads] Chats fetched:", chats?.length || 0);
         // Convertir Chat[] a SupportThread[]
         return chats.map(chatToThread);
       } catch (error) {
+        console.error("[useSupportThreads] Error fetching chats:", error);
         // Si es un error 500, retornar array vacío en lugar de lanzar
         const axiosError = error as AxiosError;
         if (axiosError.response?.status === 500) {
@@ -56,19 +58,25 @@ export function useSupportThreads(includeHidden = false) {
         throw error;
       }
     },
-    staleTime: 1000 * 15,
+    staleTime: 1000 * 30, // 30 segundos
+    gcTime: 1000 * 60 * 5, // 5 minutos en cache
     retry: (failureCount, error) => {
       // No hacer retry en errores 500 (problema del servidor)
       const axiosError = error as AxiosError;
       if (axiosError.response?.status === 500) {
         return false;
       }
-      // Retry máximo 1 vez para otros errores
-      return failureCount < 1;
+      // No hacer retry en errores de autenticación
+      if (axiosError.response?.status === 401 || axiosError.response?.status === 403) {
+        return false;
+      }
+      // Retry máximo 2 veces para otros errores
+      return failureCount < 2;
     },
-    retryDelay: 1000,
-    // Valor inicial por defecto
-    initialData: [],
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
+    // NO usar initialData - causa parpadeo
+    placeholderData: [],
+    refetchOnWindowFocus: false,
   });
 
   const createThread = useMutation({

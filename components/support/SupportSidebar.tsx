@@ -246,6 +246,22 @@ export function SupportSidebar({
   );
 }
 
+// Helper para validar y formatear fechas de forma segura
+function safeFormatDistanceToNow(
+  dateStr: string | undefined | null,
+  locale: Locale
+): string | null {
+  if (!dateStr) return null;
+  try {
+    const date = new Date(dateStr);
+    // Verificar que la fecha sea válida
+    if (isNaN(date.getTime())) return null;
+    return formatDistanceToNow(date, { addSuffix: false, locale });
+  } catch {
+    return null;
+  }
+}
+
 function ChatItem({
   chat,
   isSelected,
@@ -259,12 +275,14 @@ function ChatItem({
   locale: Locale;
   t: (key: string, opts?: any) => string;
 }) {
-  const initials = chat.agentName
+  const initials = (chat.agentName || "??")
     .split(" ")
     .map((n) => n[0])
     .join("")
     .toUpperCase()
     .slice(0, 2);
+
+  const timeAgo = safeFormatDistanceToNow(chat.lastMessage?.createdAt, locale);
 
   return (
     <button
@@ -288,12 +306,9 @@ function ChatItem({
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <span className="font-medium text-sm truncate">{chat.agentName}</span>
-          {chat.lastMessage && (
+          {timeAgo && (
             <span className="text-[10px] text-muted-foreground flex-shrink-0">
-              {formatDistanceToNow(new Date(chat.lastMessage.createdAt), {
-                addSuffix: false,
-                locale,
-              })}
+              {timeAgo}
             </span>
           )}
         </div>
@@ -339,13 +354,17 @@ function AgentItem({
   const isAway = agent.status === "away";
   const isBusy = agent.status === "busy";
 
-  // Formatear "última vez visto"
-  const lastSeenText = agent.lastSeenAt
-    ? formatDistanceToNow(new Date(agent.lastSeenAt), {
-        addSuffix: true,
-        locale,
-      })
-    : null;
+  // Formatear "última vez visto" de forma segura
+  const lastSeenText = useMemo(() => {
+    if (!agent.lastSeenAt) return null;
+    try {
+      const date = new Date(agent.lastSeenAt);
+      if (isNaN(date.getTime())) return null;
+      return formatDistanceToNow(date, { addSuffix: true, locale });
+    } catch {
+      return null;
+    }
+  }, [agent.lastSeenAt, locale]);
 
   return (
     <button

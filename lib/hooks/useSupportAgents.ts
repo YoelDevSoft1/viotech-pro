@@ -31,34 +31,46 @@ export function useSupportAgents(filters?: {
         // El backend sincroniza automáticamente el estado basado en sesiones activas
         const agents = await supportApi.getAgents({
           ...filters,
-          includeInactive: filters?.includeInactive !== undefined 
-            ? filters.includeInactive 
+          includeInactive: filters?.includeInactive !== undefined
+            ? filters.includeInactive
             : true, // Default: incluir todos
         });
+        console.log("[useSupportAgents] Agents fetched:", agents?.length || 0);
         return Array.isArray(agents) ? agents : [];
       } catch (error) {
+        console.error("[useSupportAgents] Error fetching agents:", error);
         // Si es un error 500, retornar array vacío en lugar de lanzar
         const axiosError = error as AxiosError;
         if (axiosError.response?.status === 500) {
           // Backend no disponible - retornar array vacío para que la UI funcione
           return [] as Agent[];
         }
+        // Para otros errores (401, 403, etc.), también retornar vacío para no romper la UI
+        // pero marcar como error
         throw error;
       }
     },
-    staleTime: 1000 * 30,
+    staleTime: 1000 * 60, // 1 minuto - aumentado para evitar refetches innecesarios
+    gcTime: 1000 * 60 * 5, // 5 minutos en cache
     retry: (failureCount, error) => {
       // No hacer retry en errores 500 (problema del servidor)
       const axiosError = error as AxiosError;
       if (axiosError.response?.status === 500) {
         return false;
       }
-      // Retry máximo 1 vez para otros errores
-      return failureCount < 1;
+      // No hacer retry en errores de autenticación
+      if (axiosError.response?.status === 401 || axiosError.response?.status === 403) {
+        return false;
+      }
+      // Retry máximo 2 veces para otros errores
+      return failureCount < 2;
     },
-    retryDelay: 1000,
-    // Valor inicial por defecto
-    initialData: [],
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
+    // NO usar initialData - causa el parpadeo
+    // En su lugar, usar placeholderData para mostrar algo mientras carga
+    placeholderData: [],
+    // Mantener datos previos mientras se refresca
+    refetchOnWindowFocus: false,
   });
 
   // Asegurar que siempre sea un array
