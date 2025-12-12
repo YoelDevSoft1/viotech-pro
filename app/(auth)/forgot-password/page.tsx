@@ -30,65 +30,67 @@ export default function ForgotPasswordPage() {
     recover(values.email);
   };
 
-  if (isSuccess) {
-    return (
-      <Card className="border-border/60 shadow-xl">
-        <CardHeader>
-          <CardTitle className="text-xl text-center">{tAuth("emailSent")}</CardTitle>
-          <CardDescription className="text-center">
-            {tAuth("emailSentDescriptionStart")} <strong>{form.getValues("email")}</strong>, {tAuth("emailSentDescriptionEnd")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex justify-center">
-          <div className="bg-primary/10 p-4 rounded-full">
-            <Mail className="h-8 w-8 text-primary" />
-          </div>
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <Link href="/login">
-            <Button variant="outline">{tAuth("backToSignIn")}</Button>
-          </Link>
-        </CardFooter>
-      </Card>
-    );
-  }
-
   return (
-    <Card className="border-border/60 shadow-xl">
-      <CardHeader>
-        <CardTitle className="text-xl">{tAuth("recoverPassword")}</CardTitle>
-        <CardDescription>
-          {tAuth("recoverPasswordDescription")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{tAuth("email")}</FormLabel>
-                  <FormControl>
-                    <Input placeholder={tAuth("emailPlaceholder")} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isPending ? tAuth("sending") : tAuth("sendLink")}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-      <CardFooter className="justify-center">
-        <Link href="/login" className="flex items-center text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="mr-2 h-4 w-4" /> {tAuth("back")}
-        </Link>
-      </CardFooter>
-    </Card>
+    <div className="container relative flex h-screen flex-col items-center justify-center px-4">
+      <div className="mx-auto flex w-full max-w-sm flex-col justify-center space-y-6">
+        {isSuccess ? (
+          <Card className="border-border/60 shadow-xl w-full">
+            <CardHeader>
+              <CardTitle className="text-xl text-center">{tAuth("emailSent")}</CardTitle>
+              <CardDescription className="text-center">
+                {tAuth("emailSentDescriptionStart")} <strong>{form.getValues("email")}</strong>, {tAuth("emailSentDescriptionEnd")}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex justify-center">
+              <div className="bg-primary/10 p-4 rounded-full">
+                <Mail className="h-8 w-8 text-primary" />
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-center">
+              <Link href="/login">
+                <Button variant="outline">{tAuth("backToSignIn")}</Button>
+              </Link>
+            </CardFooter>
+          </Card>
+        ) : (
+          <Card className="border-border/60 shadow-xl w-full">
+            <CardHeader>
+              <CardTitle className="text-xl">{tAuth("recoverPassword")}</CardTitle>
+              <CardDescription>
+                {tAuth("recoverPasswordDescription")}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{tAuth("email")}</FormLabel>
+                        <FormControl>
+                          <Input placeholder={tAuth("emailPlaceholder")} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="w-full" disabled={isPending}>
+                    {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isPending ? tAuth("sending") : tAuth("sendLink")}
+                  </Button>
+                </form>
+              </Form>
+            </CardContent>
+            <CardFooter className="justify-center">
+              <Link href="/login" className="flex items-center text-sm text-muted-foreground hover:text-foreground">
+                <ArrowLeft className="mr-2 h-4 w-4" /> {tAuth("back")}
+              </Link>
+            </CardFooter>
+          </Card>
+        )}
+      </div>
+    </div>
   );
 }

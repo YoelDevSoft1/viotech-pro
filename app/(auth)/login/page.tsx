@@ -276,8 +276,8 @@ function LoginPageContent() {
       </div>
 
       {/* Versión Móvil - Sin dos columnas */}
-      <div className="container relative flex h-screen flex-col items-center justify-center md:hidden">
-        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+      <div className="container relative flex h-screen flex-col items-center justify-center md:hidden px-4">
+        <div className="mx-auto flex w-full max-w-sm flex-col justify-center space-y-6">
           <div className="flex flex-col space-y-2 text-center">
             <h1 className="text-2xl font-semibold tracking-tight">
               Crear una cuenta
@@ -287,7 +287,7 @@ function LoginPageContent() {
             </p>
           </div>
 
-          <Card className="border-border/60 shadow-lg">
+          <Card className="border-border/60 shadow-lg w-full">
             <CardHeader className="space-y-1">
               <CardTitle className="text-xl">Iniciar Sesión</CardTitle>
               <CardDescription>

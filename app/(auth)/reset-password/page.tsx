@@ -43,22 +43,25 @@ function ResetPasswordPageContent() {
 
   if (!token) {
     return (
-      <div className="container flex items-center justify-center min-h-screen p-4">
-        <Card className="w-full max-w-md border-border/60 shadow-xl">
-          <CardContent className="pt-6">
-            <Alert variant="destructive">
-              <AlertTitle>{tAuth("invalidToken")}</AlertTitle>
-              <AlertDescription>{tAuth("invalidTokenDescription")}</AlertDescription>
-            </Alert>
-          </CardContent>
-        </Card>
+      <div className="container relative flex h-screen flex-col items-center justify-center px-4">
+        <div className="mx-auto flex w-full max-w-sm flex-col justify-center space-y-6">
+          <Card className="w-full border-border/60 shadow-xl">
+            <CardContent className="pt-6">
+              <Alert variant="destructive">
+                <AlertTitle>{tAuth("invalidToken")}</AlertTitle>
+                <AlertDescription>{tAuth("invalidTokenDescription")}</AlertDescription>
+              </Alert>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container flex items-center justify-center min-h-screen p-4">
-      <Card className="w-full max-w-md border-border/60 shadow-xl">
+    <div className="container relative flex h-screen flex-col items-center justify-center px-4">
+      <div className="mx-auto flex w-full max-w-sm flex-col justify-center space-y-6">
+        <Card className="w-full border-border/60 shadow-xl">
         <CardHeader>
           <CardTitle className="text-xl">{tAuth("newPassword")}</CardTitle>
           <CardDescription>{tAuth("newPasswordDescription")}</CardDescription>
@@ -106,6 +109,7 @@ function ResetPasswordPageContent() {
           </Form>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
